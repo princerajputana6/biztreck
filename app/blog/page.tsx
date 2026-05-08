@@ -22,7 +22,7 @@ async function getBlogs() {
       .sort({ createdAt: -1 })
       .limit(60)
       .toArray();
-    return blogs;
+    return blogs.filter((b: any) => b?.slug && b?.title);
   } catch {
     return [];
   }

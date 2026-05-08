@@ -11,11 +11,13 @@ export const metadata = { title: "Careers · Biztreck Solutions" };
 async function getJobs() {
   try {
     const db = await getDb();
-    return await db
+    const all = await db
       .collection("jobs")
       .find({ active: { $ne: false } })
       .sort({ createdAt: -1 })
       .toArray();
+    // Filter out malformed legacy docs missing slug/title
+    return all.filter((j: any) => j?.slug && j?.title);
   } catch {
     return [];
   }

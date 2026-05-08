@@ -23,9 +23,10 @@ async function getBlog(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const blog = await getBlog(params.slug);
+  const { slug } = await params;
+  const blog = await getBlog(slug);
   if (!blog) return { title: "Post not found · Biztreck" };
   return {
     title: `${blog.title} · Biztreck Blog`,
@@ -41,9 +42,10 @@ export async function generateMetadata({
 export default async function BlogPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const blog = await getBlog(params.slug);
+  const { slug } = await params;
+  const blog = await getBlog(slug);
   if (!blog) notFound();
 
   const html = renderMarkdown(blog.contentMarkdown || "");

@@ -5,12 +5,13 @@ export const runtime = "nodejs";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
   const db = await getDb();
   const comments = await db
     .collection("comments")
-    .find({ blogSlug: params.slug, approved: { $ne: false } })
+    .find({ blogSlug: slug, approved: { $ne: false } })
     .sort({ createdAt: -1 })
     .limit(200)
     .toArray();
@@ -22,9 +23,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const { name, email, message } = await req.json();
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -39,12 +41,12 @@ export async function POST(
       );
     }
     const db = await getDb();
-    const exists = await db.collection("blogs").findOne({ slug: params.slug });
+    const exists = await db.collection("blogs").findOne({ slug });
     if (!exists) {
       return NextResponse.json({ ok: false, error: "Blog not found" }, { status: 404 });
     }
     const doc = {
-      blogSlug: params.slug,
+      blogSlug: slug,
       name: String(name).slice(0, 80),
       email: String(email).slice(0, 120),
       message: String(message),

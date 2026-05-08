@@ -58,8 +58,7 @@ Markdown rules: use ## for sections, ### for subsections, **bold**, lists, and \
   const user = `Write a complete blog post about: "${topic}"`;
   const raw = await complete(system, user, true);
   const parsed = JSON.parse(raw) as GeneratedBlog;
-  if (!parsed.slug) parsed.slug = slugify(parsed.title);
-  parsed.slug = slugify(parsed.slug);
+  parsed.slug = slugify(parsed.slug || parsed.title || `post-${Date.now()}`);
   return parsed;
 }
 
@@ -112,8 +111,7 @@ ${brief.location ? `Location: ${brief.location}\n` : ""}${brief.type ? `Type: ${
 
   const raw = await complete(system, user, true);
   const parsed = JSON.parse(raw) as GeneratedJob;
-  if (!parsed.slug) parsed.slug = slugify(parsed.title);
-  parsed.slug = slugify(parsed.slug);
+  parsed.slug = slugify(parsed.slug || parsed.title || `role-${Date.now()}`);
   return parsed;
 }
 

@@ -29,9 +29,10 @@ async function getJob(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const j = await getJob(params.slug);
+  const { slug } = await params;
+  const j = await getJob(slug);
   if (!j) return { title: "Role not found · Biztreck" };
   return {
     title: `${j.title} · Careers · Biztreck`,
@@ -42,9 +43,10 @@ export async function generateMetadata({
 export default async function JobPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const job = await getJob(params.slug);
+  const { slug } = await params;
+  const job = await getJob(slug);
   if (!job) notFound();
 
   const html = renderMarkdown(job.descriptionMarkdown || "");
