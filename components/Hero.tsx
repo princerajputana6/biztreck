@@ -18,7 +18,6 @@ import {
   Globe2,
   Cpu,
   Layers,
-  TerminalSquare,
   Rocket,
   Smartphone,
   RefreshCw,
@@ -235,78 +234,6 @@ function MagneticButton({
     >
       {children}
     </motion.a>
-  );
-}
-
-/* ───── Live-typing terminal ───── */
-const TERM_LINES = [
-  { p: "$", t: "biztreck init my-startup --stack=next,aws", c: "text-accent-glow" },
-  { p: "✓", t: "design system generated", c: "text-emerald-400" },
-  { p: "✓", t: "next.js 14 + tailwind scaffolded", c: "text-emerald-400" },
-  { p: "✓", t: "ci/cd pipeline online", c: "text-emerald-400" },
-  { p: "$", t: "biztreck deploy --prod", c: "text-accent-glow" },
-  { p: "→", t: "live at startup.biztreck.world ", c: "text-accent-cyan" },
-];
-
-function Terminal() {
-  const [step, setStep] = useState(0);
-  const [typed, setTyped] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    let i = 0;
-    let buffer = "";
-    let lineIdx = 0;
-
-    const tick = async () => {
-      while (!cancelled) {
-        const line = TERM_LINES[lineIdx];
-        for (let c = 0; c <= line.t.length; c++) {
-          if (cancelled) return;
-          buffer = line.t.slice(0, c);
-          setTyped(buffer);
-          await new Promise((r) => setTimeout(r, 28));
-        }
-        await new Promise((r) => setTimeout(r, 600));
-        i++;
-        setStep(i);
-        lineIdx = (lineIdx + 1) % TERM_LINES.length;
-        if (lineIdx === 0) {
-          setStep(0);
-          await new Promise((r) => setTimeout(r, 800));
-        }
-      }
-    };
-    tick();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return (
-    <div className="font-mono text-[12.5px] leading-relaxed">
-      {TERM_LINES.slice(0, step).map((l, i) => (
-        <div key={i} className="flex gap-2">
-          <span className={`${l.c} font-bold`}>{l.p}</span>
-          <span className="text-slate-200">{l.t}</span>
-        </div>
-      ))}
-      {step < TERM_LINES.length && (
-        <div className="flex gap-2">
-          <span className={`${TERM_LINES[step].c} font-bold`}>
-            {TERM_LINES[step].p}
-          </span>
-          <span className="text-slate-200">
-            {typed}
-            <motion.span
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 0.9, repeat: Infinity }}
-              className="ml-0.5 inline-block h-[1em] w-[7px] -translate-y-[1px] bg-accent-cyan align-middle"
-            />
-          </span>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -631,28 +558,6 @@ export default function Hero() {
               Get in touch <ArrowRight size={18} />
             </MagneticButton>
             <MagneticButton href="#services">Explore services</MagneticButton>
-          </motion.div>
-
-          {/* Live terminal preview */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="mt-10 max-w-md"
-          >
-            <div className="glass overflow-hidden rounded-2xl">
-              <div className="flex items-center gap-2 border-b border-navy-700/50 bg-navy-900/60 px-4 py-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                <div className="ml-2 flex items-center gap-1.5 text-[11px] text-slate-400">
-                  <TerminalSquare size={11} /> ~/biztreck
-                </div>
-              </div>
-              <div className="bg-navy-950/60 p-4">
-                <Terminal />
-              </div>
-            </div>
           </motion.div>
 
           <motion.div
