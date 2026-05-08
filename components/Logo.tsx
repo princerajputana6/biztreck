@@ -34,6 +34,7 @@ export default function Logo({
           width={size * 4}
           height={size}
           priority
+          quality={75}
           sizes={`${size * 4}px`}
           style={{ height: size, width: "auto" }}
           className="block object-contain drop-shadow-[0_0_18px_rgba(127,162,255,0.35)]"

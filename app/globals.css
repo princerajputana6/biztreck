@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,7 +22,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
   overflow-x: hidden;
@@ -155,6 +153,131 @@ body {
   }
   50% {
     background-position: 100% 50%;
+  }
+}
+
+/* GPU-cheap rotation keyframes used in HeroOrb. */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes spin-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.bt-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes bt-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  60% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+.bt-pulse {
+  animation: bt-pulse 3s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes bt-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.bt-float {
+  animation: bt-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+.bt-float-slow {
+  animation: bt-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Orbit ring rotations. CSS variables drive starting angle to fan items. */
+@keyframes bt-orbit-30 {
+  from {
+    transform: rotate(var(--bt-start, 0deg));
+  }
+  to {
+    transform: rotate(calc(var(--bt-start, 0deg) + 360deg));
+  }
+}
+@keyframes bt-orbit-counter-30 {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes bt-orbit-rev-24 {
+  from {
+    transform: rotate(var(--bt-start, 0deg));
+  }
+  to {
+    transform: rotate(calc(var(--bt-start, 0deg) - 360deg));
+  }
+}
+@keyframes bt-orbit-counter-24 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bt-orbit-30 {
+  animation: bt-orbit-30 30s linear infinite;
+  will-change: transform;
+}
+.bt-orbit-counter-30 {
+  animation: bt-orbit-counter-30 30s linear infinite;
+  will-change: transform;
+}
+.bt-orbit-rev-24 {
+  animation: bt-orbit-rev-24 24s linear infinite;
+  will-change: transform;
+}
+.bt-orbit-counter-24 {
+  animation: bt-orbit-counter-24 24s linear infinite;
+  will-change: transform;
+}
+
+/* Endless horizontal marquee — used by hero background strip. */
+@keyframes bt-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.bt-marquee {
+  animation: bt-marquee 40s linear infinite;
+  will-change: transform;
+}
+
+/* Respect prefers-reduced-motion for all custom keyframes. */
+@media (prefers-reduced-motion: reduce) {
+  .bt-pulse,
+  .bt-float,
+  .bt-float-slow,
+  .bt-spin-slow,
+  .bt-orbit-30,
+  .bt-orbit-counter-30,
+  .bt-orbit-rev-24,
+  .bt-orbit-counter-24,
+  .bt-marquee {
+    animation: none !important;
   }
 }
 

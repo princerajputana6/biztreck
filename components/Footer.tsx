@@ -29,6 +29,15 @@ const columns = [
     ],
   },
   {
+    title: "Products",
+    links: [
+      { label: "KuddlKin — Childcare", href: "/#products" },
+      { label: "Buildifai — Construction", href: "/#products" },
+      { label: "Rezulaizer — AI Hiring", href: "/#products" },
+      { label: "Servio — Restaurant ERP", href: "/#products" },
+    ],
+  },
+  {
     title: "Company",
     links: [
       { label: "Our Process", href: "/#process" },
@@ -130,7 +139,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-7">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-7">
             {columns.map((col) => (
               <div key={col.title}>
                 <div className="font-display text-sm font-semibold uppercase tracking-wider text-white">
