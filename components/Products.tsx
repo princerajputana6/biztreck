@@ -7,6 +7,9 @@ import {
   UtensilsCrossed,
   ArrowUpRight,
   Sparkles,
+  BarChart3,
+  Compass,
+  Landmark,
 } from "lucide-react";
 
 const products = [
@@ -19,6 +22,7 @@ const products = [
     Icon: Baby,
     tags: ["B2C App", "Marketplace", "Verified pros"],
     status: "Live",
+    url: "https://kuddl.co/",
     accent: "from-pink-400 to-rose-500",
     accentSoft: "rgba(244, 114, 182, 0.18)",
     glow: "rgba(244, 114, 182, 0.45)",
@@ -32,6 +36,7 @@ const products = [
     Icon: HardHat,
     tags: ["Marketplace", "Construction", "Logistics"],
     status: "Live",
+    url: "https://buildifai.vercel.app",
     accent: "from-amber-400 to-orange-500",
     accentSoft: "rgba(251, 146, 60, 0.18)",
     glow: "rgba(251, 146, 60, 0.45)",
@@ -45,22 +50,66 @@ const products = [
     Icon: BrainCircuit,
     tags: ["AI / ML", "B2B SaaS", "HR Tech"],
     status: "Live",
+    url: "https://www.rezulaizer.com",
     accent: "from-violet-400 to-fuchsia-500",
     accentSoft: "rgba(167, 139, 250, 0.18)",
     glow: "rgba(167, 139, 250, 0.45)",
   },
   {
-    name: "Servio",
-    slug: "servio",
+    name: "Atithira",
+    slug: "atithira",
     tagline: "Full-fledged ERP for restaurants & hotels",
     description:
       "Customers scan a QR at the table to place orders, and managers get a complete operations stack — kitchen, billing, inventory, staff and analytics — in one tight ERP.",
     Icon: UtensilsCrossed,
     tags: ["Restaurant", "ERP", "QR ordering"],
     status: "Live",
+    url: "https://atithira.vercel.app",
     accent: "from-cyan-400 to-emerald-500",
     accentSoft: "rgba(34, 211, 238, 0.18)",
     glow: "rgba(34, 211, 238, 0.45)",
+  },
+  {
+    name: "REP",
+    slug: "rep",
+    tagline: "Resource planning, reimagined",
+    description:
+      "One platform for capacity, allocations, financials, and your whole project portfolio. AI-powered resource matching, predictive 12-month forecasting, and multi-agency networking — so your team runs leaner and every deadline lands.",
+    Icon: BarChart3,
+    tags: ["AI / ML", "B2B SaaS", "Resource Planning"],
+    status: "Live",
+    url: "https://rep.vercel.app/",
+    accent: "from-blue-400 to-indigo-500",
+    accentSoft: "rgba(96, 165, 250, 0.18)",
+    glow: "rgba(96, 165, 250, 0.45)",
+  },
+  {
+    name: "SafarMates",
+    slug: "safarmates",
+    tagline: "Ride beyond the horizon",
+    description:
+      "Curated motorbike expeditions, scenic bus journeys, and once-in-a-lifetime escapes across the Himalayas, Vietnam, Iceland, and beyond — crafted for travelers who prefer the long way around.",
+    Icon: Compass,
+    tags: ["Travel", "Adventure", "Marketplace"],
+    status: "Live",
+    url: "https://safarmates.vercel.app/",
+    accent: "from-green-400 to-teal-500",
+    accentSoft: "rgba(52, 211, 153, 0.18)",
+    glow: "rgba(52, 211, 153, 0.45)",
+  },
+  {
+    name: "BookMyGuide",
+    slug: "bookmyguide",
+    tagline: "Discover India's heritage with expert local guides",
+    description:
+      "Connect with verified local guides across 50+ heritage destinations in India. From the ghats of Varanasi to the palaces of Jaipur — compare ratings, book securely, and explore in depth.",
+    Icon: Landmark,
+    tags: ["Travel", "Heritage", "India"],
+    status: "Live",
+    url: "https://www.bookmyguide.in/",
+    accent: "from-amber-400 to-yellow-500",
+    accentSoft: "rgba(251, 191, 36, 0.18)",
+    glow: "rgba(251, 191, 36, 0.45)",
   },
 ];
 
@@ -171,9 +220,15 @@ export default function Products() {
                   <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
                     A Biztreck product
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-white transition-all group-hover:bg-accent-electric">
-                    Learn more <ArrowUpRight size={12} />
-                  </span>
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-white transition-all group-hover:bg-accent-electric"
+                  >
+                    Launch site <ArrowUpRight size={12} />
+                  </a>
                 </div>
               </motion.article>
             );
@@ -193,7 +248,7 @@ export default function Products() {
               Have an idea you want built like this?
             </div>
             <div className="mt-1 text-sm text-slate-400">
-              We&apos;ve done it 4 times for ourselves — we&apos;ll do it for you too.
+              We&apos;ve done it 7 times for ourselves — we&apos;ll do it for you too.
             </div>
           </div>
           <a href="#contact" className="btn-primary shine whitespace-nowrap">
