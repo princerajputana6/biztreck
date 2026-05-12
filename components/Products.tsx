@@ -183,23 +183,23 @@ export default function Products() {
                 />
 
                 <div className="relative flex items-start justify-between">
-                  <div
-                    className={`relative grid h-14 w-14 place-items-center rounded-2xl ${p.logo ? 'bg-white' : `bg-gradient-to-br ${p.accent}`} shadow-glow`}
-                    style={{ boxShadow: `0 0 30px ${p.glow}` }}
-                  >
-                    {p.logo ? (
-                      <Image
-                        src={p.logo}
-                        alt={`${p.name} logo`}
-                        width={56}
-                        height={56}
-                        className="h-14 w-14 rounded-2xl object-cover p-2"
-                      />
-                    ) : (
+                  {p.logo ? (
+                    <Image
+                      src={p.logo}
+                      alt={`${p.name} logo`}
+                      width={80}
+                      height={80}
+                      className="h-20 w-20 object-contain"
+                    />
+                  ) : (
+                    <div
+                      className={`relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${p.accent} shadow-glow`}
+                      style={{ boxShadow: `0 0 30px ${p.glow}` }}
+                    >
                       <Icon className="text-white" size={26} />
-                    )}
-                    <span className="absolute -inset-1 rounded-2xl border border-white/20" />
-                  </div>
+                      <span className="absolute -inset-1 rounded-2xl border border-white/20" />
+                    </div>
+                  )}
 
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">
                     <span className="relative grid h-1.5 w-1.5 place-items-center">
