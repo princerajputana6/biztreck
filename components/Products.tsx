@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   Baby,
   HardHat,
@@ -20,6 +21,7 @@ const products = [
     description:
       "We connect parents with trusted, verified childcare professionals. From spontaneous date nights to regular nanny care, KuddlKin ensures your little ones are in safe, loving hands while having the time of their lives.",
     Icon: Baby,
+    logo: "/assets/brands/kuddl-kin.svg",
     tags: ["B2C App", "Marketplace", "Verified pros"],
     status: "Live",
     url: "https://kuddl.co/",
@@ -34,6 +36,7 @@ const products = [
     description:
       "A marketplace where you can buy construction materials online and book trusted builders to get complete project solutions — from bricks to handover.",
     Icon: HardHat,
+    logo: "/assets/brands/buildify-logo.png",
     tags: ["Marketplace", "Construction", "Logistics"],
     status: "Live",
     url: "https://buildifai.vercel.app",
@@ -48,6 +51,7 @@ const products = [
     description:
       "Transform your recruitment with AI-powered resume parsing, intelligent candidate matching, and automated assessments — so you screen 10x faster and hire 3x better.",
     Icon: BrainCircuit,
+    logo: "/assets/brands/rezulaizer.png",
     tags: ["AI / ML", "B2B SaaS", "HR Tech"],
     status: "Live",
     url: "https://www.rezulaizer.com",
@@ -62,6 +66,7 @@ const products = [
     description:
       "Customers scan a QR at the table to place orders, and managers get a complete operations stack — kitchen, billing, inventory, staff and analytics — in one tight ERP.",
     Icon: UtensilsCrossed,
+    logo: "/assets/brands/atithira.jpeg",
     tags: ["Restaurant", "ERP", "QR ordering"],
     status: "Live",
     url: "https://atithira.vercel.app",
@@ -179,10 +184,20 @@ export default function Products() {
 
                 <div className="relative flex items-start justify-between">
                   <div
-                    className={`relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${p.accent} shadow-glow`}
+                    className={`relative grid h-14 w-14 place-items-center rounded-2xl ${p.logo ? 'bg-white' : `bg-gradient-to-br ${p.accent}`} shadow-glow`}
                     style={{ boxShadow: `0 0 30px ${p.glow}` }}
                   >
-                    <Icon className="text-white" size={26} />
+                    {p.logo ? (
+                      <Image
+                        src={p.logo}
+                        alt={`${p.name} logo`}
+                        width={56}
+                        height={56}
+                        className="h-14 w-14 rounded-2xl object-cover p-2"
+                      />
+                    ) : (
+                      <Icon className="text-white" size={26} />
+                    )}
                     <span className="absolute -inset-1 rounded-2xl border border-white/20" />
                   </div>
 
