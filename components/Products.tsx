@@ -83,7 +83,7 @@ const products = [
     Icon: BarChart3,
     tags: ["AI / ML", "B2B SaaS", "Resource Planning"],
     status: "Live",
-    url: "https://rep.vercel.app/",
+    url: "https://rep-orpin-seven.vercel.app/",
     accent: "from-blue-400 to-indigo-500",
     accentSoft: "rgba(96, 165, 250, 0.18)",
     glow: "rgba(96, 165, 250, 0.45)",

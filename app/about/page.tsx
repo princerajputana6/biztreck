@@ -70,37 +70,37 @@ const values = [
 
 const journey = [
   {
-    year: "2021",
+    year: "May 2026",
     title: "The Beginning",
     description:
       "Biztreck was founded with a vision to build AI-powered solutions that solve real business problems.",
   },
   {
-    year: "2022",
-    title: "First Products",
+    year: "Jun 2026",
+    title: "First Products Launch",
     description:
-      "Launched our first SaaS products — KuddlKin and Buildifai — serving thousands of users.",
+      "Launched KuddlKin and Buildifai — our first SaaS products connecting users with trusted professionals.",
   },
   {
-    year: "2023",
-    title: "AI Revolution",
+    year: "Jul 2026",
+    title: "AI Integration",
     description:
-      "Integrated cutting-edge AI into our hiring platform, transforming recruitment for enterprises.",
+      "Integrated cutting-edge AI into Rezulaizer, our recruitment platform with intelligent resume parsing and candidate matching.",
   },
   {
-    year: "2024",
+    year: "Aug 2026",
+    title: "Portfolio Expansion",
+    description:
+      "Expanded to 7+ live products across childcare, construction, hiring, hospitality, travel, and resource management.",
+  },
+  {
+    year: "2027",
     title: "Scale & Growth",
     description:
-      "Expanded our portfolio to 7+ live products across multiple industries and geographies.",
+      "Scaling our products globally, serving startups and enterprises with AI-driven digital solutions.",
   },
   {
-    year: "2025",
-    title: "Global Reach",
-    description:
-      "Serving clients worldwide with AI-driven solutions and custom digital products.",
-  },
-  {
-    year: "2026",
+    year: "Beyond",
     title: "The Future",
     description:
       "Building the next generation of intelligent platforms that redefine how businesses operate.",
