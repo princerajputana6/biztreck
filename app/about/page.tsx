@@ -4,90 +4,110 @@ import BackgroundFX from "@/components/BackgroundFX";
 import {
   ArrowUpRight,
   Sparkles,
-  Code2,
-  Cpu,
-  Globe2,
-  Layers,
+  Heart,
   Lightbulb,
-  Rocket,
-  Zap,
   Users,
-  BrainCircuit,
-  PackageOpen,
-  CheckCircle2,
-  Mail,
+  Target,
+  Zap,
+  Shield,
+  TrendingUp,
+  Calendar,
 } from "lucide-react";
 
 export const metadata = {
-  title: "About · Biztreck Solutions",
+  title: "About Us · Biztreck Solutions",
   description:
-    "Founder & Product Builder at Biztreck — AI Hiring Platform, SaaS, Web & AI Solutions. Turning ideas into scalable digital products.",
+    "We are dreamers, innovators, and builders who design and engineer world-class digital solutions. Discover our story, values, and journey.",
 };
 
-const skills = [
-  { label: "React.js & Next.js", Icon: Code2 },
-  { label: "Tailwind CSS & MUI", Icon: Layers },
-  { label: "TypeScript", Icon: Code2 },
-  { label: "AI / ML Integrations", Icon: Cpu },
-  { label: "Performance Optimization", Icon: Zap },
-  { label: "Scalable UI Systems", Icon: Globe2 },
-  { label: "Product Architecture", Icon: Lightbulb },
-  { label: "Business-Driven Dev", Icon: Rocket },
-];
-
-const pillars = [
+const values = [
   {
-    Icon: BrainCircuit,
-    title: "AI-Powered Hiring Systems",
+    Icon: Heart,
+    title: "Customer First",
     description:
-      "Resume parsing, intelligent candidate matching, AI-driven interviews, and deep analytics — the full hiring stack, automated end-to-end.",
-    accent: "from-violet-400 to-fuchsia-500",
-    glow: "rgba(167, 139, 250, 0.35)",
+      "Every decision we make starts with one question: does this serve our clients better?",
+    accent: "from-pink-400 to-rose-500",
+    glow: "rgba(244, 114, 182, 0.25)",
   },
   {
-    Icon: PackageOpen,
-    title: "Custom SaaS Products",
+    Icon: Lightbulb,
+    title: "Innovation",
     description:
-      "We design, build, and scale SaaS platforms for startups and enterprises — from MVP to production-ready multi-tenant systems.",
-    accent: "from-cyan-400 to-blue-500",
-    glow: "rgba(34, 211, 238, 0.35)",
-  },
-  {
-    Icon: Globe2,
-    title: "Scalable Web Platforms",
-    description:
-      "Modern stacks, clean architecture, and performance-first engineering — products that hold up under real traffic and real teams.",
+      "We challenge the status quo and embrace new technologies to build tomorrow's solutions today.",
     accent: "from-amber-400 to-orange-500",
-    glow: "rgba(251, 146, 60, 0.35)",
-  },
-];
-
-const whatWeDo = [
-  {
-    Icon: Rocket,
-    title: "Build & Launch Products",
-    description:
-      "We take ideas from whiteboard to deployed product — fast, scalable, and built to last.",
-  },
-  {
-    Icon: Cpu,
-    title: "Automate with AI",
-    description:
-      "We integrate AI into your operations — from hiring and screening to content and workflows.",
+    glow: "rgba(251, 146, 60, 0.25)",
   },
   {
     Icon: Users,
-    title: "Scale Digital Operations",
+    title: "Collaboration",
     description:
-      "We help startups and enterprises modernize hiring, onboarding, and internal tooling.",
+      "Great products are built by great teams. We believe in open communication and shared ownership.",
+    accent: "from-cyan-400 to-blue-500",
+    glow: "rgba(34, 211, 238, 0.25)",
+  },
+  {
+    Icon: Target,
+    title: "Excellence",
+    description:
+      "We don't ship good enough. We ship exceptional — every line of code, every pixel, every interaction.",
+    accent: "from-violet-400 to-purple-500",
+    glow: "rgba(167, 139, 250, 0.25)",
+  },
+  {
+    Icon: Zap,
+    title: "Speed",
+    description:
+      "In a world that moves fast, we move faster. Agile execution without compromising quality.",
+    accent: "from-yellow-400 to-amber-500",
+    glow: "rgba(251, 191, 36, 0.25)",
+  },
+  {
+    Icon: Shield,
+    title: "Integrity",
+    description:
+      "We build trust through transparency, honesty, and doing what we say we'll do.",
+    accent: "from-emerald-400 to-green-500",
+    glow: "rgba(52, 211, 153, 0.25)",
   },
 ];
 
-const openTo = [
-  "Collaboration on SaaS & AI products",
-  "Product consulting for startups",
-  "Startup & founder partnerships",
-  "Tech advisory & architecture reviews",
+const journey = [
+  {
+    year: "2021",
+    title: "The Beginning",
+    description:
+      "Biztreck was founded with a vision to build AI-powered solutions that solve real business problems.",
+  },
+  {
+    year: "2022",
+    title: "First Products",
+    description:
+      "Launched our first SaaS products — KuddlKin and Buildifai — serving thousands of users.",
+  },
+  {
+    year: "2023",
+    title: "AI Revolution",
+    description:
+      "Integrated cutting-edge AI into our hiring platform, transforming recruitment for enterprises.",
+  },
+  {
+    year: "2024",
+    title: "Scale & Growth",
+    description:
+      "Expanded our portfolio to 7+ live products across multiple industries and geographies.",
+  },
+  {
+    year: "2025",
+    title: "Global Reach",
+    description:
+      "Serving clients worldwide with AI-driven solutions and custom digital products.",
+  },
+  {
+    year: "2026",
+    title: "The Future",
+    description:
+      "Building the next generation of intelligent platforms that redefine how businesses operate.",
+  },
 ];
 
 export default function About() {
@@ -97,81 +117,112 @@ export default function About() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative z-10 pb-16 pt-40 sm:pt-44">
-        <div className="container-px">
-          <div className="eyebrow mb-6">
-            <Sparkles size={12} /> About Biztreck
-          </div>
+      <section className="relative z-10 pb-20 pt-40 sm:pt-44">
+        <div className="container-px text-center">
           <h1 className="font-display text-5xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Founder & Product Builder
-            <br className="hidden sm:block" />
-            <span className="gradient-text"> Turning Ideas into Impact.</span>
+            The Biztreck Way
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-            I&apos;m a Founder and Product Engineer building AI-powered
-            solutions that help businesses scale smarter. At Biztreck, we
-            design, build, and ship digital products that solve real problems
-            across industries.
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-400">
+            Get a glimpse into who we are, what we do, our values and the
+            experiences we&apos;ve had along the way
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="/#contact" className="btn-primary shine">
-              Let&apos;s build together <ArrowUpRight size={15} />
-            </a>
-            <a href="/#products" className="btn-ghost">
-              View our products
-            </a>
+        </div>
+      </section>
+
+      {/* ── Who We Are ── */}
+      <section className="relative z-10 py-20">
+        <div className="container-px">
+          <div className="mx-auto max-w-4xl">
+            <h2 className="section-title text-center text-white">
+              Who we are
+            </h2>
+            <p className="mt-6 text-center text-lg leading-relaxed text-slate-300">
+              We are dreamers, innovators, challengers and fun lovers who happen
+              to design and engineer world-class technology solutions. Our magic
+              lies in these multi-disciplinary teams working together, imagining
+              remarkable solutions and making them a reality.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── About / Stats ── */}
+      {/* ── Our Values ── */}
       <section className="relative z-10 py-20">
         <div className="container-px">
-          <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <div className="eyebrow mb-5">
-                <Sparkles size={12} /> Our story
-              </div>
-              <h2 className="section-title text-white">
-                Building platforms that{" "}
-                <span className="gradient-text">actually move the needle.</span>
-              </h2>
-              <div className="mt-6 space-y-5 text-[15px] leading-relaxed text-slate-300">
-                <p>
-                  Biztreck started with a simple belief — most software is built
-                  for the wrong reasons. We build for impact, not demos. Every
-                  product we ship is designed to solve a painful, real-world
-                  problem with clean code and sharp product thinking.
-                </p>
-                <p>
-                  With 4+ years in frontend engineering, we&apos;ve specialised
-                  in React.js, Next.js, Tailwind, and MUI — and evolved into a
-                  full product studio that handles everything from architecture
-                  to AI integration to deployment.
-                </p>
-                <p>
-                  Today, Biztreck is home to 7+ live products across childcare,
-                  construction, hiring, hospitality, travel, and resource
-                  management — and we&apos;re just getting started.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 self-start">
-              {[
-                { value: "7+", label: "Live Products" },
-                { value: "4+", label: "Years Building" },
-                { value: "50+", label: "Clients Served" },
-                { value: "∞", label: "Ideas in Queue" },
-              ].map((stat) => (
+          <div className="mb-12 text-center">
+            <h2 className="section-title text-white">Our values</h2>
+            <p className="mt-4 text-slate-400">
+              Our values are part of everything we build here
+            </p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {values.map((v) => {
+              const Icon = v.Icon;
+              return (
                 <div
-                  key={stat.label}
-                  className="glass rounded-2xl p-6 text-center"
+                  key={v.title}
+                  className="glass group relative overflow-hidden rounded-3xl p-7 transition-all hover:border-white/20"
                 >
-                  <div className="font-display text-4xl font-extrabold gradient-text">
-                    {stat.value}
+                  <div
+                    className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-all duration-700 group-hover:scale-110"
+                    style={{ background: v.glow }}
+                  />
+                  <div
+                    className={`relative mb-5 grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${v.accent}`}
+                  >
+                    <Icon className="text-white" size={22} />
                   </div>
-                  <div className="mt-2 text-sm text-slate-400">{stat.label}</div>
+                  <h3 className="relative font-display text-xl font-bold text-white">
+                    {v.title}
+                  </h3>
+                  <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
+                    {v.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Our Journey ── */}
+      <section className="relative z-10 py-20">
+        <div className="container-px">
+          <div className="mb-12 text-center">
+            <h2 className="section-title text-white">Our Journey</h2>
+            <p className="mx-auto mt-4 max-w-3xl text-slate-400">
+              Our journey began with a desire to build products that matter.
+              Since our beginning, we&apos;ve enabled Startups towards Success,
+              Medium-Enterprises towards Scale, and Corporate Giants towards
+              Value.
+            </p>
+          </div>
+          <div className="relative mx-auto max-w-4xl">
+            <div className="absolute left-8 top-0 h-full w-px bg-gradient-to-b from-transparent via-accent-electric/40 to-transparent sm:left-1/2" />
+            <div className="space-y-12">
+              {journey.map((j, i) => (
+                <div
+                  key={j.year}
+                  className={`relative flex flex-col gap-6 sm:flex-row ${
+                    i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"
+                  }`}
+                >
+                  <div className="flex-1" />
+                  <div className="absolute left-8 top-0 z-10 grid h-16 w-16 place-items-center rounded-full border-4 border-navy-950 bg-gradient-to-br from-blue-400 to-indigo-500 shadow-lg sm:left-1/2 sm:-translate-x-1/2">
+                    <Calendar className="text-white" size={24} />
+                  </div>
+                  <div className="glass flex-1 rounded-3xl p-6 sm:p-8">
+                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent-electric/10 px-3 py-1 text-sm font-bold text-accent-glow">
+                      <TrendingUp size={14} />
+                      {j.year}
+                    </div>
+                    <h3 className="mt-3 font-display text-2xl font-bold text-white">
+                      {j.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                      {j.description}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -179,249 +230,27 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── Three Pillars ── */}
+      {/* ── CTA ── */}
       <section className="relative z-10 py-20">
         <div className="container-px">
-          <div className="eyebrow mb-4">
-            <Sparkles size={12} /> What Biztreck builds
-          </div>
-          <h2 className="section-title mb-12 text-white">
-            Three pillars.{" "}
-            <span className="gradient-text">One mission.</span>
-          </h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {pillars.map((p) => {
-              const Icon = p.Icon;
-              return (
-                <div
-                  key={p.title}
-                  className="glass group relative overflow-hidden rounded-3xl p-7"
-                >
-                  <div
-                    className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl"
-                    style={{ background: p.glow }}
-                  />
-                  <div
-                    className={`relative mb-5 grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${p.accent}`}
-                  >
-                    <Icon className="text-white" size={22} />
-                  </div>
-                  <h3 className="relative font-display text-lg font-bold text-white">
-                    {p.title}
-                  </h3>
-                  <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
-                    {p.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Expertise / Skills ── */}
-      <section className="relative z-10 py-20">
-        <div className="container-px">
-          <div className="eyebrow mb-4">
-            <Sparkles size={12} /> Core expertise
-          </div>
-          <h2 className="section-title mb-10 text-white">
-            The stack we <span className="gradient-text">live in.</span>
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {skills.map((s) => {
-              const Icon = s.Icon;
-              return (
-                <span
-                  key={s.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-navy-600/50 bg-navy-800/50 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-accent-electric/50 hover:bg-navy-700/60"
-                >
-                  <Icon size={13} className="text-accent-glow" />
-                  {s.label}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── What we do today ── */}
-      <section className="relative z-10 py-20">
-        <div className="container-px">
-          <div className="eyebrow mb-4">
-            <Sparkles size={12} /> What we do today
-          </div>
-          <h2 className="section-title mb-12 text-white">
-            How we help businesses{" "}
-            <span className="gradient-text">grow.</span>
-          </h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {whatWeDo.map((w) => {
-              const Icon = w.Icon;
-              return (
-                <div key={w.title} className="glass rounded-3xl p-7">
-                  <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-navy-700/60 text-accent-glow">
-                    <Icon size={20} />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-white">
-                    {w.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                    {w.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Currently Building ── */}
-      <section className="relative z-10 py-20">
-        <div className="container-px">
-          <div className="glass relative overflow-hidden rounded-3xl p-8 sm:p-12">
+          <div className="glass relative overflow-hidden rounded-3xl p-10 text-center sm:p-16">
             <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
             <div className="relative">
-              <div className="eyebrow mb-5">
-                <Sparkles size={12} /> Currently building
-              </div>
               <h2 className="section-title text-white">
-                An AI recruitment platform that{" "}
-                <span className="gradient-text">redefines hiring.</span>
+                Let&apos;s start something{" "}
+                <span className="gradient-text">meaningful together</span>
               </h2>
-              <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-slate-300">
-                We&apos;re building a next-generation recruitment system that
-                automates the heaviest parts of hiring — from intelligent resume
-                parsing and candidate matching to AI-driven interviews and
-                real-time analytics. The goal: help companies hire better, not
-                just faster.
+              <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+                Whether you&apos;re a startup with a bold idea or an enterprise
+                looking to scale — we&apos;d love to hear from you.
               </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {[
-                  "AI Resume Parsing",
-                  "Smart Candidate Matching",
-                  "AI Video Interviews",
-                  "Hiring Analytics",
-                ].map((feat) => (
-                  <div
-                    key={feat}
-                    className="flex items-center gap-2.5 rounded-xl border border-navy-600/40 bg-navy-800/40 px-4 py-3 text-sm text-slate-200"
-                  >
-                    <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
-                    {feat}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Experience ── */}
-      <section className="relative z-10 py-20">
-        <div className="container-px">
-          <div className="eyebrow mb-4">
-            <Sparkles size={12} /> Experience
-          </div>
-          <h2 className="section-title mb-10 text-white">
-            Where we&apos;ve been{" "}
-            <span className="gradient-text">building.</span>
-          </h2>
-          <div className="glass relative overflow-hidden rounded-3xl p-8">
-            <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-accent-electric/5 blur-3xl" />
-            <div className="relative flex flex-col gap-6 sm:flex-row sm:gap-10">
-              <div className="shrink-0">
-                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-lg">
-                  <Globe2 size={24} />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="font-display text-2xl font-bold text-white">
-                    Founder & Product Engineer
-                  </h3>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    Current
-                  </span>
-                </div>
-                <div className="mt-1 text-sm font-medium text-accent-glow">
-                  Biztreck Solutions · 2021 – Present
-                </div>
-                <ul className="mt-5 space-y-2.5">
-                  {[
-                    "Leading architecture and delivery of 7+ live SaaS and AI-powered products",
-                    "Built a next-gen AI recruitment platform covering resume parsing, candidate matching, and AI interviews",
-                    "Designing scalable frontend systems using React.js, Next.js, Tailwind, and MUI",
-                    "Integrating OpenAI and ML models into production workflows across multiple products",
-                    "Driving end-to-end product ownership — from idea and wireframe to deployment and iteration",
-                    "Working with startups and enterprises to modernise hiring, operations, and internal tooling",
-                  ].map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2.5 text-[14px] leading-relaxed text-slate-300"
-                    >
-                      <CheckCircle2
-                        size={14}
-                        className="mt-0.5 shrink-0 text-accent-glow"
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Open To / CTA ── */}
-      <section className="relative z-10 py-20">
-        <div className="container-px">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="glass rounded-3xl p-8">
-              <div className="eyebrow mb-4">
-                <Sparkles size={12} /> Open to
-              </div>
-              <h2 className="font-display text-2xl font-bold text-white">
-                Let&apos;s build{" "}
-                <span className="gradient-text">something impactful.</span>
-              </h2>
-              <ul className="mt-6 space-y-3">
-                {openTo.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-center gap-2.5 text-[14px] text-slate-300"
-                  >
-                    <CheckCircle2
-                      size={14}
-                      className="shrink-0 text-emerald-400"
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="glass relative overflow-hidden rounded-3xl p-8">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-accent-electric/10 blur-3xl" />
-              <div className="relative">
-                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-blue-400 to-cyan-400">
-                  <Mail size={20} className="text-white" />
-                </div>
-                <h3 className="font-display text-xl font-bold text-white">
-                  Reach out directly
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                  Whether you have an idea, need a technical partner, or just
-                  want to chat about products and AI — my inbox is open.
-                </p>
-                <a
-                  href="/#contact"
-                  className="btn-primary shine mt-6 inline-flex"
-                >
-                  Start a conversation <ArrowUpRight size={14} />
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                <a href="/#contact" className="btn-primary shine">
+                  Connect Now <ArrowUpRight size={15} />
+                </a>
+                <a href="/#products" className="btn-ghost">
+                  View Our Products
                 </a>
               </div>
             </div>
