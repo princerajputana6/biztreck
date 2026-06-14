@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { renderMarkdown } from "@/lib/markdown";
 import { Clock, Tag, ArrowLeft } from "lucide-react";
 import Comments from "@/components/Comments";
+import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -27,14 +28,32 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const blog = await getBlog(slug);
-  if (!blog) return { title: "Post not found · Biztreck" };
+  if (!blog) return { title: "Post not found" };
+  const url = `${SITE.url}/blog/${blog.slug}`;
+  const images = blog.coverImage ? [blog.coverImage] : ["/logo.png"];
   return {
-    title: `${blog.title} · Biztreck Blog`,
+    title: blog.title,
     description: blog.excerpt,
+    keywords: Array.isArray(blog.tags) ? blog.tags : undefined,
+    authors: blog.author ? [{ name: blog.author }] : undefined,
+    alternates: { canonical: `/blog/${blog.slug}` },
     openGraph: {
+      type: "article",
       title: blog.title,
       description: blog.excerpt,
-      images: blog.coverImage ? [blog.coverImage] : [],
+      url,
+      siteName: SITE.name,
+      publishedTime: blog.createdAt ? new Date(blog.createdAt).toISOString() : undefined,
+      modifiedTime: blog.updatedAt ? new Date(blog.updatedAt).toISOString() : undefined,
+      authors: blog.author ? [blog.author] : undefined,
+      tags: Array.isArray(blog.tags) ? blog.tags : undefined,
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: blog.title,
+      description: blog.excerpt,
+      images,
     },
   };
 }
@@ -50,8 +69,30 @@ export default async function BlogPage({
 
   const html = renderMarkdown(blog.contentMarkdown || "");
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: blog.title,
+    description: blog.excerpt,
+    image: blog.coverImage ? [blog.coverImage] : [`${SITE.url}/logo.png`],
+    author: { "@type": "Person", name: blog.author || "Biztreck Editorial" },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      logo: { "@type": "ImageObject", url: `${SITE.url}/logo.png` },
+    },
+    datePublished: blog.createdAt ? new Date(blog.createdAt).toISOString() : undefined,
+    dateModified: blog.updatedAt ? new Date(blog.updatedAt).toISOString() : undefined,
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE.url}/blog/${blog.slug}` },
+    keywords: Array.isArray(blog.tags) ? blog.tags.join(", ") : undefined,
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-navy-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <BackgroundFX />
       <Navbar />
 

@@ -6,11 +6,33 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Clock, Tag } from "lucide-react";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
-export const metadata = {
-  title: "Blog & Insights · Biztreck Solutions",
+export const metadata: Metadata = {
+  title: "Blog & Insights — Field notes from the Biztreck team",
   description:
-    "Field notes, tutorials, and opinions from the Biztreck product, design, engineering, and growth team.",
+    "Practical playbooks on building, revamping, ranking and scaling digital products. Tutorials, opinion, and tear-downs from the Biztreck product, design, engineering, DevOps and growth team.",
+  keywords: [
+    "next.js tutorials",
+    "react best practices",
+    "seo guide india",
+    "startup launch playbook",
+    "devops blog",
+    "biztreck blog",
+  ],
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    type: "website",
+    title: "Biztreck Blog & Insights",
+    description: "Field notes from the Biztreck product, design, engineering, and growth team.",
+    url: "/blog",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Biztreck Blog & Insights",
+    description: "Practical playbooks on building, revamping, ranking and scaling.",
+  },
 };
 
 async function getBlogs() {

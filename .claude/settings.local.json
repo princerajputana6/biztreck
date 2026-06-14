@@ -6,7 +6,21 @@
       "Bash(npx next *)",
       "Bash(npm view *)",
       "Bash(npm audit *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "WebFetch(domain:trylinqr.com)",
+      "WebFetch(domain:angeleandroadsters.com)",
+      "Bash(curl -sL -o app/assets/brands/trylinqr.jpg \"https://res.cloudinary.com/dcykkgiei/image/upload/v1781081738/trylinqr/mvzatzdnnfcqbaptdhhj.jpg\" -w \"%{http_code}\\\\n\")",
+      "Bash(curl -sL -o app/assets/brands/trylinqr.png \"https://trylinqr.com/trylinqr.png\" -w \"%{http_code}\\\\n\")",
+      "WebFetch(domain:www.angeleandroadsters.com)",
+      "Bash(curl -sLI \"https://angeleandroadsters.com\")",
+      "Bash(curl -sL \"https://angeleandroadsters.com\" -o /tmp/angele.html -w \"HTTP:%{http_code} SIZE:%{size_download}\\\\n\")",
+      "Bash(curl -sL \"https://www.angeleandroadsters.com\" -o /tmp/angele.html -w \"HTTP:%{http_code} SIZE:%{size_download}\\\\n\")",
+      "Read(//tmp/**)",
+      "Bash(curl -sLI \"https://www.angeleandroadsters.com\")",
+      "Bash(nslookup angeleandroadsters.com)",
+      "Bash(nslookup www.angeleandroadsters.com)",
+      "Bash(node --env-file=.env scripts/seed-blogs.mjs)",
+      "Bash(md5 /Users/geekyprince/Desktop/biztreck/public/logo.png /Users/geekyprince/Desktop/biztreck/app/assets/brands/logo.png)"
     ]
   }
 }

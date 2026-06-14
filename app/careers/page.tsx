@@ -5,8 +5,33 @@ import { getDb } from "@/lib/mongodb";
 import Link from "next/link";
 import { ArrowUpRight, Briefcase, MapPin, Clock, Banknote, Sparkles } from "lucide-react";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Careers · Biztreck Solutions" };
+export const metadata: Metadata = {
+  title: "Careers — Join the Biztreck team",
+  description:
+    "Open roles at Biztreck Solutions. Build the next generation of websites, apps, DevOps platforms and growth playbooks alongside senior specialists from Greater Noida.",
+  keywords: [
+    "biztreck careers",
+    "software engineer jobs Greater Noida",
+    "remote react jobs india",
+    "devops jobs",
+    "frontend engineer hiring",
+  ],
+  alternates: { canonical: "/careers" },
+  openGraph: {
+    type: "website",
+    title: "Careers at Biztreck Solutions",
+    description: "Senior team, real ownership, no busywork. We're hiring.",
+    url: "/careers",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Careers at Biztreck Solutions",
+    description: "Senior team, real ownership, no busywork.",
+  },
+};
 
 async function getJobs() {
   try {

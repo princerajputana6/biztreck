@@ -1,6 +1,7 @@
 export const SITE = {
   name: "Biztreck Solutions",
   tagline: "Build · Revamp · Rank · Scale",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://biztreck.world",
   email: "connect@biztreck.world",
   phone: "+91 87408 63229",
   phoneRaw: "+918740863229",
@@ -8,6 +9,7 @@ export const SITE = {
   shortAddress: "Greater Noida, Delhi NCR",
   pin: "201306",
   hq: "Greater Noida, Delhi NCR (201306), India",
+  twitterHandle: "@biztreck",
   socials: {
     linkedin: "https://linkedin.com/company/biztreck",
     twitter: "https://twitter.com/biztreck",

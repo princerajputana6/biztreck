@@ -11,6 +11,8 @@ import {
   BarChart3,
   Compass,
   Landmark,
+  Ticket,
+  Car,
 } from "lucide-react";
 
 const products = [
@@ -101,6 +103,36 @@ const products = [
     accent: "from-green-400 to-teal-500",
     accentSoft: "rgba(52, 211, 153, 0.18)",
     glow: "rgba(52, 211, 153, 0.45)",
+  },
+  {
+    name: "TryLinqr",
+    slug: "trylinqr",
+    tagline: "India's premium event ecosystem — discover & book in 2 min",
+    description:
+      "Discover and book India's best events — bike rides, food experiences, workshops, jagrans, festivals, travel and adventures — in under two minutes. No hassle, no paperwork, QR entry. Verified organisers, instant payouts.",
+    Icon: Ticket,
+    logo: "/assets/brands/trylinqr.webp",
+    tags: ["Events", "Ticketing", "Marketplace", "B2C App"],
+    status: "Live",
+    url: "https://trylinqr.com",
+    accent: "from-fuchsia-400 to-pink-500",
+    accentSoft: "rgba(232, 121, 249, 0.18)",
+    glow: "rgba(232, 121, 249, 0.45)",
+  },
+  {
+    name: "Angels & Roadsters",
+    slug: "angels-and-roadsters",
+    tagline: "Ride loud. Ride united. India's 1st gender-equal bike club",
+    description:
+      "A riding community of 26,000+ across India — weekend runs, multi-day expeditions, flagship festivals like Trailstorm, and a crew that rolls together no matter who's behind the bars. 200+ rides hosted across 15+ cities, 50:50 gender-equal.",
+    Icon: Car,
+    logo: "/assets/brands/angeles-roadsters.png",
+    tags: ["Community", "Motorcycle", "India", "Gender-equal"],
+    status: "Live",
+    url: "https://angelsandroadsters.com",
+    accent: "from-orange-400 to-amber-500",
+    accentSoft: "rgba(251, 146, 60, 0.18)",
+    glow: "rgba(251, 146, 60, 0.45)",
   },
   {
     name: "BookMyGuide",
@@ -201,13 +233,20 @@ export default function Products() {
                     </div>
                   )}
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">
-                    <span className="relative grid h-1.5 w-1.5 place-items-center">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    </span>
-                    {p.status}
-                  </span>
+                  {(() => {
+                    const inProgress = p.status !== "Live";
+                    const ring = inProgress ? "border-amber-400/30 bg-amber-400/10 text-amber-300" : "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
+                    const dot = inProgress ? "bg-amber-400" : "bg-emerald-400";
+                    return (
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${ring}`}>
+                        <span className="relative grid h-1.5 w-1.5 place-items-center">
+                          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${dot}`} />
+                          <span className={`relative h-1.5 w-1.5 rounded-full ${dot}`} />
+                        </span>
+                        {p.status}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <h3 className="relative mt-6 font-display text-3xl font-extrabold text-white">
