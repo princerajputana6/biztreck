@@ -129,3 +129,98 @@ export function coverImageUrl(prompt: string) {
   const enc = encodeURIComponent(prompt);
   return `https://image.pollinations.ai/prompt/${enc}?width=1200&height=630&nologo=true&enhance=true`;
 }
+
+export type RoleBrief = {
+  role: string;
+  notes?: string;
+  location?: string;
+  type?: string;
+  experience?: string;
+};
+
+/**
+ * Ask the model to propose N in-demand role briefs Biztreck should be hiring
+ * for right now. Each brief feeds into `generateJob()` to expand into a full
+ * job description.
+ */
+export async function generateInDemandRoles(
+  count: number,
+  existingTitles: string[] = []
+): Promise<RoleBrief[]> {
+  const recents = existingTitles
+    .slice(0, 40)
+    .map((t, i) => `${i + 1}. ${t}`)
+    .join("\n");
+
+  const system = `You are the head of recruiting at Biztreck Solutions, a digital product studio in Greater Noida, India that builds websites, apps, runs DevOps and SEO for clients, and helps startups launch.
+
+Propose ${count} in-demand role briefs that Biztreck should consider hiring for RIGHT NOW based on current 2026 hiring trends in Indian product studios. Roles should:
+- Span multiple disciplines (engineering, design, growth, operations) — don't propose 5 of the same role.
+- Reflect real, currently-hot skill sets (e.g. "Senior React Native Engineer", "Technical SEO Lead", "Platform Engineer", "AI Engineer (LLM Apps)", "Product Designer (B2B SaaS)").
+- Be distinct from any role already open at Biztreck (see list below).
+- Be realistic for a senior-staffed Indian product studio — no exec or C-suite roles.
+
+Roles ALREADY open (do NOT repeat or paraphrase):
+${recents || "(none)"}
+
+Respond with valid JSON ONLY in this exact shape:
+{
+  "roles": [
+    {
+      "role": string,        // clean role title
+      "notes": string,       // 1-2 sentence brief on what makes this role distinct
+      "location": string,    // "Greater Noida, Delhi NCR (Hybrid)" or "Remote, India" etc
+      "type": string,        // "Full-time" | "Contract" | "Internship"
+      "experience": string   // e.g. "3-6 years"
+    }
+  ]
+}
+Exactly ${count} roles. No commentary outside the JSON.`;
+
+  const user = `Propose ${count} fresh, distinct role briefs to publish today.`;
+  const raw = await complete(system, user, true);
+  const parsed = JSON.parse(raw) as { roles?: RoleBrief[] };
+  const arr = Array.isArray(parsed.roles) ? parsed.roles : [];
+  return arr
+    .filter((r) => r && typeof r.role === "string" && r.role.trim().length > 0)
+    .slice(0, count);
+}
+
+/**
+ * Ask the model to propose N timely blog topics for Biztreck's audience,
+ * informed by the current date and a list of recent titles to avoid duplication.
+ */
+export async function generateTrendingTopics(
+  count: number,
+  recentTitles: string[] = []
+): Promise<string[]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const recents = recentTitles
+    .slice(0, 60)
+    .map((t, i) => `${i + 1}. ${t}`)
+    .join("\n");
+
+  const system = `You are the senior content strategist at Biztreck Solutions, a digital product studio in Greater Noida, India that builds websites, apps, runs DevOps and SEO for clients, and helps startups launch from zero.
+
+Your job: propose ${count} fresh, timely blog topics that an experienced founder, CTO, or marketing lead would actually want to read RIGHT NOW. Topics must be:
+- Specific (not "SEO tips" — instead "How Google's AI Overviews changed e-commerce SEO in 2026").
+- Tied to current trends, recent releases, or evergreen-but-underdiscussed angles in: web development (Next.js / React), mobile (React Native / Flutter), DevOps (k8s / AWS / CI-CD / observability), SEO & content, startups & product, design systems, AI/LLMs in production.
+- Distinct from any topic already covered (see list below).
+- Written with a hook a sophisticated reader would click on.
+
+Today's date is ${today}.
+
+${recents ? `Topics ALREADY published (do NOT repeat or paraphrase any of these):\n${recents}\n` : ""}
+
+Respond with valid JSON ONLY in this exact shape:
+{ "topics": [string, string, ...] }
+Exactly ${count} topics. No commentary outside the JSON.`;
+
+  const user = `Propose ${count} fresh, distinct blog topics for today.`;
+  const raw = await complete(system, user, true);
+  const parsed = JSON.parse(raw) as { topics?: string[] };
+  const arr = Array.isArray(parsed.topics) ? parsed.topics : [];
+  return arr
+    .filter((t) => typeof t === "string" && t.trim().length > 0)
+    .slice(0, count);
+}

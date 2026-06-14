@@ -12,6 +12,8 @@ import {
   LogOut,
   Trash2,
   ExternalLink,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useState } from "react";
@@ -33,6 +35,84 @@ export default function AdminShell({
 }: Stats) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  type AutoState = {
+    busy: boolean;
+    result: {
+      ok: boolean;
+      message: string;
+      inserted?: { title: string; slug: string }[];
+    } | null;
+  };
+  const [autoBlogs, setAutoBlogs] = useState<AutoState>({ busy: false, result: null });
+  const [autoJobs, setAutoJobs] = useState<AutoState>({ busy: false, result: null });
+
+  async function runAutoPublish(opts: {
+    kind: "blogs" | "jobs";
+    count: number;
+    confirmMsg: string;
+    endpoint: string;
+    noun: string;
+    setState: (s: AutoState) => void;
+  }) {
+    if (!confirm(opts.confirmMsg)) return;
+    opts.setState({ busy: true, result: null });
+    try {
+      const res = await fetch(opts.endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ count: opts.count }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        opts.setState({
+          busy: false,
+          result: { ok: false, message: data.error || "Auto-publish failed" },
+        });
+        return;
+      }
+      const n = data.inserted?.length ?? 0;
+      const failed = data.failed?.length ?? 0;
+      opts.setState({
+        busy: false,
+        result: {
+          ok: true,
+          message:
+            failed > 0
+              ? `Published ${n} ${opts.noun} (${failed} failed). Refreshing…`
+              : `Published ${n} ${opts.noun}. Refreshing…`,
+          inserted: data.inserted,
+        },
+      });
+      setTimeout(() => router.refresh(), 1200);
+    } catch (e: any) {
+      opts.setState({
+        busy: false,
+        result: { ok: false, message: e?.message || "Network error" },
+      });
+    }
+  }
+
+  const autoPublishBlogs = () =>
+    runAutoPublish({
+      kind: "blogs",
+      count: 5,
+      confirmMsg:
+        "Auto-publish 5 trending blogs?\n\nThis will find 5 trending topics related to your business and generate + publish 5 full blog posts. Takes ~20-40 seconds.",
+      endpoint: "/api/admin/auto-publish-blogs",
+      noun: "posts",
+      setState: setAutoBlogs,
+    });
+
+  const autoPublishJobs = () =>
+    runAutoPublish({
+      kind: "jobs",
+      count: 3,
+      confirmMsg:
+        "Auto-publish 3 in-demand roles?\n\nThis will find 3 in-demand role briefs and generate + publish 3 full job postings. Takes ~15-30 seconds.",
+      endpoint: "/api/admin/auto-publish-jobs",
+      noun: "roles",
+      setState: setAutoJobs,
+    });
 
   const logout = async () => {
     await fetch("/api/admin/login", { method: "DELETE" });
@@ -154,20 +234,85 @@ export default function AdminShell({
           })}
         </div>
 
-        <div className="mb-8 flex flex-wrap gap-3">
+        <div className="mb-4 flex flex-wrap gap-3">
           <Link
             href="/admin/blogs/new"
             className="btn-primary shine inline-flex items-center gap-2"
           >
             <PlusCircle size={16} /> Generate new blog
           </Link>
+          <button
+            type="button"
+            onClick={autoPublishBlogs}
+            disabled={autoBlogs.busy}
+            className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              borderColor: "rgba(167, 139, 250, 0.5)",
+              background: autoBlogs.busy
+                ? "rgba(167, 139, 250, 0.18)"
+                : "rgba(76, 53, 178, 0.25)",
+            }}
+            title="Discover 5 trending topics and publish a full blog post for each"
+          >
+            {autoBlogs.busy ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Generating 5 blogs… (~20-40s)
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} /> Auto-publish 5 trending blogs
+              </>
+            )}
+          </button>
           <Link
             href="/admin/jobs/new"
             className="btn-ghost inline-flex items-center gap-2"
           >
             <PlusCircle size={16} /> Generate new job
           </Link>
+          <button
+            type="button"
+            onClick={autoPublishJobs}
+            disabled={autoJobs.busy}
+            className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              borderColor: "rgba(34, 211, 238, 0.5)",
+              background: autoJobs.busy
+                ? "rgba(34, 211, 238, 0.18)"
+                : "rgba(7, 89, 133, 0.35)",
+            }}
+            title="Discover 3 in-demand roles and publish a full job posting for each"
+          >
+            {autoJobs.busy ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Generating 3 roles… (~15-30s)
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} /> Auto-publish 3 in-demand roles
+              </>
+            )}
+          </button>
         </div>
+
+        {(autoBlogs.result || autoJobs.result) && (
+          <div className="mb-8 space-y-3">
+            {autoBlogs.result && (
+              <AutoResultBanner
+                result={autoBlogs.result}
+                hrefBuilder={(slug) => `/blog/${slug}`}
+              />
+            )}
+            {autoJobs.result && (
+              <AutoResultBanner
+                result={autoJobs.result}
+                hrefBuilder={(slug) => `/careers/${slug}`}
+              />
+            )}
+          </div>
+        )}
 
         <section className="mb-12">
           <div className="mb-4 flex items-center justify-between">
@@ -260,5 +405,47 @@ function Empty({ label }: { label: string }) {
     <div className="rounded-2xl border border-navy-700/40 bg-navy-800/20 p-8 text-center text-sm text-slate-400">
       {label}
     </div>
+  );
+}
+
+function AutoResultBanner({
+  result,
+  hrefBuilder,
+}: {
+  result: {
+    ok: boolean;
+    message: string;
+    inserted?: { title: string; slug: string }[];
+  };
+  hrefBuilder: (slug: string) => string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`rounded-2xl border px-5 py-4 text-sm ${
+        result.ok
+          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
+          : "border-rose-400/40 bg-rose-400/10 text-rose-200"
+      }`}
+    >
+      <div className="font-semibold">{result.message}</div>
+      {result.inserted && result.inserted.length > 0 && (
+        <ul className="mt-2 space-y-1 text-slate-200/90">
+          {result.inserted.map((p) => (
+            <li key={p.slug} className="flex items-center gap-2">
+              <span className="text-emerald-300">✓</span>
+              <Link
+                href={hrefBuilder(p.slug)}
+                target="_blank"
+                className="hover:underline"
+              >
+                {p.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </motion.div>
   );
 }
