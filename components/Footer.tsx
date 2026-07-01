@@ -20,12 +20,13 @@ const columns = [
   {
     title: "Services",
     links: [
-      { label: "Website Revamp", href: "/#services" },
-      { label: "Web Development", href: "/#services" },
-      { label: "App Development", href: "/#services" },
-      { label: "DevOps Solutions", href: "/#services" },
-      { label: "SEO & Ranking", href: "/#services" },
-      { label: "Startup Launch (0 → 1)", href: "/#services" },
+      { label: "Website Development", href: "/services/website-development" },
+      { label: "App Development", href: "/services/app-development" },
+      { label: "Custom Software", href: "/services/custom-software-development" },
+      { label: "IT Services", href: "/services/it-services" },
+      { label: "DevOps Solutions", href: "/services/devops-solutions" },
+      { label: "SEO & Ranking", href: "/services/seo-services" },
+      { label: "All Services", href: "/services" },
     ],
   },
   {

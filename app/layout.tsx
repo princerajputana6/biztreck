@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import { SITE } from "@/lib/site";
+import { SERVICES } from "@/lib/services";
+import WebMCP from "@/components/WebMCP";
 import "./globals.css";
 
 const inter = Inter({
@@ -91,12 +93,15 @@ export const metadata: Metadata = {
 
 const orgJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": ["Organization", "ProfessionalService"],
+  "@id": `${SITE.url}/#organization`,
   name: SITE.name,
   url: SITE.url,
   logo: `${SITE.url}/logo.png`,
+  image: `${SITE.url}/logo.png`,
   email: SITE.email,
-  telephone: SITE.phone,
+  telephone: SITE.phoneRaw,
+  priceRange: "₹₹",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Greater Noida",
@@ -105,7 +110,39 @@ const orgJsonLd = {
     postalCode: SITE.pin,
     addressCountry: "IN",
   },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 28.4744,
+    longitude: 77.504,
+  },
+  areaServed: [
+    { "@type": "Country", name: "India" },
+    { "@type": "AdministrativeArea", name: "Delhi NCR" },
+    "Worldwide (remote)",
+  ],
+  knowsAbout: [
+    "Website development",
+    "Mobile app development",
+    "Custom software development",
+    "IT services",
+    "DevOps and cloud infrastructure",
+    "Search engine optimization",
+    "Startup MVP development",
+  ],
   sameAs: Object.values(SITE.socials),
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Software & IT services",
+    itemListElement: SERVICES.map((s) => ({
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: s.name,
+        serviceType: s.serviceType,
+        url: `${SITE.url}/services/${s.slug}`,
+      },
+    })),
+  },
   description:
     "Biztreck Solutions builds high-performance websites and apps, revamps platforms, delivers DevOps, boosts SEO and helps startups launch.",
 };
@@ -131,6 +168,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${sora.variable}`}>
       <body className="bg-navy-950 text-slate-100 antialiased">
         {children}
+        <WebMCP />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

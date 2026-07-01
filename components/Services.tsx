@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   RefreshCw,
   Code2,
@@ -7,42 +8,65 @@ import {
   TrendingUp,
   Rocket,
   Smartphone,
+  Database,
+  Server,
+  ArrowUpRight,
 } from "lucide-react";
 
 const services = [
   {
-    icon: RefreshCw,
-    title: "Website Revamp",
-    desc: "Modernise outdated websites with new design systems, faster performance, and conversion-focused UX — without losing your SEO.",
-    bullets: ["UI/UX redesign", "Performance audit", "SEO migration"],
-  },
-  {
     icon: Code2,
-    title: "Web Development",
-    desc: "Production-grade websites and web apps built with Next.js, React, and modern stacks — pixel-perfect and lightning fast.",
+    title: "Website Development",
+    slug: "website-development",
+    desc: "Production-grade websites and web apps built with Next.js, React, and modern stacks — pixel-perfect, lightning fast and SEO-ready.",
     bullets: ["Next.js / React", "Headless CMS", "API integrations"],
   },
   {
     icon: Smartphone,
     title: "App Development",
+    slug: "app-development",
     desc: "Native-quality iOS, Android, and cross-platform apps with React Native and Flutter — from MVP to App Store launch.",
     bullets: ["iOS & Android", "React Native", "Cross-platform"],
   },
   {
+    icon: Database,
+    title: "Custom Software",
+    slug: "custom-software-development",
+    desc: "Bespoke web apps, SaaS platforms, internal tools and automations built end-to-end around your exact business workflow.",
+    bullets: ["SaaS platforms", "Internal tools", "Automation"],
+  },
+  {
+    icon: Server,
+    title: "IT Services",
+    slug: "it-services",
+    desc: "One technology partner for your whole stack — web, apps, software, cloud, DevOps and SEO, with ongoing support.",
+    bullets: ["End-to-end delivery", "Cloud & support", "One senior team"],
+  },
+  {
     icon: ServerCog,
     title: "DevOps Solutions",
+    slug: "devops-solutions",
     desc: "CI/CD pipelines, container orchestration, cloud architecture, and observability so your team ships safer and faster.",
     bullets: ["AWS / GCP / Azure", "Kubernetes & Docker", "CI/CD automation"],
   },
   {
     icon: TrendingUp,
     title: "SEO & Ranking",
+    slug: "seo-services",
     desc: "Climb Google with technical SEO, content strategy, and link building — measurable growth, transparent reporting.",
     bullets: ["Technical SEO", "Keyword strategy", "Content & backlinks"],
   },
   {
+    icon: RefreshCw,
+    title: "Website Revamp",
+    slug: "website-revamp",
+    desc: "Modernise outdated websites with new design systems, faster performance, and conversion-focused UX — without losing your SEO.",
+    bullets: ["UI/UX redesign", "Performance audit", "SEO migration"],
+  },
+  {
     icon: Rocket,
     title: "Startup Launch (Zero → 1)",
+    slug: "startup-launch",
     desc: "From an idea on a napkin to a launched product. Branding, MVP build, infrastructure, and go-to-market — all in one place.",
     bullets: ["MVP in weeks", "Brand & identity", "Go-to-market"],
   },
@@ -127,6 +151,13 @@ export default function Services() {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  href={`/services/${s.slug}`}
+                  className="relative mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent-glow transition-colors hover:text-white"
+                >
+                  Learn about {s.title}
+                  <ArrowUpRight size={14} />
+                </Link>
               </motion.article>
             );
           })}

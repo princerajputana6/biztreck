@@ -1,0 +1,33 @@
+# Biztreck Solutions
+
+> Biztreck Solutions builds, revamps, ranks and scales digital products —
+> high-performance websites and apps, DevOps, technical SEO, and zero-to-one
+> startup launches. Based in Greater Noida, Delhi NCR, India.
+
+## About
+- Site: https://biztreck.world
+- Contact: connect@biztreck.world
+- Services: Website development, website revamp, app development, DevOps,
+  SEO, MVP / startup launch.
+
+## Key pages
+- Home: https://biztreck.world/
+- About: https://biztreck.world/about
+- Blog: https://biztreck.world/blog
+- Careers: https://biztreck.world/careers
+
+## Machine-readable interfaces
+- API catalog: https://biztreck.world/.well-known/api-catalog
+- Agent skills index: https://biztreck.world/.well-known/agent-skills/index.json
+- Blog list (JSON): https://biztreck.world/api/blogs
+- Open roles (JSON): https://biztreck.world/api/jobs
+- Contact (POST JSON): https://biztreck.world/api/contact
+- Health: https://biztreck.world/api/health
+
+## Content negotiation
+Any page also serves Markdown when requested with `Accept: text/markdown`,
+e.g. `curl -H "Accept: text/markdown" https://biztreck.world/blog/<slug>`.
+
+## Content usage preferences
+Declared in https://biztreck.world/robots.txt via Content-Signal:
+search=yes, ai-input=yes, ai-train=no.
