@@ -32,6 +32,18 @@ const nextConfig = {
         source: "/.well-known/agent-skills/:name/SKILL.md",
         destination: "/api/well-known/agent-skills/:name",
       },
+      {
+        source: "/.well-known/mcp/server-card.json",
+        destination: "/api/well-known/mcp-server-card",
+      },
+      {
+        source: "/.well-known/agent-card.json",
+        destination: "/api/well-known/agent-card",
+      },
+      {
+        source: "/auth.md",
+        destination: "/api/auth-md",
+      },
     ];
   },
 };

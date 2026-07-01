@@ -6,6 +6,8 @@ const HOMEPAGE_LINK = [
   '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
   '</llms.txt>; rel="service-doc"; type="text/plain"',
   '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
+  '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
+  '</.well-known/agent-card.json>; rel="service-desc"; type="application/json"',
 ].join(", ");
 
 // Content negotiation: when an agent requests a page with `Accept: text/markdown`

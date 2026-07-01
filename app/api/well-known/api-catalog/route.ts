@@ -48,6 +48,24 @@ export function GET() {
           },
         ],
       },
+      {
+        anchor: `${base}/api/mcp`,
+        "service-desc": [
+          {
+            href: `${base}/.well-known/mcp/server-card.json`,
+            type: "application/json",
+          },
+        ],
+      },
+      {
+        anchor: `${base}/api/a2a`,
+        "service-desc": [
+          {
+            href: `${base}/.well-known/agent-card.json`,
+            type: "application/json",
+          },
+        ],
+      },
     ],
   };
 
