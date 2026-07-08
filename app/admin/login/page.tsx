@@ -2,11 +2,12 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
 
 export default function AdminLogin() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function AdminLogin() {
       const r = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Login failed");
@@ -69,10 +70,30 @@ export default function AdminLogin() {
           Admin Access
         </h1>
         <p className="mt-1 text-center text-sm text-slate-400">
-          Enter your admin password to continue.
+          Enter your admin email and password to continue.
         </p>
 
         <div className="mt-6">
+          <label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            Email
+          </label>
+          <div className="relative mt-2">
+            <Mail
+              size={16}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            />
+            <input
+              autoFocus
+              type="email"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@biztreck.com"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
           <label className="text-xs font-medium uppercase tracking-wider text-slate-400">
             Password
           </label>

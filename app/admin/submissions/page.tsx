@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { loadAdminData } from "@/lib/admin-data";
-import AdminShell from "./AdminShell";
+import AdminShell from "../AdminShell";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminHome() {
+export default async function AdminSubmissionsPage() {
   if (!(await isAdmin())) redirect("/admin/login");
-  const stats = await loadAdminData();
-  return <AdminShell {...stats} view="dashboard" />;
+  return <AdminShell {...(await loadAdminData())} view="submissions" />;
 }

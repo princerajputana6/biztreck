@@ -78,6 +78,61 @@ export type GeneratedJob = {
   benefits: string[];
 };
 
+export type AnalyzedClientDocument = {
+  brdSummary: string;
+  milestones: {
+    title: string;
+    amount: number;
+    dueDate: string;
+    notes?: string;
+  }[];
+};
+
+export async function analyzeClientDocument(
+  documentText: string
+): Promise<AnalyzedClientDocument> {
+  const system = `You extract structured client onboarding data for Biztreck Solutions from combined BRD, proposal, scope, quotation, or milestone documents.
+
+Return valid JSON only in this exact schema:
+{
+  "brdSummary": string,
+  "milestones": [
+    {
+      "title": string,
+      "amount": number,
+      "dueDate": string,
+      "notes": string
+    }
+  ]
+}
+
+Rules:
+- brdSummary should capture business goals, scope, core modules, functional requirements, integrations, assumptions, and exclusions.
+- milestones should contain payment/delivery milestones only.
+- amount must be a plain number in INR when available; use 0 only if no amount is stated.
+- dueDate must be YYYY-MM-DD when a clear date exists; otherwise "".
+- Do not invent milestone prices or due dates.
+- If the document has separate BRD and milestone sections, preserve that separation.
+- If milestones are embedded inside paragraphs or tables, extract them cleanly.`;
+
+  const user = `Analyze this client document and separate BRD requirements from milestones:\n\n${documentText.slice(0, 18000)}`;
+  const raw = await complete(system, user, true);
+  const parsed = JSON.parse(raw) as AnalyzedClientDocument;
+  return {
+    brdSummary: String(parsed.brdSummary || "").trim(),
+    milestones: Array.isArray(parsed.milestones)
+      ? parsed.milestones
+          .map((m: any) => ({
+            title: String(m?.title || "").trim(),
+            amount: Number(m?.amount || 0),
+            dueDate: String(m?.dueDate || "").trim(),
+            notes: String(m?.notes || "").trim(),
+          }))
+          .filter((m) => m.title)
+      : [],
+  };
+}
+
 export async function generateJob(brief: {
   role: string;
   notes?: string;
