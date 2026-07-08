@@ -24,7 +24,8 @@
       "Bash(npx tsc *)",
       "Bash(./node_modules/.bin/tsc --noEmit)",
       "Bash(node_modules/.bin/next build *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(grep -rn '\\\\$push' /Users/prince/Desktop/biztreck/app /Users/prince/Desktop/biztreck/lib)"
     ]
   }
 }

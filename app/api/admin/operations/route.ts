@@ -288,7 +288,7 @@ export async function POST(req: Request) {
         .collection("clients")
         .updateOne(
           { _id: toObjectId(clientId) },
-          { $push: { payments: payment }, $set: { updatedAt: now } }
+          { $push: { payments: payment }, $set: { updatedAt: now } } as never
         );
       return NextResponse.json({ ok: true });
     }
