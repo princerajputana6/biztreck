@@ -13,6 +13,7 @@ export type AdminData = {
   hiring: any[];
   socialTasks: any[];
   expenses: any[];
+  places: any[];
 };
 
 function serializeAdminValue(value: any): any {
@@ -46,6 +47,7 @@ export async function loadAdminData(): Promise<AdminData> {
       hiring,
       socialTasks,
       expenses,
+      places,
     ] = await Promise.all([
       db
         .collection("blogs")
@@ -68,6 +70,12 @@ export async function loadAdminData(): Promise<AdminData> {
       db.collection("hiring_pipeline").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
       db.collection("social_tasks").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
       db.collection("expenses").find({}).sort({ createdAt: -1 }).limit(120).toArray(),
+      db
+        .collection("scraped_places")
+        .find({})
+        .sort({ scrapedAt: -1 })
+        .limit(1000)
+        .toArray(),
     ]);
     const norm = (items: any[]) => items.map((x) => serializeAdminValue(x));
     return {
@@ -83,6 +91,7 @@ export async function loadAdminData(): Promise<AdminData> {
       hiring: norm(hiring),
       socialTasks: norm(socialTasks),
       expenses: norm(expenses),
+      places: norm(places),
     };
   } catch {
     return {
@@ -98,6 +107,7 @@ export async function loadAdminData(): Promise<AdminData> {
       hiring: [],
       socialTasks: [],
       expenses: [],
+      places: [],
     };
   }
 }

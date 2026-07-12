@@ -25,7 +25,8 @@
       "Bash(./node_modules/.bin/tsc --noEmit)",
       "Bash(node_modules/.bin/next build *)",
       "Bash(npm run *)",
-      "Bash(grep -rn '\\\\$push' /Users/prince/Desktop/biztreck/app /Users/prince/Desktop/biztreck/lib)"
+      "Bash(grep -rn '\\\\$push' /Users/prince/Desktop/biztreck/app /Users/prince/Desktop/biztreck/lib)",
+      "Bash(node --env-file=.env -e \"const {createHmac}=require\\('crypto'\\);const s=process.env.ADMIN_SESSION_SECRET||'biztreck-default-insecure-secret';const p='admin.'+Date.now\\(\\);const sig=createHmac\\('sha256',s\\).update\\(p\\).digest\\('hex'\\);console.log\\(p+'.'+sig\\)\")"
     ]
   }
 }
