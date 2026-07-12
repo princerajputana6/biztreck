@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminContentPage() {
   if (!(await isAdmin())) redirect("/admin/login");
-  return <AdminShell {...(await loadAdminData())} view="content" />;
+  return <AdminShell {...(await loadAdminData("content"))} view="content" />;
 }

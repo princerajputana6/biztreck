@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAiPublishingPage() {
   if (!(await isAdmin())) redirect("/admin/login");
-  return <AdminShell {...(await loadAdminData())} view="ai-publishing" />;
+  return <AdminShell {...(await loadAdminData("ai-publishing"))} view="ai-publishing" />;
 }

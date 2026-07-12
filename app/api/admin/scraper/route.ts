@@ -97,6 +97,22 @@ export async function POST(req: Request) {
       });
     }
 
+    if (action === "set-stage") {
+      const placeId = String(data.placeId || "");
+      const stage = String(data.stage || "");
+      const allowed = ["new", "contacted", "replied", "negotiation", "won", "lost"];
+      if (!placeId) {
+        return NextResponse.json({ ok: false, error: "placeId required" }, { status: 400 });
+      }
+      if (!allowed.includes(stage)) {
+        return NextResponse.json({ ok: false, error: "Invalid stage" }, { status: 400 });
+      }
+      await db
+        .collection("scraped_places")
+        .updateOne({ placeId }, { $set: { stage, updatedAt: new Date() } });
+      return NextResponse.json({ ok: true });
+    }
+
     if (action === "delete-place") {
       const placeId = String(data.placeId || "");
       if (!placeId) {

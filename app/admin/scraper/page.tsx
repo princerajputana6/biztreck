@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminScraperPage() {
   if (!(await isAdmin())) redirect("/admin/login");
-  return <AdminShell {...(await loadAdminData())} view="scraper" />;
+  return <AdminShell {...(await loadAdminData("scraper"))} view="scraper" />;
 }

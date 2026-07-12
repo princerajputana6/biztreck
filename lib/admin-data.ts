@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/mongodb";
+import type { Db } from "mongodb";
 
 export type AdminData = {
   blogs: any[];
@@ -16,6 +17,17 @@ export type AdminData = {
   places: any[];
 };
 
+export type AdminView =
+  | "dashboard"
+  | "ai-publishing"
+  | "scraper"
+  | "clients"
+  | "invoices"
+  | "people"
+  | "team"
+  | "content"
+  | "submissions";
+
 function serializeAdminValue(value: any): any {
   if (value == null) return value;
   if (value instanceof Date) return value.toISOString();
@@ -31,83 +43,95 @@ function serializeAdminValue(value: any): any {
   return value;
 }
 
-export async function loadAdminData(): Promise<AdminData> {
+const EMPTY: AdminData = {
+  blogs: [],
+  jobs: [],
+  applicationsCount: 0,
+  contactsCount: 0,
+  commentsCount: 0,
+  clients: [],
+  documents: [],
+  invoices: [],
+  employees: [],
+  hiring: [],
+  socialTasks: [],
+  expenses: [],
+  places: [],
+};
+
+// One query per data slice. Each admin view only pulls the slices it renders, so
+// navigating between tabs doesn't re-fetch the entire dataset every time.
+const QUERIES: Record<keyof AdminData, (db: Db) => Promise<any>> = {
+  blogs: (db) =>
+    db
+      .collection("blogs")
+      .find({}, { projection: { contentMarkdown: 0 } })
+      .sort({ createdAt: -1 })
+      .toArray(),
+  jobs: (db) => db.collection("jobs").find({}).sort({ createdAt: -1 }).toArray(),
+  applicationsCount: (db) => db.collection("applications").countDocuments(),
+  contactsCount: (db) => db.collection("contacts").countDocuments(),
+  commentsCount: (db) => db.collection("comments").countDocuments(),
+  clients: (db) => db.collection("clients").find({}).sort({ createdAt: -1 }).limit(50).toArray(),
+  documents: (db) =>
+    db
+      .collection("client_documents")
+      .find({}, { projection: { contentMarkdown: 0 } })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray(),
+  invoices: (db) => db.collection("invoices").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
+  employees: (db) => db.collection("employees").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
+  hiring: (db) =>
+    db.collection("hiring_pipeline").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
+  socialTasks: (db) =>
+    db.collection("social_tasks").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
+  expenses: (db) => db.collection("expenses").find({}).sort({ createdAt: -1 }).limit(120).toArray(),
+  places: (db) =>
+    db.collection("scraped_places").find({}).sort({ scrapedAt: -1 }).limit(1000).toArray(),
+};
+
+// The exact slices each view reads. Views not listed here (or with no DB reads,
+// like "ai-publishing" and "people") fetch nothing.
+const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
+  dashboard: [
+    "blogs",
+    "clients",
+    "invoices",
+    "employees",
+    "expenses",
+    "applicationsCount",
+    "contactsCount",
+    "commentsCount",
+  ],
+  "ai-publishing": [],
+  scraper: ["places"],
+  clients: ["clients", "documents"],
+  invoices: ["invoices"],
+  people: [],
+  team: ["employees", "hiring", "socialTasks"],
+  content: ["blogs", "jobs"],
+  submissions: ["applicationsCount", "contactsCount", "commentsCount"],
+};
+
+/**
+ * Load only the data the given admin view renders. Always returns the full
+ * AdminData shape (unused slices stay at their empty defaults) so AdminShell can
+ * consume it unchanged.
+ */
+export async function loadAdminData(view: AdminView = "dashboard"): Promise<AdminData> {
   try {
     const db = await getDb();
-    const [
-      blogs,
-      jobs,
-      applications,
-      contacts,
-      comments,
-      clients,
-      documents,
-      invoices,
-      employees,
-      hiring,
-      socialTasks,
-      expenses,
-      places,
-    ] = await Promise.all([
-      db
-        .collection("blogs")
-        .find({}, { projection: { contentMarkdown: 0 } })
-        .sort({ createdAt: -1 })
-        .toArray(),
-      db.collection("jobs").find({}).sort({ createdAt: -1 }).toArray(),
-      db.collection("applications").countDocuments(),
-      db.collection("contacts").countDocuments(),
-      db.collection("comments").countDocuments(),
-      db.collection("clients").find({}).sort({ createdAt: -1 }).limit(50).toArray(),
-      db
-        .collection("client_documents")
-        .find({}, { projection: { contentMarkdown: 0 } })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray(),
-      db.collection("invoices").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
-      db.collection("employees").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
-      db.collection("hiring_pipeline").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
-      db.collection("social_tasks").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
-      db.collection("expenses").find({}).sort({ createdAt: -1 }).limit(120).toArray(),
-      db
-        .collection("scraped_places")
-        .find({})
-        .sort({ scrapedAt: -1 })
-        .limit(1000)
-        .toArray(),
-    ]);
-    const norm = (items: any[]) => items.map((x) => serializeAdminValue(x));
-    return {
-      blogs: norm(blogs),
-      jobs: norm(jobs),
-      applicationsCount: applications,
-      contactsCount: contacts,
-      commentsCount: comments,
-      clients: norm(clients),
-      documents: norm(documents),
-      invoices: norm(invoices),
-      employees: norm(employees),
-      hiring: norm(hiring),
-      socialTasks: norm(socialTasks),
-      expenses: norm(expenses),
-      places: norm(places),
-    };
+    const out: AdminData = { ...EMPTY };
+    const needs = VIEW_NEEDS[view] || [];
+    await Promise.all(
+      needs.map(async (key) => {
+        const raw = await QUERIES[key](db);
+        (out as any)[key] = typeof raw === "number" ? raw : (raw as any[]).map(serializeAdminValue);
+      })
+    );
+    return out;
   } catch {
-    return {
-      blogs: [],
-      jobs: [],
-      applicationsCount: 0,
-      contactsCount: 0,
-      commentsCount: 0,
-      clients: [],
-      documents: [],
-      invoices: [],
-      employees: [],
-      hiring: [],
-      socialTasks: [],
-      expenses: [],
-      places: [],
-    };
+    return { ...EMPTY };
   }
 }
