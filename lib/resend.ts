@@ -40,6 +40,46 @@ export async function sendAdminEmail({
   }
 }
 
+type OutreachArgs = {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+  attachments?: { filename: string; content: string }[];
+};
+
+/**
+ * Send an outreach email to a lead. Replies go back to the admin inbox so the
+ * business can respond directly. `attachments[].content` is a base64 string.
+ */
+export async function sendOutreachEmail({
+  to,
+  subject,
+  html,
+  replyTo,
+  attachments,
+}: OutreachArgs) {
+  try {
+    const resend = getResend();
+    const result = await resend.emails.send({
+      from: fromAddress,
+      to,
+      subject,
+      html,
+      replyTo: replyTo || adminEmail,
+      ...(attachments && attachments.length ? { attachments } : {}),
+    });
+    if ((result as any)?.error) {
+      const err = (result as any).error;
+      return { ok: false, error: err?.message || "send failed" };
+    }
+    return { ok: true, id: (result as any)?.data?.id };
+  } catch (err: any) {
+    console.error("[resend] outreach send failed:", err?.message || err);
+    return { ok: false, error: err?.message || "send failed" };
+  }
+}
+
 export function emailShell(title: string, body: string) {
   return `<!doctype html>
 <html><body style="margin:0;padding:0;background:#0b1224;font-family:Inter,Arial,sans-serif;color:#e2e8f0;">

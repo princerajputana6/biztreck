@@ -3,21 +3,25 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  CheckSquare,
   ChevronDown,
   Clock,
   ExternalLink,
   Globe,
   Loader2,
+  Mail,
   MapPin,
   Phone,
   PlusCircle,
   Search,
   Sparkles,
+  Square,
   Star,
   Trash2,
   Upload,
   X,
 } from "lucide-react";
+import OutreachPanel from "./OutreachPanel";
 
 type AnyDoc = Record<string, any>;
 
@@ -32,6 +36,8 @@ export default function ScraperView({ places }: { places: AnyDoc[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [showRun, setShowRun] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [showOutreach, setShowOutreach] = useState(false);
 
   // Run form state
   const [searchStrings, setSearchStrings] = useState("restaurant");
@@ -64,6 +70,24 @@ export default function ScraperView({ places }: { places: AnyDoc[] }) {
       );
     });
   }, [places, category, query]);
+
+  const pickedLeads = useMemo(
+    () => places.filter((p) => picked.has(p.placeId)),
+    [places, picked]
+  );
+
+  function togglePick(placeId: string) {
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(placeId)) next.delete(placeId);
+      else next.add(placeId);
+      return next;
+    });
+  }
+
+  function selectAllFiltered() {
+    setPicked(new Set(filtered.map((p) => p.placeId)));
+  }
 
   async function post(payload: AnyDoc, key: string) {
     setBusy(key);
@@ -291,7 +315,41 @@ export default function ScraperView({ places }: { places: AnyDoc[] }) {
         <span className="text-sm text-slate-400">
           {filtered.length} result{filtered.length === 1 ? "" : "s"}
         </span>
+        {filtered.length > 0 && (
+          <button
+            type="button"
+            onClick={selectAllFiltered}
+            className="text-sm text-accent-cyan hover:underline"
+          >
+            Select all
+          </button>
+        )}
       </div>
+
+      {/* Selection bar */}
+      {picked.size > 0 && (
+        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent-cyan/40 bg-accent-cyan/10 px-4 py-3 backdrop-blur">
+          <span className="text-sm font-semibold text-white">
+            {picked.size} lead{picked.size === 1 ? "" : "s"} selected
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPicked(new Set())}
+              className="rounded-full border border-navy-700/70 bg-navy-900/60 px-4 py-1.5 text-sm text-slate-200 hover:border-slate-400"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowOutreach(true)}
+              className="btn-primary inline-flex items-center gap-2 px-4 py-1.5 text-sm"
+            >
+              <Mail size={15} /> AI outreach
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Cards */}
       {filtered.length === 0 ? (
@@ -306,6 +364,8 @@ export default function ScraperView({ places }: { places: AnyDoc[] }) {
             <PlaceCard
               key={place.placeId || place._id}
               place={place}
+              picked={picked.has(place.placeId)}
+              onTogglePick={() => togglePick(place.placeId)}
               onOpen={() => setSelected(place)}
             />
           ))}
@@ -320,6 +380,11 @@ export default function ScraperView({ places }: { places: AnyDoc[] }) {
           onDelete={() => deletePlace(selected)}
           deleting={busy === `del-${selected.placeId}`}
         />
+      )}
+
+      {/* Outreach campaign */}
+      {showOutreach && pickedLeads.length > 0 && (
+        <OutreachPanel leads={pickedLeads} onClose={() => setShowOutreach(false)} />
       )}
     </div>
   );
@@ -336,13 +401,37 @@ function Rating({ score, reviews }: { score: number | null; reviews: number }) {
   );
 }
 
-function PlaceCard({ place, onOpen }: { place: AnyDoc; onOpen: () => void }) {
+function PlaceCard({
+  place,
+  picked,
+  onTogglePick,
+  onOpen,
+}: {
+  place: AnyDoc;
+  picked: boolean;
+  onTogglePick: () => void;
+  onOpen: () => void;
+}) {
+  const sent = place.outreachStatus === "sent";
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group flex flex-col overflow-hidden rounded-xl border border-navy-700/40 bg-navy-900/35 text-left transition hover:border-accent-cyan/50 hover:bg-navy-900/60"
+    <div
+      className={`group relative flex flex-col overflow-hidden rounded-xl border text-left transition ${
+        picked
+          ? "border-accent-cyan bg-navy-900/70"
+          : "border-navy-700/40 bg-navy-900/35 hover:border-accent-cyan/50 hover:bg-navy-900/60"
+      }`}
     >
+      {/* Selection checkbox */}
+      <button
+        type="button"
+        onClick={onTogglePick}
+        aria-label={picked ? "Deselect lead" : "Select lead"}
+        className="absolute right-2 top-2 z-10 rounded-md bg-navy-950/80 p-1 text-accent-cyan backdrop-blur transition hover:scale-110"
+      >
+        {picked ? <CheckSquare size={20} /> : <Square size={20} className="text-slate-300" />}
+      </button>
+
+      <button type="button" onClick={onOpen} className="flex flex-1 flex-col text-left">
       <div className="relative h-36 w-full overflow-hidden bg-navy-950">
         {place.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -360,6 +449,11 @@ function PlaceCard({ place, onOpen }: { place: AnyDoc; onOpen: () => void }) {
         <span className="absolute left-2 top-2 rounded-full border border-accent-cyan/30 bg-navy-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-cyan">
           {place.categoryName || "Business"}
         </span>
+        {sent && (
+          <span className="absolute bottom-2 left-2 rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+            Emailed
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
@@ -380,7 +474,8 @@ function PlaceCard({ place, onOpen }: { place: AnyDoc; onOpen: () => void }) {
           {place.price && <span className="text-slate-400">{place.price}</span>}
         </div>
       </div>
-    </button>
+      </button>
+    </div>
   );
 }
 

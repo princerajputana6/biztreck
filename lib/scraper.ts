@@ -23,6 +23,7 @@ export type ScrapedPlace = {
   state: string;
   countryCode: string;
   website: string;
+  email: string;
   phone: string;
   phoneUnformatted: string;
   location: { lat: number | null; lng: number | null };
@@ -111,6 +112,7 @@ export function normalizePlace(raw: any): ScrapedPlace | null {
     state: str(raw.state),
     countryCode: str(raw.countryCode),
     website: str(raw.website),
+    email: str(raw.email),
     phone: str(raw.phone),
     phoneUnformatted: str(raw.phoneUnformatted),
     location: {
@@ -144,6 +146,24 @@ export function normalizePlaces(rawItems: unknown): ScrapedPlace[] {
     out.push(place);
   }
   return out;
+}
+
+/**
+ * Best-effort guess of a contact email from a website URL, e.g.
+ * "https://olympiaberlin.de/" -> "info@olympiaberlin.de". Google Places does
+ * not return emails, so this is only a starting point the admin must confirm.
+ */
+export function guessEmailFromWebsite(website: string): string {
+  if (!website) return "";
+  try {
+    const host = new URL(website).hostname.replace(/^www\./, "");
+    // Skip social/aggregator domains where a domain-based guess is meaningless.
+    const skip = ["facebook.com", "instagram.com", "google.com", "metro.rest", "business.site"];
+    if (!host || skip.some((s) => host.endsWith(s))) return "";
+    return `info@${host}`;
+  } catch {
+    return "";
+  }
 }
 
 export type ApifyRunInput = {

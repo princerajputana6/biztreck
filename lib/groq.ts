@@ -170,6 +170,72 @@ ${brief.location ? `Location: ${brief.location}\n` : ""}${brief.type ? `Type: ${
   return parsed;
 }
 
+export type OutreachLead = {
+  title: string;
+  categoryName?: string;
+  city?: string;
+  address?: string;
+  website?: string;
+};
+
+export type GeneratedOutreach = { subject: string; body: string; whatsapp: string };
+
+/**
+ * Write a short, personalized cold-outreach email to a scraped business lead,
+ * pitching either a new website ("build") or a redesign ("revamp").
+ * `body` is returned as light markdown (short paragraphs, optional bullets).
+ */
+export async function generateOutreachEmail(
+  lead: OutreachLead,
+  opts: { angle: "build" | "revamp"; prototype?: boolean; senderName?: string }
+): Promise<GeneratedOutreach> {
+  const sender = opts.senderName || "The Biztreck Solutions team";
+  const angleBrief =
+    opts.angle === "revamp"
+      ? `This business already has a website (${lead.website || "current site"}). Pitch a REVAMP/redesign: their site likely looks dated, is slow, not mobile-first, or converts poorly, and a modern rebuild would win more customers.`
+      : `This business has no website (or only a social page). Pitch BUILDING a professional website from scratch so they stop losing customers to competitors who are easy to find and book online.`;
+  const protoBrief = opts.prototype
+    ? `We have built a custom prototype/mockup specifically for them. Reference it naturally and invite them to take a look — the email will include a button/link to it, so write a sentence that leads into that.`
+    : `We have NOT built a prototype yet. Offer to create a free quick mockup/demo if they're interested. Do not claim a prototype already exists.`;
+
+  const system = `You are a senior growth specialist at Biztreck Solutions, a digital product studio (Greater Noida, India) that builds and revamps websites, apps, DevOps, and SEO.
+
+Write a warm, concise, human cold-outreach email to a local business. Rules:
+- 90-150 words in the body. Short paragraphs (1-3 sentences). No fluff, no hype, no buzzword salad.
+- Personalize using ONLY the facts given (business name, category, city). Never invent details, awards, reviews, or specifics you weren't given.
+- Lead with a specific, relevant observation about their type of business and how a great/redesigned website helps them get more customers.
+- One clear, low-friction call to action. Friendly, not pushy or salesy. Avoid spammy words ("guarantee", "act now", "limited offer", excessive capitals/exclamations).
+- Sign off as "${sender}".
+- Do NOT include the recipient email, your signature block with phone/address (that is added separately), or a subject line inside the body.
+
+Respond with valid JSON only:
+{
+  "subject": string (max 60 chars, specific and non-spammy, references their business or city),
+  "body": string (markdown: short paragraphs; you MAY use one short bullet list of 2-3 concrete benefits),
+  "whatsapp": string (a SHORT WhatsApp version, 2-3 sentences max, ~300 chars, friendly and casual, first-name-basis tone, no markdown, no subject line. Do NOT paste a link — a prototype link is appended separately.)
+}`;
+
+  const user = `Business: ${lead.title}
+Category: ${lead.categoryName || "local business"}
+City: ${lead.city || ""}
+Address: ${lead.address || ""}
+Website: ${lead.website || "(none found)"}
+
+Pitch angle: ${opts.angle.toUpperCase()}
+${angleBrief}
+${protoBrief}
+
+Write the outreach email now.`;
+
+  const raw = await complete(system, user, true);
+  const parsed = JSON.parse(raw) as GeneratedOutreach;
+  return {
+    subject: String(parsed.subject || `A quick idea for ${lead.title}`).trim().slice(0, 120),
+    body: String(parsed.body || "").trim(),
+    whatsapp: String(parsed.whatsapp || "").trim(),
+  };
+}
+
 export function slugify(s: string) {
   return s
     .toLowerCase()
