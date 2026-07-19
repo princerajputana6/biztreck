@@ -59,6 +59,7 @@ function buildPdfBuffer(invoice: any) {
     const discount = Number(invoice.discount || 0);
     const taxRate = Number(invoice.taxRate || 0);
     const taxAmount = Number(invoice.taxAmount || 0);
+    const gstMode = invoice.gstMode || (taxAmount > 0 ? "exclusive" : "none");
     const total =
       invoice.amount != null
         ? Number(invoice.amount)
@@ -119,6 +120,10 @@ function buildPdfBuffer(invoice: any) {
       billY += 13;
     }
     doc.text(`Project: ${invoice.projectName || ""}`, left, billY);
+    billY += 13;
+    if (invoice.websiteUrl) {
+      doc.text(`Website: ${invoice.websiteUrl}`, left, billY);
+    }
 
     const invoiceDate = invoice.createdAt
       ? new Date(invoice.createdAt).toLocaleDateString("en-IN")
@@ -192,8 +197,11 @@ function buildPdfBuffer(invoice: any) {
     };
     totalsRow("Subtotal", money(subtotal), { strong: true });
     if (discount > 0) totalsRow("Discount", `- ${money(discount)}`);
-    if (taxRate > 0 || taxAmount > 0)
-      totalsRow(`GST (${taxRate}%)`, money(taxAmount));
+    if (gstMode !== "none" && (taxRate > 0 || taxAmount > 0))
+      totalsRow(
+        `GST (${taxRate}%${gstMode === "inclusive" ? " incl." : ""})`,
+        money(taxAmount)
+      );
 
     // Grand total pill
     y += 6;

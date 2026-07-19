@@ -84,14 +84,25 @@ function clientFinancials(client: AnyDoc) {
       ? Number(client.totalCost)
       : milestoneSum || Number(client.projectValue || 0);
   const discount = Math.min(Number(client.discountAmount || 0), gross);
-  const taxable = Math.max(0, gross - discount);
+  const netBase = Math.max(0, gross - discount);
   const taxRate = Number(client.gstRate || 0);
-  const tax = Math.round(taxable * (taxRate / 100));
-  const net = taxable + tax;
+  const gstMode =
+    client.gstMode === "none" || client.gstMode === "inclusive"
+      ? client.gstMode
+      : "exclusive";
+  let tax = 0;
+  let net = netBase;
+  if (taxRate > 0 && gstMode === "exclusive") {
+    tax = Math.round(netBase * (taxRate / 100));
+    net = netBase + tax;
+  } else if (taxRate > 0 && gstMode === "inclusive") {
+    tax = netBase - Math.round(netBase / (1 + taxRate / 100));
+    net = netBase;
+  }
   const paid = Array.isArray(client.payments)
     ? client.payments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
     : 0;
-  return { gross, discount, taxRate, tax, paid, net, left: Math.max(0, net - paid) };
+  return { gross, discount, taxRate, tax, gstMode, paid, net, left: Math.max(0, net - paid) };
 }
 
 export default function AdminShell(props: Stats) {
@@ -117,12 +128,8 @@ export default function AdminShell(props: Stats) {
   const [notice, setNotice] = useState<{ ok: boolean; message: string } | null>(null);
   const [autoBlogs, setAutoBlogs] = useState<AutoState>({ busy: false, result: null });
   const [autoJobs, setAutoJobs] = useState<AutoState>({ busy: false, result: null });
-  const [combinedClientDoc, setCombinedClientDoc] = useState("");
-  const [combinedClientFile, setCombinedClientFile] = useState<File | null>(null);
   const [milestonesText, setMilestonesText] = useState("");
   const [brdText, setBrdText] = useState("");
-  const [analysisBusy, setAnalysisBusy] = useState(false);
-  const [analysisSource, setAnalysisSource] = useState<string | null>(null);
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState<AnyDoc | null>(null);
   const [selectedClient, setSelectedClient] = useState<AnyDoc | null>(null);
@@ -274,8 +281,14 @@ export default function AdminShell(props: Stats) {
         phone: data.get("phone"),
         status: data.get("status"),
         projectName: data.get("projectName"),
+        websiteUrl: data.get("websiteUrl"),
+        reportsTo: data.get("reportsTo"),
+        theirContact: data.get("theirContact"),
+        contactEmail: data.get("contactEmail"),
+        contactPhone: data.get("contactPhone"),
         totalCost: data.get("totalCost"),
         gstRate: data.get("gstRate"),
+        gstMode: data.get("gstMode"),
         brdText,
         milestones,
       },
@@ -285,11 +298,8 @@ export default function AdminShell(props: Stats) {
       form
     );
     if (ok) {
-      setCombinedClientDoc("");
-      setCombinedClientFile(null);
       setMilestonesText("");
       setBrdText("");
-      setAnalysisSource(null);
       setEditingClient(null);
       setShowClientForm(false);
     }
@@ -311,8 +321,6 @@ export default function AdminShell(props: Stats) {
             .join("\n")
         : ""
     );
-    setCombinedClientDoc("");
-    setCombinedClientFile(null);
   };
 
   const deleteClient = async (client: AnyDoc) => {
@@ -392,86 +400,6 @@ export default function AdminShell(props: Stats) {
       { action: "delete-document", documentId: doc._id },
       "Document deleted."
     );
-  };
-
-  const analyzeClientDoc = async (opts?: { file?: File | null; text?: string }) => {
-    const fileToAnalyze = opts?.file === undefined ? combinedClientFile : opts.file;
-    const textToAnalyze = opts?.text === undefined ? combinedClientDoc : opts.text;
-    if (!textToAnalyze.trim() && !fileToAnalyze) {
-      setNotice({ ok: false, message: "Paste or upload a combined BRD/milestone document first." });
-      return;
-    }
-    setAnalysisBusy(true);
-    setNotice(null);
-    try {
-      const body = fileToAnalyze
-        ? (() => {
-            const form = new FormData();
-            form.append("file", fileToAnalyze);
-            if (textToAnalyze.trim() && !textToAnalyze.startsWith("DOCX uploaded:")) {
-              form.append("documentText", textToAnalyze);
-            }
-            return form;
-          })()
-        : JSON.stringify({ documentText: textToAnalyze });
-      const res = await fetch("/api/admin/analyze-client-doc", {
-        method: "POST",
-        ...(fileToAnalyze ? {} : { headers: { "content-type": "application/json" } }),
-        body,
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Could not analyze document");
-      const milestoneLines = Array.isArray(data.milestones)
-        ? data.milestones
-            .map((m: any) =>
-              [m.title, Number(m.amount || 0) > 0 ? Number(m.amount || 0) : "", m.dueDate || ""]
-                .filter((part) => part !== "")
-                .join(" | ")
-            )
-            .join("\n")
-        : "";
-      setBrdText(String(data.brdSummary || ""));
-      setMilestonesText(milestoneLines);
-      setAnalysisSource(data.source || "analysis");
-      setNotice({
-        ok: true,
-        message: `Document analyzed. Review the separated BRD and milestones before generating docs.`,
-      });
-    } catch (e: any) {
-      setNotice({ ok: false, message: e?.message || "Document analysis failed" });
-    } finally {
-      setAnalysisBusy(false);
-    }
-  };
-
-  const readCombinedDocFile = async (file: File | null) => {
-    if (!file) return;
-    setCombinedClientFile(file);
-    if (file.name.toLowerCase().endsWith(".docx")) {
-      const label = `DOCX uploaded: ${file.name}`;
-      setCombinedClientDoc(label);
-      setNotice({
-        ok: true,
-        message: "DOCX loaded. Analyzing it now...",
-      });
-      analyzeClientDoc({ file, text: label });
-      return;
-    }
-    try {
-      const text = await file.text();
-      setCombinedClientFile(null);
-      setCombinedClientDoc(text);
-      setNotice({
-        ok: true,
-        message: "Document loaded. Analyzing it now...",
-      });
-      analyzeClientDoc({ file: null, text });
-    } catch {
-      setNotice({
-        ok: false,
-        message: "Could not read this file. Please upload a text/markdown document or paste the content.",
-      });
-    }
   };
 
   const cards = [
@@ -722,8 +650,6 @@ export default function AdminShell(props: Stats) {
                     setEditingClient(null);
                     setBrdText("");
                     setMilestonesText("");
-                    setCombinedClientDoc("");
-                    setCombinedClientFile(null);
                   }
                 }}
                 className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm"
@@ -749,6 +675,12 @@ export default function AdminShell(props: Stats) {
                       options={["active", "lead", "paused", "completed"]}
                     />
                     <Field
+                      name="websiteUrl"
+                      label="Website URL"
+                      placeholder="https://client-site.com"
+                      defaultValue={editingClient?.websiteUrl || ""}
+                    />
+                    <Field
                       name="totalCost"
                       label="Total website cost (INR)"
                       type="number"
@@ -760,68 +692,51 @@ export default function AdminShell(props: Stats) {
                       type="number"
                       defaultValue={editingClient?.gstRate ?? 18}
                     />
+                    <Select
+                      name="gstMode"
+                      label="GST treatment"
+                      defaultValue={editingClient?.gstMode || "exclusive"}
+                      options={[
+                        { value: "exclusive", label: "GST added on top (exclusive)" },
+                        { value: "inclusive", label: "GST included in total (inclusive)" },
+                        { value: "none", label: "No GST" },
+                      ]}
+                    />
+                    <Field
+                      name="reportsTo"
+                      label="Whom we report to"
+                      placeholder="Client-side stakeholder"
+                      defaultValue={editingClient?.reportsTo || ""}
+                    />
+                    <Field
+                      name="theirContact"
+                      label="Whom they contact (our POC)"
+                      placeholder="Our point of contact"
+                      defaultValue={editingClient?.theirContact || ""}
+                    />
+                    <Field
+                      name="contactEmail"
+                      label="Contact person email"
+                      type="email"
+                      defaultValue={editingClient?.contactEmail || ""}
+                    />
+                    <Field
+                      name="contactPhone"
+                      label="Contact person phone"
+                      defaultValue={editingClient?.contactPhone || ""}
+                    />
                   </div>
                   <Textarea
-                    name="combinedClientDoc"
-                    label="Combined BRD + milestone document"
-                    placeholder="Paste the full client document here. It can include scope, requirements, pricing, timelines, and milestones together."
-                    value={combinedClientDoc}
-                    onChange={(value) => {
-                      setCombinedClientDoc(value);
-                      setCombinedClientFile(null);
-                    }}
-                  />
-                  <label className="grid gap-1 text-sm text-slate-300">
-                    Upload combined document
-                    <input
-                      type="file"
-                      accept=".docx,.txt,.md,.csv,.json"
-                      onChange={(event) => readCombinedDocFile(event.target.files?.[0] || null)}
-                      className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-accent-cyan/15 file:px-3 file:py-1.5 file:text-accent-cyan"
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => analyzeClientDoc()}
-                    disabled={analysisBusy}
-                    className="btn-ghost inline-flex w-fit items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {analysisBusy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                    Analyze document
-                  </button>
-                  {(brdText || milestonesText) && (
-                    <div className="rounded-lg border border-accent-cyan/25 bg-accent-cyan/10 p-4 text-sm text-slate-200">
-                      <div className="font-semibold text-white">
-                        Separated document output{analysisSource ? ` (${analysisSource})` : ""}
-                      </div>
-                      <div className="mt-2 grid gap-3 md:grid-cols-2">
-                        <div>
-                          <div className="text-xs uppercase tracking-wider text-accent-cyan">Milestones</div>
-                          <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-md bg-navy-950/60 p-3 text-xs text-slate-300">
-                            {milestonesText || "No milestones found yet."}
-                          </pre>
-                        </div>
-                        <div>
-                          <div className="text-xs uppercase tracking-wider text-accent-cyan">BRD</div>
-                          <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-md bg-navy-950/60 p-3 text-xs text-slate-300">
-                            {brdText || "No BRD summary found yet."}
-                          </pre>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <Textarea
                     name="milestones"
-                    label="Milestones extracted for invoices"
+                    label="Milestones (optional)"
                     placeholder={"Discovery | 25000 | 2026-07-20\nMVP delivery | 75000 | 2026-08-15"}
                     value={milestonesText}
                     onChange={setMilestonesText}
-                    required
                   />
                   <Textarea
                     name="brdText"
-                    label="BRD summary extracted for agreement"
-                    placeholder="The extracted BRD summary will appear here after analysis. You can edit it before generating docs."
+                    label="BRD (optional)"
+                    placeholder="Business requirement summary, scope, and notes for the agreement."
                     value={brdText}
                     onChange={setBrdText}
                   />
@@ -874,6 +789,34 @@ export default function AdminShell(props: Stats) {
                   <Panel title="Client details" icon={Users}>
                     <div className="space-y-4">
                       <RecordRow title={selectedClient.company || selectedClient.name} meta={`${selectedClient.projectName || "Project"} | ${selectedClient.email || "No email"}`} />
+                      {(selectedClient.websiteUrl ||
+                        selectedClient.reportsTo ||
+                        selectedClient.theirContact ||
+                        selectedClient.contactEmail ||
+                        selectedClient.contactPhone) && (
+                        <div className="grid gap-2 rounded-lg border border-navy-700/40 bg-navy-950/35 p-3 text-xs text-slate-300 sm:grid-cols-2">
+                          {selectedClient.websiteUrl && (
+                            <div>
+                              <span className="text-slate-500">Website:</span>{" "}
+                              <a href={selectedClient.websiteUrl} target="_blank" rel="noreferrer" className="text-accent-cyan hover:underline">
+                                {selectedClient.websiteUrl}
+                              </a>
+                            </div>
+                          )}
+                          {selectedClient.reportsTo && (
+                            <div><span className="text-slate-500">We report to:</span> {selectedClient.reportsTo}</div>
+                          )}
+                          {selectedClient.theirContact && (
+                            <div><span className="text-slate-500">Their POC (us):</span> {selectedClient.theirContact}</div>
+                          )}
+                          {selectedClient.contactEmail && (
+                            <div><span className="text-slate-500">Contact email:</span> {selectedClient.contactEmail}</div>
+                          )}
+                          {selectedClient.contactPhone && (
+                            <div><span className="text-slate-500">Contact phone:</span> {selectedClient.contactPhone}</div>
+                          )}
+                        </div>
+                      )}
                       {(() => {
                         const f = clientFinancials(selectedClient);
                         const clientInvoices = invoices.filter(
@@ -1436,12 +1379,14 @@ function Field({
   type = "text",
   required,
   defaultValue,
+  placeholder,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
   defaultValue?: string | number;
+  placeholder?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm text-slate-300">
@@ -1451,7 +1396,8 @@ function Field({
         type={type}
         required={required}
         defaultValue={defaultValue}
-        className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+        placeholder={placeholder}
+        className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"
       />
     </label>
   );
@@ -1465,7 +1411,7 @@ function Select({
 }: {
   name: string;
   label: string;
-  options: string[];
+  options: (string | { value: string; label: string })[];
   defaultValue?: string;
 }) {
   return (
@@ -1476,11 +1422,15 @@ function Select({
         defaultValue={defaultValue}
         className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
       >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {options.map((option) => {
+          const value = typeof option === "string" ? option : option.value;
+          const text = typeof option === "string" ? option : option.label;
+          return (
+            <option key={value} value={value}>
+              {text}
+            </option>
+          );
+        })}
       </select>
     </label>
   );

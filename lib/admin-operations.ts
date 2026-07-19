@@ -35,6 +35,8 @@ export function nextInvoiceNumber(count: number) {
 
 export type InvoiceLineItem = { description: string; amount: number };
 
+export type GstMode = "none" | "exclusive" | "inclusive";
+
 export type InvoiceTotals = {
   subtotal: number;
   discount: number;
@@ -42,18 +44,27 @@ export type InvoiceTotals = {
   taxRate: number;
   taxAmount: number;
   total: number;
+  gstMode: GstMode;
 };
+
+export function normalizeGstMode(value: unknown): GstMode {
+  return value === "none" || value === "inclusive" ? value : "exclusive";
+}
 
 /**
  * Compute the money breakdown for a client-level (full project) invoice.
- * `base` is the dedicated total website cost when set, otherwise the sum of
- * milestone amounts. GST is applied on the post-discount taxable amount.
+ * `subtotal` is the dedicated total website cost when set, otherwise the sum of
+ * milestone amounts.
+ *   - exclusive: GST is added on top of the post-discount amount.
+ *   - inclusive: the post-discount amount already contains GST (we back it out).
+ *   - none: no GST applied.
  */
 export function computeInvoiceTotals(input: {
   totalCost?: number;
   milestones?: ClientMilestone[];
   discount?: number;
   taxRate?: number;
+  gstMode?: GstMode;
 }): InvoiceTotals {
   const milestoneSum = Array.isArray(input.milestones)
     ? input.milestones.reduce((sum, m) => sum + Number(m.amount || 0), 0)
@@ -61,11 +72,22 @@ export function computeInvoiceTotals(input: {
   const subtotal =
     Number(input.totalCost || 0) > 0 ? Number(input.totalCost) : milestoneSum;
   const discount = Math.min(Math.max(0, Number(input.discount || 0)), subtotal);
-  const taxable = Math.max(0, subtotal - discount);
+  const net = Math.max(0, subtotal - discount);
   const taxRate = Math.max(0, Number(input.taxRate || 0));
-  const taxAmount = Math.round(taxable * (taxRate / 100));
-  const total = taxable + taxAmount;
-  return { subtotal, discount, taxable, taxRate, taxAmount, total };
+  const gstMode = normalizeGstMode(input.gstMode);
+
+  if (gstMode === "none" || taxRate <= 0) {
+    return { subtotal, discount, taxable: net, taxRate, taxAmount: 0, total: net, gstMode };
+  }
+  if (gstMode === "inclusive") {
+    // net already includes GST — extract the embedded tax.
+    const taxable = Math.round(net / (1 + taxRate / 100));
+    const taxAmount = net - taxable;
+    return { subtotal, discount, taxable, taxRate, taxAmount, total: net, gstMode };
+  }
+  // exclusive
+  const taxAmount = Math.round(net * (taxRate / 100));
+  return { subtotal, discount, taxable: net, taxRate, taxAmount, total: net + taxAmount, gstMode };
 }
 
 export function buildAgreementMarkdown(client: {
@@ -208,6 +230,7 @@ export function buildProjectInvoiceMarkdown(invoice: {
   clientCompany?: string;
   clientEmail?: string;
   projectName: string;
+  websiteUrl?: string;
   lineItems: InvoiceLineItem[];
   totals: InvoiceTotals;
   dueDate?: string;
@@ -250,16 +273,20 @@ Bill To: ${invoice.clientCompany || invoice.clientName}${
     invoice.clientEmail ? `\n\nEmail: ${invoice.clientEmail}` : ""
   }
 
-Project: ${invoice.projectName}
+Project: ${invoice.projectName}${
+    invoice.websiteUrl ? `\n\nWebsite: ${invoice.websiteUrl}` : ""
+  }
 
 | Description | Amount |
 |---|---:|
 ${rows}
 
 Subtotal: ${inr(t.subtotal)}
-${t.discount > 0 ? `\nDiscount: -${inr(t.discount)}\n` : ""}
-GST (${t.taxRate}%): ${inr(t.taxAmount)}
-
+${t.discount > 0 ? `\nDiscount: -${inr(t.discount)}\n` : ""}${
+    t.gstMode === "none"
+      ? ""
+      : `\nGST (${t.taxRate}%${t.gstMode === "inclusive" ? " incl." : ""}): ${inr(t.taxAmount)}\n`
+  }
 Total Payable: ${inr(t.total)}
 
 Due Date: ${due}
