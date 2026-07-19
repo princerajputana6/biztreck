@@ -24,6 +24,8 @@ import {
   Trash2,
   UserPlus,
   Users,
+  Wallet,
+  X,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { FormEvent, useMemo, useState } from "react";
@@ -133,6 +135,10 @@ export default function AdminShell(props: Stats) {
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState<AnyDoc | null>(null);
   const [selectedClient, setSelectedClient] = useState<AnyDoc | null>(null);
+  const [peopleTab, setPeopleTab] = useState<
+    "employees" | "hiring" | "social" | "expenses"
+  >("employees");
+  const [peopleFormOpen, setPeopleFormOpen] = useState(false);
 
   const finance = useMemo(() => {
     const invoiceTotal = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
@@ -254,6 +260,17 @@ export default function AdminShell(props: Stats) {
     } finally {
       setOperationBusy(null);
     }
+  };
+
+  // Submit a People-ops form, then collapse the add panel on success.
+  const submitPeople = async (
+    key: string,
+    payload: AnyDoc,
+    success: string,
+    form: HTMLFormElement
+  ) => {
+    const ok = await submitOperation(key, payload, success, form);
+    if (ok) setPeopleFormOpen(false);
   };
 
   const createClient = async (event: FormEvent<HTMLFormElement>) => {
@@ -864,7 +881,9 @@ export default function AdminShell(props: Stats) {
                         meta={`${doc.type || "document"} | ${dateLabel(doc.createdAt)}`}
                         action={
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => downloadText(`${doc.title || "agreement"}.md`, doc.contentMarkdown || "")} className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan" title="Download agreement markdown"><Download size={14} /></button>
+                            {doc.clientId && (
+                              <a href={`/api/admin/agreements/${doc.clientId}/pdf`} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan" title="Download agreement PDF"><Download size={14} /></a>
+                            )}
                             <button type="button" onClick={() => deleteDocument(doc)} className="rounded-full border border-rose-400/30 bg-rose-400/10 p-2 text-rose-300 hover:border-rose-400/60" title="Delete document"><Trash2 size={14} /></button>
                           </div>
                         }
@@ -877,130 +896,242 @@ export default function AdminShell(props: Stats) {
           </>
         )}
 
-        {view === "people" && (
-        <div className="mt-8">
-          <section className="space-y-8">
-            <Panel id="people-ops" title="People, hiring, social, and expenses" icon={Users}>
-              <div className="grid gap-5 lg:grid-cols-2">
-                <MiniForm
-                  title="Add employee"
-                  icon={Users}
-                  busy={operationBusy === "employee"}
-                  onSubmit={(form, data) =>
-                    submitOperation(
-                      "employee",
-                      {
-                        action: "add-employee",
-                        name: data.get("name"),
-                        role: data.get("role"),
-                        email: data.get("email"),
-                        salaryMonthly: data.get("salaryMonthly"),
-                        status: data.get("status"),
-                        joiningDate: data.get("joiningDate"),
-                      },
-                      "Employee added.",
-                      form
-                    )
-                  }
-                >
-                  <Field name="name" label="Name" required />
-                  <Field name="role" label="Role" />
-                  <Field name="email" label="Email" type="email" />
-                  <Field name="salaryMonthly" label="Monthly salary" type="number" />
-                  <Field name="joiningDate" label="Joining date" type="date" />
-                  <Select name="status" label="Status" options={["active", "contract", "intern", "inactive"]} />
-                </MiniForm>
+        {view === "people" && (() => {
+          const activeEmployees = employees.filter((e) => e.status !== "inactive");
+          const openRoles = hiring.filter((h) => h.stage !== "closed");
+          const queuedSocial = socialTasks.filter((s) => s.status !== "posted");
+          const tabs = [
+            { key: "employees" as const, label: "Employees", icon: Users, count: employees.length },
+            { key: "hiring" as const, label: "Hiring", icon: UserPlus, count: hiring.length },
+            { key: "social" as const, label: "Social", icon: Megaphone, count: socialTasks.length },
+            { key: "expenses" as const, label: "Expenses", icon: Banknote, count: expenses.length },
+          ];
+          const noun = {
+            employees: "employee",
+            hiring: "role",
+            social: "task",
+            expenses: "expense",
+          }[peopleTab];
+          const busyKey = {
+            employees: "employee",
+            hiring: "hiring",
+            social: "social",
+            expenses: "expense",
+          }[peopleTab];
+          const activeTab = tabs.find((t) => t.key === peopleTab)!;
 
-                <MiniForm
-                  title="Hiring pipeline"
-                  icon={UserPlus}
-                  busy={operationBusy === "hiring"}
-                  onSubmit={(form, data) =>
-                    submitOperation(
-                      "hiring",
-                      {
-                        action: "add-hiring",
-                        title: data.get("title"),
-                        department: data.get("department"),
-                        stage: data.get("stage"),
-                        candidateName: data.get("candidateName"),
-                        notes: data.get("notes"),
-                      },
-                      "Hiring item added.",
-                      form
-                    )
-                  }
-                >
-                  <Field name="title" label="Role title" required />
-                  <Field name="department" label="Department" />
-                  <Select name="stage" label="Stage" options={["open", "screening", "interview", "offer", "closed"]} />
-                  <Field name="candidateName" label="Candidate" />
-                  <Textarea name="notes" label="Notes" compact />
-                </MiniForm>
-
-                <MiniForm
-                  title="Social task"
-                  icon={Megaphone}
-                  busy={operationBusy === "social"}
-                  onSubmit={(form, data) =>
-                    submitOperation(
-                      "social",
-                      {
-                        action: "add-social-task",
-                        title: data.get("title"),
-                        channel: data.get("channel"),
-                        status: data.get("status"),
-                        scheduledFor: data.get("scheduledFor"),
-                        notes: data.get("notes"),
-                      },
-                      "Social task added.",
-                      form
-                    )
-                  }
-                >
-                  <Field name="title" label="Task title" required />
-                  <Select name="channel" label="Channel" options={["LinkedIn", "Instagram", "X", "YouTube", "Blog"]} />
-                  <Select name="status" label="Status" options={["planned", "drafting", "scheduled", "posted"]} />
-                  <Field name="scheduledFor" label="Scheduled for" type="date" />
-                  <Textarea name="notes" label="Notes" compact />
-                </MiniForm>
-
-                <MiniForm
-                  title="Expense"
-                  icon={Banknote}
-                  busy={operationBusy === "expense"}
-                  onSubmit={(form, data) =>
-                    submitOperation(
-                      "expense",
-                      {
-                        action: "add-expense",
-                        title: data.get("title"),
-                        category: data.get("category"),
-                        amount: data.get("amount"),
-                        paidOn: data.get("paidOn"),
-                        recurring: data.get("recurring") === "on",
-                        notes: data.get("notes"),
-                      },
-                      "Expense added.",
-                      form
-                    )
-                  }
-                >
-                  <Field name="title" label="Expense title" required />
-                  <Field name="category" label="Category" />
-                  <Field name="amount" label="Amount" type="number" required />
-                  <Field name="paidOn" label="Paid on" type="date" />
-                  <label className="flex items-center gap-2 text-sm text-slate-300">
-                    <input name="recurring" type="checkbox" className="h-4 w-4 rounded border-navy-700 bg-navy-950" />
-                    Recurring
-                  </label>
-                  <Textarea name="notes" label="Notes" compact />
-                </MiniForm>
+          return (
+            <div className="mt-8 space-y-6">
+              {/* KPI tiles */}
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatTile icon={Users} tone="cyan" label="Team members" value={employees.length} hint={`${activeEmployees.length} active · ${money.format(finance.salaryTotal)}/mo payroll`} />
+                <StatTile icon={UserPlus} tone="violet" label="Open roles" value={openRoles.length} hint={`${hiring.length} in pipeline`} />
+                <StatTile icon={Megaphone} tone="emerald" label="Social queued" value={queuedSocial.length} hint={`${socialTasks.length} total tasks`} />
+                <StatTile icon={Wallet} tone="amber" label="Monthly expenses" value={money.format(finance.expenseTotal)} hint={`${expenses.length} entries logged`} />
               </div>
-            </Panel>
-          </section>
-        </div>
-        )}
+
+              {/* Segmented tab switcher */}
+              <div className="flex flex-wrap gap-1.5 rounded-xl border border-navy-700/40 bg-navy-900/40 p-1.5">
+                {tabs.map((t) => {
+                  const Icon = t.icon;
+                  const active = peopleTab === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => {
+                        setPeopleTab(t.key);
+                        setPeopleFormOpen(false);
+                      }}
+                      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                        active
+                          ? "border border-accent-cyan/30 bg-accent-cyan/15 text-white"
+                          : "border border-transparent text-slate-400 hover:bg-navy-800/60 hover:text-white"
+                      }`}
+                    >
+                      <Icon size={16} className={active ? "text-accent-cyan" : "text-slate-500"} />
+                      {t.label}
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] ${active ? "bg-accent-cyan/20 text-accent-cyan" : "bg-navy-800/80 text-slate-500"}`}>
+                        {t.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active section */}
+              <div className="rounded-xl border border-navy-700/40 bg-navy-900/35 p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <activeTab.icon size={18} className="text-accent-cyan" />
+                    <h2 className="font-display text-lg font-bold text-white">{activeTab.label}</h2>
+                    <span className="rounded-full bg-navy-800/80 px-2 py-0.5 text-xs text-slate-400">{activeTab.count}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPeopleFormOpen((o) => !o)}
+                    className="btn-primary inline-flex items-center gap-2 px-3.5 py-2 text-sm"
+                  >
+                    {peopleFormOpen ? <X size={15} /> : <PlusCircle size={15} />}
+                    {peopleFormOpen ? "Close" : `Add ${noun}`}
+                  </button>
+                </div>
+
+                {/* Add form (collapsed by default) */}
+                {peopleFormOpen && (
+                  <motion.form
+                    key={peopleTab}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const form = event.currentTarget;
+                      const data = new FormData(form);
+                      if (peopleTab === "employees") {
+                        submitPeople("employee", { action: "add-employee", name: data.get("name"), role: data.get("role"), email: data.get("email"), salaryMonthly: data.get("salaryMonthly"), status: data.get("status"), joiningDate: data.get("joiningDate") }, "Employee added.", form);
+                      } else if (peopleTab === "hiring") {
+                        submitPeople("hiring", { action: "add-hiring", title: data.get("title"), department: data.get("department"), stage: data.get("stage"), candidateName: data.get("candidateName"), notes: data.get("notes") }, "Hiring item added.", form);
+                      } else if (peopleTab === "social") {
+                        submitPeople("social", { action: "add-social-task", title: data.get("title"), channel: data.get("channel"), status: data.get("status"), scheduledFor: data.get("scheduledFor"), notes: data.get("notes") }, "Social task added.", form);
+                      } else {
+                        submitPeople("expense", { action: "add-expense", title: data.get("title"), category: data.get("category"), amount: data.get("amount"), paidOn: data.get("paidOn"), recurring: data.get("recurring") === "on", notes: data.get("notes") }, "Expense added.", form);
+                      }
+                    }}
+                    className="mb-5 rounded-xl border border-accent-cyan/20 bg-navy-950/40 p-4"
+                  >
+                    {peopleTab === "employees" && (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <Field name="name" label="Name" required />
+                        <Field name="role" label="Role" />
+                        <Field name="email" label="Email" type="email" />
+                        <Field name="salaryMonthly" label="Monthly salary" type="number" />
+                        <Field name="joiningDate" label="Joining date" type="date" />
+                        <Select name="status" label="Status" options={["active", "contract", "intern", "inactive"]} />
+                      </div>
+                    )}
+                    {peopleTab === "hiring" && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field name="title" label="Role title" required />
+                        <Field name="department" label="Department" />
+                        <Select name="stage" label="Stage" options={["open", "screening", "interview", "offer", "closed"]} />
+                        <Field name="candidateName" label="Candidate" />
+                        <div className="sm:col-span-2"><Textarea name="notes" label="Notes" compact /></div>
+                      </div>
+                    )}
+                    {peopleTab === "social" && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field name="title" label="Task title" required />
+                        <Select name="channel" label="Channel" options={["LinkedIn", "Instagram", "X", "YouTube", "Blog"]} />
+                        <Select name="status" label="Status" options={["planned", "drafting", "scheduled", "posted"]} />
+                        <Field name="scheduledFor" label="Scheduled for" type="date" />
+                        <div className="sm:col-span-2"><Textarea name="notes" label="Notes" compact /></div>
+                      </div>
+                    )}
+                    {peopleTab === "expenses" && (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <Field name="title" label="Expense title" required />
+                        <Field name="category" label="Category" />
+                        <Field name="amount" label="Amount" type="number" required />
+                        <Field name="paidOn" label="Paid on" type="date" />
+                        <label className="flex items-center gap-2 self-end pb-2.5 text-sm text-slate-300">
+                          <input name="recurring" type="checkbox" className="h-4 w-4 rounded border-navy-700 bg-navy-950" />
+                          Recurring
+                        </label>
+                      </div>
+                    )}
+                    <SubmitButton busy={operationBusy === busyKey} label={`Save ${noun}`} icon={PlusCircle} compact />
+                  </motion.form>
+                )}
+
+                {/* Records */}
+                {peopleTab === "employees" && (
+                  <>
+                    <ListEmpty show={employees.length === 0} label="No employees yet. Add your first team member." />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {employees.map((emp) => (
+                        <div key={emp._id} className="flex items-center gap-3 rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-white">{initials(emp.name)}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold text-white">{emp.name}</div>
+                            <div className="mt-0.5 truncate text-xs text-slate-400">{emp.role || "Team"}{emp.email ? ` · ${emp.email}` : ""}</div>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <div className="text-sm font-semibold text-white">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
+                            <div className="mt-1"><StatusBadge value={emp.status} /></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {peopleTab === "hiring" && (
+                  <>
+                    <ListEmpty show={hiring.length === 0} label="No open roles yet. Add a position to track." />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {hiring.map((item) => (
+                        <div key={item._id} className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate font-semibold text-white">{item.title}</div>
+                              <div className="mt-0.5 truncate text-xs text-slate-400">{item.department || "Team"}{item.candidateName ? ` · ${item.candidateName}` : ""}</div>
+                            </div>
+                            <StatusBadge value={item.stage} />
+                          </div>
+                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-500">{item.notes}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {peopleTab === "social" && (
+                  <>
+                    <ListEmpty show={socialTasks.length === 0} label="No social tasks yet. Plan your first post." />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {socialTasks.map((item) => (
+                        <div key={item._id} className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate font-semibold text-white">{item.title}</div>
+                              <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400">
+                                <span className="rounded bg-navy-800/80 px-1.5 py-0.5 text-[11px] text-slate-300">{item.channel}</span>
+                                <span className="inline-flex items-center gap-1"><CalendarClock size={12} />{item.scheduledFor || "unscheduled"}</span>
+                              </div>
+                            </div>
+                            <StatusBadge value={item.status} />
+                          </div>
+                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-500">{item.notes}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {peopleTab === "expenses" && (
+                  <>
+                    <ListEmpty show={expenses.length === 0} label="No expenses logged yet." />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {expenses.map((item) => (
+                        <div key={item._id} className="flex items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold text-white">{item.title}</div>
+                            <div className="mt-0.5 flex items-center gap-2 truncate text-xs text-slate-400">
+                              <span>{item.category || "General"}</span>
+                              <span>· {item.paidOn || "—"}</span>
+                              {item.recurring && <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300">recurring</span>}
+                            </div>
+                          </div>
+                          <div className="shrink-0 font-display text-base font-bold text-white">{money.format(Number(item.amount || 0))}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {view === "invoices" && (
         <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
@@ -1411,37 +1542,6 @@ function Panel({
   );
 }
 
-function MiniForm({
-  title,
-  icon: Icon,
-  busy,
-  onSubmit,
-  children,
-}: {
-  title: string;
-  icon: any;
-  busy: boolean;
-  onSubmit: (form: HTMLFormElement, data: FormData) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(event.currentTarget, new FormData(event.currentTarget));
-      }}
-      className="rounded-lg border border-navy-700/40 bg-navy-950/30 p-4"
-    >
-      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
-        <Icon size={16} className="text-accent-glow" />
-        {title}
-      </div>
-      <div className="grid gap-3">{children}</div>
-      <SubmitButton busy={busy} label="Save" icon={PlusCircle} compact />
-    </form>
-  );
-}
-
 function Field({
   name,
   label,
@@ -1560,6 +1660,76 @@ function SubmitButton({
       {busy ? <Loader2 size={16} className="animate-spin" /> : <Icon size={16} />}
       {label}
     </button>
+  );
+}
+
+function initials(name: string) {
+  return (name || "?")
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+const TONES: Record<string, string> = {
+  cyan: "text-cyan-300 bg-cyan-400/10 border-cyan-400/25",
+  violet: "text-violet-300 bg-violet-400/10 border-violet-400/25",
+  emerald: "text-emerald-300 bg-emerald-400/10 border-emerald-400/25",
+  amber: "text-amber-300 bg-amber-400/10 border-amber-400/25",
+  slate: "text-slate-300 bg-slate-400/10 border-slate-500/25",
+};
+
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tone = "cyan",
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  hint?: string;
+  tone?: keyof typeof TONES | string;
+}) {
+  return (
+    <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-wider text-slate-500">{label}</span>
+        <span className={`grid h-9 w-9 place-items-center rounded-lg border ${TONES[tone] || TONES.cyan}`}>
+          <Icon size={16} />
+        </span>
+      </div>
+      <div className="mt-3 font-display text-2xl font-bold text-white">{value}</div>
+      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+    </div>
+  );
+}
+
+function StatusBadge({ value }: { value?: string }) {
+  const v = (value || "").toLowerCase();
+  const toneByStatus: Record<string, keyof typeof TONES> = {
+    active: "emerald",
+    posted: "emerald",
+    offer: "emerald",
+    contract: "cyan",
+    scheduled: "cyan",
+    open: "cyan",
+    screening: "violet",
+    intern: "violet",
+    interview: "amber",
+    drafting: "amber",
+    planned: "slate",
+    closed: "slate",
+    inactive: "slate",
+  };
+  const tone = toneByStatus[v] || "slate";
+  return (
+    <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize ${TONES[tone]}`}>
+      {value || "—"}
+    </span>
   );
 }
 
@@ -1699,12 +1869,3 @@ function dateLabel(value: any) {
   return date.toLocaleDateString();
 }
 
-function downloadText(filename: string, content: string) {
-  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename.replace(/[^\w.-]+/g, "-");
-  anchor.click();
-  URL.revokeObjectURL(url);
-}

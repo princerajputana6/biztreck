@@ -90,6 +90,119 @@ export function computeInvoiceTotals(input: {
   return { subtotal, discount, taxable: net, taxRate, taxAmount, total: net + taxAmount, gstMode };
 }
 
+export type AgreementClause = { heading: string; body: string[] };
+
+/**
+ * The full standard clause set for a Biztreck service agreement. Every client
+ * gets the same legal body; only the client-specific values (party name,
+ * project, payment window) are substituted in.
+ */
+export function agreementClauses(client: {
+  name: string;
+  company?: string;
+  projectName: string;
+  paymentDays?: number;
+}): AgreementClause[] {
+  const party = client.company || client.name;
+  const company = process.env.COMPANY_NAME || "Biztreck Solutions";
+  const days = client.paymentDays || 7;
+  const project = client.projectName || "the project";
+
+  return [
+    {
+      heading: "1. Scope of Services",
+      body: [
+        `${company} ("Service Provider") will plan, design, develop, test, and deliver the work described for the project "${project}" for ${party} ("Client"), in line with the mutually approved Business Requirement Document (BRD), product backlog, and accepted milestone list.`,
+        "Any work, feature, or deliverable not explicitly covered in the BRD or the accepted milestone list is out of scope and will be estimated separately through a written change request.",
+      ],
+    },
+    {
+      heading: "2. Commercials & Milestones",
+      body: [
+        "The total project cost, applicable taxes, and milestone-wise commercials are set out in the Commercial Summary table above and form part of this Agreement.",
+        "Invoices are raised milestone-wise or against the total project value as agreed. All amounts are exclusive of applicable government taxes unless explicitly stated as inclusive.",
+      ],
+    },
+    {
+      heading: "3. Payment Terms",
+      body: [
+        `Payments are due within ${days} days from the invoice date unless otherwise agreed in writing.`,
+        "Delayed payments beyond the due date may pause development, deployment, or support activity, and may attract a late-payment follow-up. Source code, deployable assets, and documentation are handed over only after the corresponding milestone payment is cleared.",
+      ],
+    },
+    {
+      heading: "4. Timeline & Delivery",
+      body: [
+        "Delivery timelines depend on timely Client feedback, access, content, approvals, and third-party dependencies (hosting, domains, payment gateways, API providers, and similar).",
+        "Delays caused by pending Client inputs or third-party services extend the delivery schedule by an equivalent period without penalty to the Service Provider.",
+      ],
+    },
+    {
+      heading: "5. Client Responsibilities",
+      body: [
+        "The Client will provide accurate requirements, brand assets, content, credentials, and approvals needed for the work, and will nominate a single point of contact empowered to review and sign off deliverables.",
+      ],
+    },
+    {
+      heading: "6. Change Requests",
+      body: [
+        "Changes to agreed scope, design, or functionality will be handled through a written change request. Each change request will be estimated for effort, cost, and timeline impact, and requires Client approval before work begins.",
+      ],
+    },
+    {
+      heading: "7. Intellectual Property",
+      body: [
+        "Upon receipt of full payment for the relevant milestone or the project, the Client owns the final delivered source code and custom assets created specifically for the project.",
+        "The Service Provider retains ownership of its pre-existing tools, libraries, frameworks, and general know-how, and may reuse non-confidential, non-Client-specific components in other work.",
+      ],
+    },
+    {
+      heading: "8. Confidentiality",
+      body: [
+        "Both parties will protect confidential business, product, technical, and customer information shared during the project and will not disclose it to third parties without prior written consent, except where required by law.",
+      ],
+    },
+    {
+      heading: "9. Warranties & Support",
+      body: [
+        "The Service Provider warrants that deliverables will substantially conform to the accepted requirements for a period of 30 days after delivery of each milestone, and will fix reported defects in that window at no additional cost.",
+        "Beyond the warranty period, support, maintenance, and enhancements are available under a separate agreed engagement.",
+      ],
+    },
+    {
+      heading: "10. Limitation of Liability",
+      body: [
+        "The Service Provider's total liability under this Agreement is limited to the fees actually paid by the Client for the specific deliverable giving rise to the claim. Neither party is liable for indirect, incidental, or consequential losses, including loss of profit or data.",
+      ],
+    },
+    {
+      heading: "11. Term & Termination",
+      body: [
+        "Either party may terminate this Agreement with written notice if the other party materially breaches it and fails to cure the breach within 15 days of written notice.",
+        "On termination, the Client will pay for all work completed and in progress up to the termination date, and the Service Provider will hand over paid deliverables.",
+      ],
+    },
+    {
+      heading: "12. Force Majeure",
+      body: [
+        "Neither party is liable for delays or failure to perform caused by events beyond reasonable control, including natural disasters, outages, government action, or internet/infrastructure failures.",
+      ],
+    },
+    {
+      heading: "13. Governing Law",
+      body: [
+        "This Agreement is governed by the laws of India, and the courts at the Service Provider's registered location have exclusive jurisdiction over any dispute arising out of it.",
+      ],
+    },
+    {
+      heading: "14. Entire Agreement",
+      body: [
+        "This Agreement, together with the BRD, accepted milestones, and any signed change requests, is the entire understanding between the parties and supersedes prior discussions. Amendments must be in writing.",
+      ],
+    },
+  ];
+}
+
 export function buildAgreementMarkdown(client: {
   name: string;
   company?: string;
@@ -116,51 +229,40 @@ export function buildAgreementMarkdown(client: {
         .join("\n")
     : "| 1 | Project kickoff | As agreed | On approval |";
 
+  const company = process.env.COMPANY_NAME || "Biztreck Solutions";
+  const clauses = agreementClauses({
+    name: client.name,
+    company: client.company,
+    projectName: client.projectName,
+  })
+    .map((c) => `## ${c.heading}\n\n${c.body.join("\n\n")}`)
+    .join("\n\n");
+
   return `# Service Agreement
 
 Date: ${today}
 
-This Service Agreement is entered between Biztreck Solutions and ${party}${
+This Service Agreement is entered between ${company} and ${party}${
     client.email ? ` (${client.email})` : ""
   } for the project "${client.projectName}".
 
-## Project Scope
-
-Biztreck Solutions will plan, design, develop, and support the work described in the BRD summary below.
-
-### BRD Reference
+## BRD Reference
 
 ${scope}
 
-## Milestones and Commercials
+## Commercial Summary
 
 | # | Milestone | Amount | Due |
 |---|---|---:|---|
 ${milestoneRows}
 
-## Delivery Terms
+${clauses}
 
-- Delivery timelines depend on timely client feedback, access, content, approvals, and third-party dependencies.
-- Any scope not covered in the BRD or accepted milestone list will be estimated separately through a written change request.
-- Source code, deployable assets, and documentation will be handed over after the corresponding milestone payment is cleared.
+## Acceptance & Signatures
 
-## Payment Terms
+By signing below, both parties accept the terms of this Agreement.
 
-- Invoices are raised milestone-wise.
-- Payments are due within 7 days from the invoice date unless otherwise agreed in writing.
-- Delayed payments may pause delivery, deployment, or support activity.
-
-## Confidentiality
-
-Both parties will protect confidential business, product, technical, and customer information shared during the project.
-
-## Acceptance
-
-The client will review each milestone deliverable within 5 working days. If no written issues are shared in that window, the milestone may be treated as accepted.
-
-## Signatures
-
-Biztreck Solutions
+${company}
 
 Authorized Signatory: ______________________
 
