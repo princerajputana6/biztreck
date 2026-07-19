@@ -4,6 +4,8 @@ import { isAdmin } from "@/lib/auth";
 import {
   buildAgreementMarkdown,
   buildInvoiceMarkdown,
+  buildProjectInvoiceMarkdown,
+  computeInvoiceTotals,
   nextInvoiceNumber,
   parseMilestones,
   toObjectId,
@@ -85,6 +87,8 @@ export async function POST(req: Request) {
         status: String(data.status || "active"),
         projectName,
         projectValue: milestones.reduce((sum, m) => sum + m.amount, 0),
+        totalCost: Math.max(0, Number(data.totalCost || 0)),
+        gstRate: Math.max(0, Number(data.gstRate || 0)),
         brdText: String(data.brdText || "").trim(),
         milestones,
         createdAt: now,
@@ -139,6 +143,8 @@ export async function POST(req: Request) {
             status: String(data.status || "active"),
             projectName,
             projectValue: milestones.reduce((sum, m) => sum + m.amount, 0),
+            totalCost: Math.max(0, Number(data.totalCost || 0)),
+            gstRate: Math.max(0, Number(data.gstRate || 0)),
             brdText: String(data.brdText || "").trim(),
             milestones,
             updatedAt: now,
@@ -291,6 +297,100 @@ export async function POST(req: Request) {
           { $push: { payments: payment }, $set: { updatedAt: now } } as never
         );
       return NextResponse.json({ ok: true });
+    }
+
+    if (action === "generate-client-invoice") {
+      const clientId = String(data.clientId || "");
+      if (!clientId) {
+        return NextResponse.json(
+          { ok: false, error: "Client id is required" },
+          { status: 400 }
+        );
+      }
+      const client = await db
+        .collection("clients")
+        .findOne({ _id: toObjectId(clientId) });
+      if (!client) {
+        return NextResponse.json(
+          { ok: false, error: "Client not found" },
+          { status: 404 }
+        );
+      }
+
+      const milestones = Array.isArray(client.milestones)
+        ? client.milestones
+        : [];
+      const totals = computeInvoiceTotals({
+        totalCost: Number(client.totalCost || 0),
+        milestones,
+        discount: Number(client.discountAmount || 0),
+        taxRate: Number(client.gstRate || 0),
+      });
+
+      if (totals.subtotal <= 0) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "Set a total website cost or add milestones before generating an invoice.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const lineItems =
+        milestones.length && Number(client.totalCost || 0) <= 0
+          ? milestones.map((m: any) => ({
+              description: String(m.title || "Project milestone"),
+              amount: Number(m.amount || 0),
+            }))
+          : [
+              {
+                description: `${client.projectName || "Website development"} — full project`,
+                amount: totals.subtotal,
+              },
+            ];
+
+      const invoiceNumber = nextInvoiceNumber(
+        await db.collection("invoices").countDocuments()
+      );
+      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      const invoiceDoc = {
+        invoiceNumber,
+        type: "project",
+        clientId: client._id,
+        clientName: client.name,
+        clientCompany: client.company,
+        clientEmail: client.email,
+        projectName: client.projectName,
+        lineItems,
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        taxRate: totals.taxRate,
+        taxAmount: totals.taxAmount,
+        amount: totals.total,
+        status: "draft",
+        dueDate,
+        contentMarkdown: buildProjectInvoiceMarkdown({
+          invoiceNumber,
+          clientName: client.name,
+          clientCompany: client.company,
+          clientEmail: client.email,
+          projectName: client.projectName,
+          lineItems,
+          totals,
+          dueDate,
+        }),
+        createdAt: now,
+        updatedAt: now,
+      };
+      const inserted = await db.collection("invoices").insertOne(invoiceDoc);
+      return NextResponse.json({
+        ok: true,
+        invoiceId: String(inserted.insertedId),
+      });
     }
 
     if (action === "update-invoice-status") {

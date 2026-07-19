@@ -33,6 +33,41 @@ export function nextInvoiceNumber(count: number) {
   return `BT-${year}-${String(count + 1).padStart(4, "0")}`;
 }
 
+export type InvoiceLineItem = { description: string; amount: number };
+
+export type InvoiceTotals = {
+  subtotal: number;
+  discount: number;
+  taxable: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+};
+
+/**
+ * Compute the money breakdown for a client-level (full project) invoice.
+ * `base` is the dedicated total website cost when set, otherwise the sum of
+ * milestone amounts. GST is applied on the post-discount taxable amount.
+ */
+export function computeInvoiceTotals(input: {
+  totalCost?: number;
+  milestones?: ClientMilestone[];
+  discount?: number;
+  taxRate?: number;
+}): InvoiceTotals {
+  const milestoneSum = Array.isArray(input.milestones)
+    ? input.milestones.reduce((sum, m) => sum + Number(m.amount || 0), 0)
+    : 0;
+  const subtotal =
+    Number(input.totalCost || 0) > 0 ? Number(input.totalCost) : milestoneSum;
+  const discount = Math.min(Math.max(0, Number(input.discount || 0)), subtotal);
+  const taxable = Math.max(0, subtotal - discount);
+  const taxRate = Math.max(0, Number(input.taxRate || 0));
+  const taxAmount = Math.round(taxable * (taxRate / 100));
+  const total = taxable + taxAmount;
+  return { subtotal, discount, taxable, taxRate, taxAmount, total };
+}
+
 export function buildAgreementMarkdown(client: {
   name: string;
   company?: string;
@@ -161,6 +196,71 @@ Project: ${invoice.projectName}
 | ${invoice.milestoneTitle} | INR ${invoice.amount.toLocaleString("en-IN")} |
 
 Total Payable: INR ${invoice.amount.toLocaleString("en-IN")}
+
+Due Date: ${due}
+
+Payment should be made to Biztreck Solutions as per the agreed payment terms.`;
+}
+
+export function buildProjectInvoiceMarkdown(invoice: {
+  invoiceNumber: string;
+  clientName: string;
+  clientCompany?: string;
+  clientEmail?: string;
+  projectName: string;
+  lineItems: InvoiceLineItem[];
+  totals: InvoiceTotals;
+  dueDate?: string;
+}) {
+  const company = {
+    name: process.env.COMPANY_NAME || "Biztreck Solutions",
+    address:
+      process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
+    gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
+    logo: process.env.COMPANY_LOGO_URL || "",
+    email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
+  };
+  const inr = (v: number) => `INR ${Number(v || 0).toLocaleString("en-IN")}`;
+  const today = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const due =
+    invoice.dueDate ||
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const t = invoice.totals;
+  const rows = invoice.lineItems
+    .map((li) => `| ${li.description} | ${inr(li.amount)} |`)
+    .join("\n");
+
+  return `${company.logo ? `![${company.name} Logo](${company.logo})\n\n` : ""}# Invoice ${invoice.invoiceNumber}
+
+From: ${company.name}
+
+Address: ${company.address}
+
+GSTIN: ${company.gst}
+
+Email: ${company.email}
+
+Invoice Date: ${today}
+
+Bill To: ${invoice.clientCompany || invoice.clientName}${
+    invoice.clientEmail ? `\n\nEmail: ${invoice.clientEmail}` : ""
+  }
+
+Project: ${invoice.projectName}
+
+| Description | Amount |
+|---|---:|
+${rows}
+
+Subtotal: ${inr(t.subtotal)}
+${t.discount > 0 ? `\nDiscount: -${inr(t.discount)}\n` : ""}
+GST (${t.taxRate}%): ${inr(t.taxAmount)}
+
+Total Payable: ${inr(t.total)}
 
 Due Date: ${due}
 

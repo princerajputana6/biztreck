@@ -75,15 +75,23 @@ const money = new Intl.NumberFormat("en-IN", {
 });
 
 function clientFinancials(client: AnyDoc) {
-  const gross = Array.isArray(client.milestones)
+  const milestoneSum = Array.isArray(client.milestones)
     ? client.milestones.reduce((sum: number, m: any) => sum + Number(m.amount || 0), 0)
-    : Number(client.projectValue || 0);
-  const discount = Number(client.discountAmount || 0);
+    : 0;
+  // Dedicated total website cost takes precedence over the milestone sum.
+  const gross =
+    Number(client.totalCost || 0) > 0
+      ? Number(client.totalCost)
+      : milestoneSum || Number(client.projectValue || 0);
+  const discount = Math.min(Number(client.discountAmount || 0), gross);
+  const taxable = Math.max(0, gross - discount);
+  const taxRate = Number(client.gstRate || 0);
+  const tax = Math.round(taxable * (taxRate / 100));
+  const net = taxable + tax;
   const paid = Array.isArray(client.payments)
     ? client.payments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
     : 0;
-  const net = Math.max(0, gross - discount);
-  return { gross, discount, paid, net, left: Math.max(0, net - paid) };
+  return { gross, discount, taxRate, tax, paid, net, left: Math.max(0, net - paid) };
 }
 
 export default function AdminShell(props: Stats) {
@@ -266,6 +274,8 @@ export default function AdminShell(props: Stats) {
         phone: data.get("phone"),
         status: data.get("status"),
         projectName: data.get("projectName"),
+        totalCost: data.get("totalCost"),
+        gstRate: data.get("gstRate"),
         brdText,
         milestones,
       },
@@ -361,6 +371,18 @@ export default function AdminShell(props: Stats) {
       "Payment recorded.",
       form
     );
+  };
+
+  const generateClientInvoice = async (client: AnyDoc) => {
+    const ok = await submitOperation(
+      `generate-invoice-${client._id}`,
+      {
+        action: "generate-client-invoice",
+        clientId: client._id,
+      },
+      "Invoice generated. Download it from the Invoices page or the button below."
+    );
+    if (ok) router.refresh();
   };
 
   const deleteDocument = async (doc: AnyDoc) => {
@@ -594,7 +616,7 @@ export default function AdminShell(props: Stats) {
                     <RecordRow
                       key={client._id}
                       title={client.company || client.name}
-                      meta={`${client.projectName || "Project"} | ${money.format(Number(client.projectValue || 0))}`}
+                      meta={`${client.projectName || "Project"} | ${money.format(clientFinancials(client).gross)}`}
                     />
                   ))}
                 </div>
@@ -726,6 +748,18 @@ export default function AdminShell(props: Stats) {
                       defaultValue={editingClient?.status || "active"}
                       options={["active", "lead", "paused", "completed"]}
                     />
+                    <Field
+                      name="totalCost"
+                      label="Total website cost (INR)"
+                      type="number"
+                      defaultValue={editingClient?.totalCost || ""}
+                    />
+                    <Field
+                      name="gstRate"
+                      label="GST %"
+                      type="number"
+                      defaultValue={editingClient?.gstRate ?? 18}
+                    />
                   </div>
                   <Textarea
                     name="combinedClientDoc"
@@ -842,13 +876,44 @@ export default function AdminShell(props: Stats) {
                       <RecordRow title={selectedClient.company || selectedClient.name} meta={`${selectedClient.projectName || "Project"} | ${selectedClient.email || "No email"}`} />
                       {(() => {
                         const f = clientFinancials(selectedClient);
+                        const clientInvoices = invoices.filter(
+                          (inv) => String(inv.clientId) === String(selectedClient._id)
+                        );
+                        const latestInvoice = clientInvoices[0];
                         return (
-                          <div className="grid gap-3 sm:grid-cols-4">
-                            <Metric label="Total" value={money.format(f.gross)} />
-                            <Metric label="Discount" value={money.format(f.discount)} />
-                            <Metric label="Paid" value={money.format(f.paid)} />
-                            <Metric label="Left" value={money.format(f.left)} />
-                          </div>
+                          <>
+                            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                              <Metric label="Total cost" value={money.format(f.gross)} />
+                              <Metric label="Discount" value={money.format(f.discount)} />
+                              <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
+                              <Metric label="Payable" value={money.format(f.net)} />
+                              <Metric label="Paid" value={money.format(f.paid)} />
+                              <Metric label="Left" value={money.format(f.left)} />
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3">
+                              <button
+                                type="button"
+                                onClick={() => generateClientInvoice(selectedClient)}
+                                disabled={operationBusy === `generate-invoice-${selectedClient._id}`}
+                                className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <ReceiptText size={16} />
+                                Generate full invoice
+                              </button>
+                              {latestInvoice && (
+                                <Link
+                                  href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
+                                  className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
+                                >
+                                  <Download size={14} />
+                                  Download {latestInvoice.invoiceNumber}
+                                </Link>
+                              )}
+                              <span className="text-xs text-slate-400">
+                                Uses the total website cost, discount, and GST above.
+                              </span>
+                            </div>
+                          </>
                         );
                       })()}
                       <div className="grid gap-4 lg:grid-cols-2">
@@ -1120,7 +1185,7 @@ export default function AdminShell(props: Stats) {
                       <div className="min-w-0">
                         <div className="truncate font-semibold text-white">{invoice.invoiceNumber}</div>
                         <div className="mt-1 text-xs text-slate-400">
-                          {invoice.clientCompany || invoice.clientName} | {invoice.milestoneTitle}
+                          {invoice.clientCompany || invoice.clientName} | {invoice.type === "project" ? "Full project invoice" : invoice.milestoneTitle}
                         </div>
                         <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
                       </div>

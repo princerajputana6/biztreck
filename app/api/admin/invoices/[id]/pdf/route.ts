@@ -9,96 +9,218 @@ function money(value: number) {
   return `INR ${Number(value || 0).toLocaleString("en-IN")}`;
 }
 
+// Purple / white creative letterhead palette
+const PURPLE = "#6D28D9";
+const PURPLE_DEEP = "#4C1D95";
+const PURPLE_SOFT = "#F3EEFF";
+const INK = "#1E1B2E";
+const MUTED = "#6B6880";
+const LINE = "#E6E1F2";
+
+type LineItem = { description: string; amount: number };
+
 function buildPdfBuffer(invoice: any) {
   return new Promise<Buffer>((resolve) => {
-    const doc = new PDFDocument({ margin: 50, size: "A4" });
+    const doc = new PDFDocument({ margin: 0, size: "A4" });
     const chunks: Buffer[] = [];
     doc.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
 
+    const pageW = doc.page.width; // ~595
+    const left = 50;
+    const right = pageW - 50;
+    const contentW = right - left;
+
     const company = {
       name: process.env.COMPANY_NAME || "Biztreck Solutions",
-      address: process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
+      address:
+        process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
       gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
       email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
     };
 
-    doc
-      .fontSize(22)
-      .fillColor("#0f172a")
-      .text(company.name, 50, 45)
-      .fontSize(9)
-      .fillColor("#475569")
-      .text(company.address)
-      .text(`GSTIN: ${company.gst}`)
-      .text(`Email: ${company.email}`);
+    // Derive line items + totals (backward compatible with milestone invoices)
+    const lineItems: LineItem[] =
+      Array.isArray(invoice.lineItems) && invoice.lineItems.length
+        ? invoice.lineItems.map((li: any) => ({
+            description: String(li.description || "Item"),
+            amount: Number(li.amount || 0),
+          }))
+        : [
+            {
+              description: invoice.milestoneTitle || "Milestone payment",
+              amount: Number(invoice.amount || 0),
+            },
+          ];
+    const subtotal =
+      invoice.subtotal != null
+        ? Number(invoice.subtotal)
+        : lineItems.reduce((s, li) => s + li.amount, 0);
+    const discount = Number(invoice.discount || 0);
+    const taxRate = Number(invoice.taxRate || 0);
+    const taxAmount = Number(invoice.taxAmount || 0);
+    const total =
+      invoice.amount != null
+        ? Number(invoice.amount)
+        : subtotal - discount + taxAmount;
+
+    // ---- Header band ----
+    const bandH = 130;
+    doc.rect(0, 0, pageW, bandH).fill(PURPLE);
+    doc.rect(0, bandH, pageW, 6).fill(PURPLE_DEEP);
 
     doc
+      .fillColor("#FFFFFF")
+      .font("Helvetica-Bold")
       .fontSize(24)
-      .fillColor("#2563eb")
-      .text("INVOICE", 420, 45, { align: "right" })
-      .fontSize(10)
-      .fillColor("#475569")
-      .text(invoice.invoiceNumber, 420, 78, { align: "right" });
-
-    doc.moveTo(50, 130).lineTo(545, 130).strokeColor("#cbd5e1").stroke();
+      .text(company.name, left, 34);
+    doc
+      .font("Helvetica")
+      .fontSize(9)
+      .fillColor("#E9E3FB")
+      .text(company.address, left, 66)
+      .text(`GSTIN: ${company.gst}`, left, 79)
+      .text(company.email, left, 92);
 
     doc
+      .font("Helvetica-Bold")
+      .fontSize(30)
+      .fillColor("#FFFFFF")
+      .text("INVOICE", right - 220, 40, { width: 220, align: "right" });
+    doc
+      .font("Helvetica")
       .fontSize(11)
-      .fillColor("#0f172a")
-      .text("Bill To", 50, 155)
+      .fillColor("#E9E3FB")
+      .text(invoice.invoiceNumber || "", right - 220, 78, {
+        width: 220,
+        align: "right",
+      });
+
+    // ---- Bill to + meta ----
+    const metaTop = bandH + 30;
+    doc
+      .font("Helvetica-Bold")
       .fontSize(10)
-      .fillColor("#475569")
-      .text(invoice.clientCompany || invoice.clientName || "Client", 50, 175)
-      .text(`Project: ${invoice.projectName || ""}`, 50, 192);
+      .fillColor(PURPLE)
+      .text("BILL TO", left, metaTop);
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .fillColor(INK)
+      .text(invoice.clientCompany || invoice.clientName || "Client", left, metaTop + 16);
+    doc.font("Helvetica").fontSize(9.5).fillColor(MUTED);
+    let billY = metaTop + 33;
+    if (invoice.clientName && invoice.clientCompany) {
+      doc.text(invoice.clientName, left, billY);
+      billY += 13;
+    }
+    if (invoice.clientEmail) {
+      doc.text(invoice.clientEmail, left, billY);
+      billY += 13;
+    }
+    doc.text(`Project: ${invoice.projectName || ""}`, left, billY);
 
     const invoiceDate = invoice.createdAt
       ? new Date(invoice.createdAt).toLocaleDateString("en-IN")
       : new Date().toLocaleDateString("en-IN");
-    doc
-      .fontSize(10)
-      .fillColor("#475569")
-      .text(`Invoice date: ${invoiceDate}`, 360, 155)
-      .text(`Due date: ${invoice.dueDate || "As agreed"}`, 360, 172)
-      .text(`Status: ${invoice.status || "draft"}`, 360, 189);
+    const metaX = right - 200;
+    const metaRows: [string, string][] = [
+      ["Invoice date", invoiceDate],
+      ["Due date", invoice.dueDate || "As agreed"],
+      ["Status", String(invoice.status || "draft").toUpperCase()],
+    ];
+    metaRows.forEach(([label, value], i) => {
+      const y = metaTop + i * 16;
+      doc.font("Helvetica").fontSize(9.5).fillColor(MUTED).text(label, metaX, y, {
+        width: 90,
+      });
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(9.5)
+        .fillColor(INK)
+        .text(value, metaX + 90, y, { width: 110, align: "right" });
+    });
 
-    const tableTop = 250;
-    doc.roundedRect(50, tableTop, 495, 32, 4).fill("#eff6ff");
-    doc.fillColor("#1e3a8a").fontSize(10).text("Description", 65, tableTop + 11);
-    doc.text("Amount", 455, tableTop + 11, { width: 75, align: "right" });
-
+    // ---- Line items table ----
+    let y = metaTop + 90;
+    const amountColW = 110;
+    const amountX = right - amountColW;
+    doc.roundedRect(left, y, contentW, 30, 5).fill(PURPLE);
     doc
-      .fillColor("#0f172a")
+      .font("Helvetica-Bold")
       .fontSize(10)
-      .text(invoice.milestoneTitle || "Milestone payment", 65, tableTop + 55, {
-        width: 330,
-      })
-      .text(money(invoice.amount), 455, tableTop + 55, {
-        width: 75,
+      .fillColor("#FFFFFF")
+      .text("DESCRIPTION", left + 16, y + 10)
+      .text("AMOUNT", amountX, y + 10, {
+        width: amountColW - 16,
         align: "right",
       });
-    doc.moveTo(50, tableTop + 92).lineTo(545, tableTop + 92).strokeColor("#e2e8f0").stroke();
+    y += 30;
 
+    lineItems.forEach((li, i) => {
+      const rowH = 30;
+      if (i % 2 === 1) {
+        doc.rect(left, y, contentW, rowH).fill(PURPLE_SOFT);
+      }
+      doc
+        .font("Helvetica")
+        .fontSize(10)
+        .fillColor(INK)
+        .text(li.description, left + 16, y + 9, { width: contentW - amountColW - 24 })
+        .text(money(li.amount), amountX, y + 9, {
+          width: amountColW - 16,
+          align: "right",
+        });
+      y += rowH;
+    });
+    doc.moveTo(left, y).lineTo(right, y).strokeColor(LINE).lineWidth(1).stroke();
+
+    // ---- Totals ----
+    y += 18;
+    const totalsX = right - 240;
+    const labelW = 150;
+    const valW = 90;
+    const totalsRow = (label: string, value: string, opts?: { strong?: boolean }) => {
+      doc
+        .font(opts?.strong ? "Helvetica-Bold" : "Helvetica")
+        .fontSize(opts?.strong ? 10 : 9.5)
+        .fillColor(opts?.strong ? INK : MUTED)
+        .text(label, totalsX, y, { width: labelW, align: "right" })
+        .fillColor(opts?.strong ? INK : INK)
+        .text(value, totalsX + labelW, y, { width: valW, align: "right" });
+      y += 18;
+    };
+    totalsRow("Subtotal", money(subtotal), { strong: true });
+    if (discount > 0) totalsRow("Discount", `- ${money(discount)}`);
+    if (taxRate > 0 || taxAmount > 0)
+      totalsRow(`GST (${taxRate}%)`, money(taxAmount));
+
+    // Grand total pill
+    y += 6;
+    doc.roundedRect(totalsX, y, labelW + valW, 34, 6).fill(PURPLE);
     doc
+      .font("Helvetica-Bold")
       .fontSize(11)
-      .fillColor("#0f172a")
-      .text("Total payable", 355, tableTop + 120, { width: 110, align: "right" })
-      .fontSize(14)
-      .fillColor("#2563eb")
-      .text(money(invoice.amount), 455, tableTop + 116, {
-        width: 75,
+      .fillColor("#FFFFFF")
+      .text("TOTAL PAYABLE", totalsX + 12, y + 12, { width: labelW - 12 })
+      .fontSize(13)
+      .text(money(total), totalsX + labelW - 12, y + 11, {
+        width: valW,
         align: "right",
       });
 
+    // ---- Footer ----
     doc
+      .font("Helvetica")
       .fontSize(9)
-      .fillColor("#64748b")
+      .fillColor(MUTED)
       .text(
-        "Payment should be made to Biztreck Solutions as per the agreed payment terms. This invoice was generated from the milestone record in the Biztreck admin panel.",
-        50,
-        690,
-        { width: 495 }
+        "Payment should be made to Biztreck Solutions as per the agreed payment terms. Thank you for your business.",
+        left,
+        760,
+        { width: contentW, align: "center" }
       );
+    doc.rect(0, 812, pageW, 30).fill(PURPLE);
 
     doc.end();
   });
