@@ -33,6 +33,31 @@ export function nextInvoiceNumber(count: number) {
   return `BT-${year}-${String(count + 1).padStart(4, "0")}`;
 }
 
+const MS_PER_HOUR = 60 * 60 * 1000;
+
+/**
+ * Return an invoice due date (YYYY-MM-DD) that always gives the client at least
+ * `minHours` (default 48h) to pay. A requested/milestone date is honoured only
+ * when it already clears that floor; otherwise we fall back to `defaultDays`
+ * from the invoice date.
+ */
+export function computeDueDate(
+  from: Date,
+  requested?: string,
+  opts?: { minHours?: number; defaultDays?: number }
+): string {
+  const minHours = opts?.minHours ?? 48;
+  const defaultDays = opts?.defaultDays ?? 7;
+  const floor = new Date(from.getTime() + minHours * MS_PER_HOUR);
+  let due = new Date(from.getTime() + defaultDays * 24 * MS_PER_HOUR);
+  if (requested) {
+    const r = new Date(requested);
+    if (!Number.isNaN(r.getTime()) && r.getTime() >= floor.getTime()) due = r;
+  }
+  if (due.getTime() < floor.getTime()) due = floor;
+  return due.toISOString().slice(0, 10);
+}
+
 export type InvoiceLineItem = { description: string; amount: number };
 
 export type GstMode = "none" | "exclusive" | "inclusive";

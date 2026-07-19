@@ -53,6 +53,15 @@ function buildPdfBuffer(invoice: any) {
       gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
       email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
     };
+    const bank = {
+      name: process.env.COMPANY_BANK_NAME ,
+      account: process.env.COMPANY_BANK_ACCOUNT ,
+      ifsc: process.env.COMPANY_BANK_IFSC ,
+      branch: process.env.COMPANY_BANK_BRANCH ,
+      holder: process.env.COMPANY_BANK_HOLDER ,
+      upi: process.env.COMPANY_UPI ,
+    };
+    const hasBank = Boolean(bank.name || bank.account || bank.upi);
 
     // Derive line items + totals (backward compatible with milestone invoices)
     const lineItems: LineItem[] =
@@ -147,13 +156,22 @@ function buildPdfBuffer(invoice: any) {
       doc.text(`Website: ${invoice.websiteUrl}`, left, billY);
     }
 
-    const invoiceDate = invoice.createdAt
-      ? new Date(invoice.createdAt).toLocaleDateString("en-IN")
-      : new Date().toLocaleDateString("en-IN");
+    const fmtDate = (d: Date) =>
+      d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const invoiceDateObj = new Date(
+      invoice.invoiceDate || invoice.createdAt || Date.now()
+    );
+    // Guarantee the client always sees at least 48h to pay, even on older
+    // invoices whose stored due date was empty or too close.
+    const dueFloor = new Date(invoiceDateObj.getTime() + 48 * 60 * 60 * 1000);
+    let dueDateObj = invoice.dueDate ? new Date(invoice.dueDate) : null;
+    if (!dueDateObj || Number.isNaN(dueDateObj.getTime()) || dueDateObj.getTime() < dueFloor.getTime()) {
+      dueDateObj = dueFloor;
+    }
     const metaX = right - 200;
     const metaRows: [string, string][] = [
-      ["Invoice date", invoiceDate],
-      ["Due date", invoice.dueDate || "As agreed"],
+      ["Invoice date", fmtDate(invoiceDateObj)],
+      ["Due date", fmtDate(dueDateObj)],
       ["Status", String(invoice.status || "draft").toUpperCase()],
     ];
     metaRows.forEach(([label, value], i) => {
@@ -239,15 +257,43 @@ function buildPdfBuffer(invoice: any) {
         align: "right",
       });
 
+    // ---- Payment details (bank / UPI) ----
+    if (hasBank) {
+      const boxY = 660;
+      const boxW = 300;
+      const rows: [string, string][] = [];
+      if (bank.holder) rows.push(["Account name", bank.holder]);
+      if (bank.name) rows.push(["Bank", bank.name]);
+      if (bank.account) rows.push(["Account no.", bank.account]);
+      if (bank.ifsc) rows.push(["IFSC", bank.ifsc]);
+      if (bank.upi) rows.push(["UPI", bank.upi]);
+      const boxH = 30 + rows.length * 15;
+      doc.roundedRect(left, boxY, boxW, boxH, 6).fillAndStroke(PURPLE_SOFT, LINE);
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .fillColor(PURPLE)
+        .text("PAYMENT DETAILS", left + 14, boxY + 12);
+      rows.forEach(([label, value], i) => {
+        const ry = boxY + 30 + i * 15;
+        doc.font("Helvetica").fontSize(9).fillColor(MUTED).text(label, left + 14, ry, { width: 80 });
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(9)
+          .fillColor(INK)
+          .text(value, left + 94, ry, { width: boxW - 108 });
+      });
+    }
+
     // ---- Footer ----
     doc
       .font("Helvetica")
       .fontSize(9)
       .fillColor(MUTED)
       .text(
-        "Payment should be made to Biztreck Solutions as per the agreed payment terms. Thank you for your business.",
+        `Please pay ${company.name}${hasBank ? " using the payment details above" : " as per the agreed payment terms"} on or before the due date. Thank you for your business.`,
         left,
-        760,
+        780,
         { width: contentW, align: "center" }
       );
     doc.rect(0, 812, pageW, 30).fill(PURPLE);

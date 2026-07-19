@@ -5,6 +5,7 @@ import {
   buildAgreementMarkdown,
   buildInvoiceMarkdown,
   buildProjectInvoiceMarkdown,
+  computeDueDate,
   computeInvoiceTotals,
   normalizeGstMode,
   nextInvoiceNumber,
@@ -217,8 +218,10 @@ export async function POST(req: Request) {
       let invoiceId = milestone.invoiceId || "";
       if ((status === "completed" || status === "invoiced" || status === "paid") && !invoiceId) {
         const invoiceNumber = nextInvoiceNumber(await db.collection("invoices").countDocuments());
+        const dueDate = computeDueDate(now, milestone.dueDate);
         const invoiceDoc = {
           invoiceNumber,
+          invoiceDate: now,
           clientId: client._id,
           clientName: client.name,
           clientCompany: client.company,
@@ -227,7 +230,7 @@ export async function POST(req: Request) {
           milestoneIndex,
           amount: Number(milestone.amount || 0),
           status: status === "paid" ? "paid" : "draft",
-          dueDate: milestone.dueDate || "",
+          dueDate,
           contentMarkdown: buildInvoiceMarkdown({
             invoiceNumber,
             clientName: client.name,
@@ -235,7 +238,7 @@ export async function POST(req: Request) {
             projectName: client.projectName,
             milestoneTitle: milestone.title,
             amount: Number(milestone.amount || 0),
-            dueDate: milestone.dueDate,
+            dueDate,
           }),
           createdAt: now,
           updatedAt: now,
@@ -368,12 +371,11 @@ export async function POST(req: Request) {
       const invoiceNumber = nextInvoiceNumber(
         await db.collection("invoices").countDocuments()
       );
-      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
+      const dueDate = computeDueDate(now);
       const invoiceDoc = {
         invoiceNumber,
         type: "project",
+        invoiceDate: now,
         clientId: client._id,
         clientName: client.name,
         clientCompany: client.company,
