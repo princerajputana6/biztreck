@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
+import fs from "node:fs";
+import path from "node:path";
 import PDFDocument from "pdfkit";
 import { isAdmin } from "@/lib/auth";
 import { getDb, ObjectId } from "@/lib/mongodb";
 
 export const runtime = "nodejs";
+
+// Read the brand logo once per lambda. Traced into the function via
+// outputFileTracingIncludes in next.config.mjs.
+let logoBuffer: Buffer | null | undefined;
+function getLogo(): Buffer | null {
+  if (logoBuffer !== undefined) return logoBuffer;
+  try {
+    logoBuffer = fs.readFileSync(path.join(process.cwd(), "public", "logo.png"));
+  } catch {
+    logoBuffer = null;
+  }
+  return logoBuffer;
+}
 
 function money(value: number) {
   return `INR ${Number(value || 0).toLocaleString("en-IN")}`;
@@ -70,18 +85,25 @@ function buildPdfBuffer(invoice: any) {
     doc.rect(0, 0, pageW, bandH).fill(PURPLE);
     doc.rect(0, bandH, pageW, 6).fill(PURPLE_DEEP);
 
-    doc
-      .fillColor("#FFFFFF")
-      .font("Helvetica-Bold")
-      .fontSize(24)
-      .text(company.name, left, 34);
+    // Brand logo (white/blue wordmark) sits on the purple band. Falls back to
+    // the company name text if the asset can't be read.
+    const logo = getLogo();
+    if (logo) {
+      try {
+        doc.image(logo, left, 30, { width: 168 });
+      } catch {
+        doc.fillColor("#FFFFFF").font("Helvetica-Bold").fontSize(24).text(company.name, left, 34);
+      }
+    } else {
+      doc.fillColor("#FFFFFF").font("Helvetica-Bold").fontSize(24).text(company.name, left, 34);
+    }
     doc
       .font("Helvetica")
       .fontSize(9)
       .fillColor("#E9E3FB")
-      .text(company.address, left, 66)
-      .text(`GSTIN: ${company.gst}`, left, 79)
-      .text(company.email, left, 92);
+      .text(company.address, left, 92)
+      .text(`GSTIN: ${company.gst}`, left, 105)
+      .text(company.email, left, 118);
 
     doc
       .font("Helvetica-Bold")
@@ -250,11 +272,19 @@ export async function GET(
   if (!invoice) {
     return NextResponse.json({ ok: false, error: "Invoice not found" }, { status: 404 });
   }
-  const pdf = await buildPdfBuffer(invoice);
-  return new NextResponse(new Uint8Array(pdf), {
-    headers: {
-      "content-type": "application/pdf",
-      "content-disposition": `attachment; filename="${invoice.invoiceNumber || "invoice"}.pdf"`,
-    },
-  });
+  try {
+    const pdf = await buildPdfBuffer(invoice);
+    return new NextResponse(new Uint8Array(pdf), {
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `inline; filename="${invoice.invoiceNumber || "invoice"}.pdf"`,
+      },
+    });
+  } catch (err: any) {
+    console.error("invoice pdf generation failed", err);
+    return NextResponse.json(
+      { ok: false, error: `PDF generation failed: ${err?.message || "unknown error"}` },
+      { status: 500 }
+    );
+  }
 }

@@ -416,7 +416,7 @@ export default function AdminShell(props: Stats) {
     { href: "/admin/ai-publishing", label: "AI publishing", icon: Sparkles, view: "ai-publishing" },
     { href: "/admin/scraper", label: "Lead scraper", icon: MapPinned, view: "scraper" },
     { href: "/admin/clients", label: "Clients & docs", icon: FileSignature, view: "clients" },
-    { href: "/admin/invoices", label: "Invoices", icon: ReceiptText, view: "invoices" },
+    { href: "/admin/invoices", label: "Payment & Invoice", icon: ReceiptText, view: "invoices" },
     { href: "/admin/people", label: "People ops", icon: Users, view: "people" },
     { href: "/admin/team", label: "Team", icon: UserPlus, view: "team" },
     { href: "/admin/content", label: "Content", icon: FileText, view: "content" },
@@ -441,8 +441,8 @@ export default function AdminShell(props: Stats) {
       description: "Add clients, generate agreements from BRDs, and review generated documents.",
     },
     invoices: {
-      title: "Invoices",
-      description: "Review milestone invoices, download invoice drafts, and update payment status.",
+      title: "Payment & Invoice",
+      description: "Pick a client to record payments and generate invoices, then download the branded PDF.",
     },
     people: {
       title: "People operations",
@@ -819,128 +819,17 @@ export default function AdminShell(props: Stats) {
                       )}
                       {(() => {
                         const f = clientFinancials(selectedClient);
-                        const clientInvoices = invoices.filter(
-                          (inv) => String(inv.clientId) === String(selectedClient._id)
-                        );
-                        const latestInvoice = clientInvoices[0];
                         return (
-                          <>
-                            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                              <Metric label="Total cost" value={money.format(f.gross)} />
-                              <Metric label="Discount" value={money.format(f.discount)} />
-                              <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
-                              <Metric label="Payable" value={money.format(f.net)} />
-                              <Metric label="Paid" value={money.format(f.paid)} />
-                              <Metric label="Left" value={money.format(f.left)} />
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3">
-                              <button
-                                type="button"
-                                onClick={() => generateClientInvoice(selectedClient)}
-                                disabled={operationBusy === `generate-invoice-${selectedClient._id}`}
-                                className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                <ReceiptText size={16} />
-                                Generate full invoice
-                              </button>
-                              {latestInvoice && (
-                                <Link
-                                  href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
-                                  className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
-                                >
-                                  <Download size={14} />
-                                  Download {latestInvoice.invoiceNumber}
-                                </Link>
-                              )}
-                              <span className="text-xs text-slate-400">
-                                Uses the total website cost, discount, and GST above.
-                              </span>
-                            </div>
-                          </>
+                          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                            <Metric label="Total cost" value={money.format(f.gross)} />
+                            <Metric label="Discount" value={money.format(f.discount)} />
+                            <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
+                            <Metric label="Payable" value={money.format(f.net)} />
+                            <Metric label="Paid" value={money.format(f.paid)} />
+                            <Metric label="Left" value={money.format(f.left)} />
+                          </div>
                         );
                       })()}
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <form
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            updateClientDiscount(selectedClient, event.currentTarget);
-                          }}
-                          className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
-                        >
-                          <div className="mb-3 text-sm font-semibold text-white">Discount</div>
-                          <Field
-                            name="discountAmount"
-                            label="Discount amount"
-                            type="number"
-                            defaultValue={selectedClient.discountAmount || 0}
-                          />
-                          <SubmitButton
-                            busy={operationBusy === `discount-${selectedClient._id}`}
-                            label="Save discount"
-                            icon={IndianRupee}
-                            compact
-                          />
-                        </form>
-                        <form
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            addClientPayment(selectedClient, event.currentTarget);
-                          }}
-                          className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
-                        >
-                          <div className="mb-3 text-sm font-semibold text-white">Record payment</div>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <Field name="amount" label="Amount received" type="number" required />
-                            <Select
-                              name="method"
-                              label="Method"
-                              options={["cash", "upi", "bank transfer", "card", "cheque", "other"]}
-                            />
-                            <Field
-                              name="receivedOn"
-                              label="Received on"
-                              type="date"
-                              defaultValue={new Date().toISOString().slice(0, 10)}
-                            />
-                            <Select
-                              name="milestoneIndex"
-                              label="Milestone"
-                              options={[
-                                "",
-                                ...(selectedClient.milestones || []).map(
-                                  (m: any, i: number) => `${i}:${m.title}`
-                                ),
-                              ]}
-                            />
-                          </div>
-                          <Textarea name="note" label="Payment note" compact />
-                          <SubmitButton
-                            busy={operationBusy === `payment-${selectedClient._id}`}
-                            label="Record payment"
-                            icon={Banknote}
-                            compact
-                          />
-                        </form>
-                      </div>
-                      <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
-                        <div className="mb-3 text-sm font-semibold text-white">Payment history</div>
-                        <ListEmpty
-                          show={!selectedClient.payments?.length}
-                          label="No payments recorded yet."
-                        />
-                        <div className="space-y-2">
-                          {selectedClient.payments?.map((payment: any, index: number) => (
-                            <div
-                              key={`${payment.createdAt || payment.receivedOn}-${index}`}
-                              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-300"
-                            >
-                              <span>{money.format(Number(payment.amount || 0))}</span>
-                              <span>{payment.method || "payment"}</span>
-                              <span>{payment.receivedOn || dateLabel(payment.createdAt)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
                       <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
                         <div className="mb-2 text-xs uppercase tracking-wider text-slate-500">BRD summary</div>
                         <div className="max-h-44 overflow-auto whitespace-pre-wrap text-sm text-slate-300">{selectedClient.brdText || "No BRD saved."}</div>
@@ -952,13 +841,13 @@ export default function AdminShell(props: Stats) {
                           <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
                             <div className="font-semibold text-white">{m.title}</div>
                             <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "completed")} disabled={Boolean(m.invoiceId)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:cursor-not-allowed disabled:opacity-50">Complete & generate invoice</button>
-                              <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "paid")} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">Mark paid</button>
-                            </div>
                           </div>
                         ))}
                       </div>
+                      <p className="rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3 text-xs text-slate-400">
+                        Record payments and generate invoices from the{" "}
+                        <span className="font-semibold text-accent-cyan">Payment &amp; Invoice</span> page.
+                      </p>
                     </div>
                   </Panel>
                 )}
@@ -988,10 +877,9 @@ export default function AdminShell(props: Stats) {
           </>
         )}
 
-        {(view === "people" || view === "invoices") && (
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+        {view === "people" && (
+        <div className="mt-8">
           <section className="space-y-8">
-            {view === "people" && (
             <Panel id="people-ops" title="People, hiring, social, and expenses" icon={Users}>
               <div className="grid gap-5 lg:grid-cols-2">
                 <MiniForm
@@ -1110,19 +998,199 @@ export default function AdminShell(props: Stats) {
                 </MiniForm>
               </div>
             </Panel>
-            )}
+          </section>
+        </div>
+        )}
+
+        {view === "invoices" && (
+        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+          <section className="space-y-6">
+            <Panel id="payment-invoice" title="Record payment & generate invoice" icon={ReceiptText}>
+              <label className="grid gap-1 text-sm text-slate-300">
+                Select client
+                <select
+                  value={selectedClient?._id || ""}
+                  onChange={(e) =>
+                    setSelectedClient(
+                      clients.find((c) => String(c._id) === e.target.value) || null
+                    )
+                  }
+                  className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                >
+                  <option value="">Select a client…</option>
+                  {clients.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {(c.company || c.name) + (c.projectName ? ` — ${c.projectName}` : "")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {!selectedClient && (
+                <p className="mt-4 text-sm text-slate-400">
+                  Pick a client to see totals, record payments, and generate a branded invoice PDF.
+                </p>
+              )}
+
+              {selectedClient && (
+                <div className="mt-5 space-y-4">
+                  {(() => {
+                    const f = clientFinancials(selectedClient);
+                    const clientInvoices = invoices.filter(
+                      (inv) => String(inv.clientId) === String(selectedClient._id)
+                    );
+                    const latestInvoice = clientInvoices[0];
+                    return (
+                      <>
+                        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                          <Metric label="Total cost" value={money.format(f.gross)} />
+                          <Metric label="Discount" value={money.format(f.discount)} />
+                          <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
+                          <Metric label="Payable" value={money.format(f.net)} />
+                          <Metric label="Paid" value={money.format(f.paid)} />
+                          <Metric label="Left" value={money.format(f.left)} />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3">
+                          <button
+                            type="button"
+                            onClick={() => generateClientInvoice(selectedClient)}
+                            disabled={operationBusy === `generate-invoice-${selectedClient._id}`}
+                            className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <ReceiptText size={16} />
+                            Generate full invoice
+                          </button>
+                          {latestInvoice && (
+                            <a
+                              href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
+                            >
+                              <Download size={14} />
+                              Download {latestInvoice.invoiceNumber}
+                            </a>
+                          )}
+                          <span className="text-xs text-slate-400">
+                            Uses the total website cost, discount, and GST from the client record.
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        updateClientDiscount(selectedClient, event.currentTarget);
+                      }}
+                      className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
+                    >
+                      <div className="mb-3 text-sm font-semibold text-white">Discount</div>
+                      <Field
+                        name="discountAmount"
+                        label="Discount amount"
+                        type="number"
+                        defaultValue={selectedClient.discountAmount || 0}
+                      />
+                      <SubmitButton
+                        busy={operationBusy === `discount-${selectedClient._id}`}
+                        label="Save discount"
+                        icon={IndianRupee}
+                        compact
+                      />
+                    </form>
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        addClientPayment(selectedClient, event.currentTarget);
+                      }}
+                      className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
+                    >
+                      <div className="mb-3 text-sm font-semibold text-white">Record payment</div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field name="amount" label="Amount received" type="number" required />
+                        <Select
+                          name="method"
+                          label="Method"
+                          options={["cash", "upi", "bank transfer", "card", "cheque", "other"]}
+                        />
+                        <Field
+                          name="receivedOn"
+                          label="Received on"
+                          type="date"
+                          defaultValue={new Date().toISOString().slice(0, 10)}
+                        />
+                        <Select
+                          name="milestoneIndex"
+                          label="Milestone"
+                          options={[
+                            "",
+                            ...(selectedClient.milestones || []).map(
+                              (m: any, i: number) => `${i}:${m.title}`
+                            ),
+                          ]}
+                        />
+                      </div>
+                      <Textarea name="note" label="Payment note" compact />
+                      <SubmitButton
+                        busy={operationBusy === `payment-${selectedClient._id}`}
+                        label="Record payment"
+                        icon={Banknote}
+                        compact
+                      />
+                    </form>
+                  </div>
+
+                  <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
+                    <div className="mb-3 text-sm font-semibold text-white">Payment history</div>
+                    <ListEmpty
+                      show={!selectedClient.payments?.length}
+                      label="No payments recorded yet."
+                    />
+                    <div className="space-y-2">
+                      {selectedClient.payments?.map((payment: any, index: number) => (
+                        <div
+                          key={`${payment.createdAt || payment.receivedOn}-${index}`}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-300"
+                        >
+                          <span>{money.format(Number(payment.amount || 0))}</span>
+                          <span>{payment.method || "payment"}</span>
+                          <span>{payment.receivedOn || dateLabel(payment.createdAt)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="text-sm font-semibold text-white">Milestone invoices</div>
+                    <ListEmpty show={!selectedClient.milestones?.length} label="No milestones saved." />
+                    {selectedClient.milestones?.map((m: any, index: number) => (
+                      <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
+                        <div className="font-semibold text-white">{m.title}</div>
+                        <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "completed")} disabled={Boolean(m.invoiceId)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:cursor-not-allowed disabled:opacity-50">Complete & generate invoice</button>
+                          <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "paid")} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">Mark paid</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Panel>
           </section>
 
           <aside className="space-y-8">
-            {view === "invoices" && (
-            <Panel id="invoices" title="Invoices" icon={ReceiptText}>
+            <Panel id="invoices" title="All invoices" icon={ReceiptText}>
               <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
                 <Metric label="Total raised" value={money.format(finance.invoiceTotal)} />
                 <Metric label="Paid" value={money.format(finance.paidTotal)} />
               </div>
               <ListEmpty show={invoices.length === 0} label="No invoices yet." />
               <div className="space-y-3">
-                {invoices.slice(0, 8).map((invoice) => (
+                {invoices.slice(0, 12).map((invoice) => (
                   <div key={invoice._id} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -1132,13 +1200,15 @@ export default function AdminShell(props: Stats) {
                         </div>
                         <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
                       </div>
-                      <Link
+                      <a
                         href={`/api/admin/invoices/${invoice._id}/pdf`}
+                        target="_blank"
+                        rel="noreferrer"
                         className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
                         title="Download invoice PDF"
                       >
                         <Download size={14} />
-                      </Link>
+                      </a>
                     </div>
                     <select
                       value={invoice.status || "draft"}
@@ -1165,7 +1235,6 @@ export default function AdminShell(props: Stats) {
                 ))}
               </div>
             </Panel>
-            )}
           </aside>
         </div>
         )}
