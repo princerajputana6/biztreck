@@ -89,12 +89,17 @@ export async function POST(req: Request) {
         status: String(data.status || "active"),
         projectName,
         websiteUrl: String(data.websiteUrl || "").trim(),
+        billingAddress: String(data.billingAddress || "").trim(),
+        country: String(data.country || "").trim(),
         reportsTo: String(data.reportsTo || "").trim(),
         theirContact: String(data.theirContact || "").trim(),
         contactEmail: String(data.contactEmail || "").trim(),
         contactPhone: String(data.contactPhone || "").trim(),
         projectValue: milestones.reduce((sum, m) => sum + m.amount, 0),
         totalCost: Math.max(0, Number(data.totalCost || 0)),
+        currency: String(data.currency || "INR").trim().toUpperCase(),
+        paymentTerms: String(data.paymentTerms || "").trim(),
+        invoiceNotes: String(data.invoiceNotes || "").trim(),
         gstRate: Math.max(0, Number(data.gstRate || 0)),
         gstMode: normalizeGstMode(data.gstMode),
         brdText: String(data.brdText || "").trim(),
@@ -151,12 +156,17 @@ export async function POST(req: Request) {
             status: String(data.status || "active"),
             projectName,
             websiteUrl: String(data.websiteUrl || "").trim(),
+            billingAddress: String(data.billingAddress || "").trim(),
+            country: String(data.country || "").trim(),
             reportsTo: String(data.reportsTo || "").trim(),
             theirContact: String(data.theirContact || "").trim(),
             contactEmail: String(data.contactEmail || "").trim(),
             contactPhone: String(data.contactPhone || "").trim(),
             projectValue: milestones.reduce((sum, m) => sum + m.amount, 0),
             totalCost: Math.max(0, Number(data.totalCost || 0)),
+            currency: String(data.currency || "INR").trim().toUpperCase(),
+            paymentTerms: String(data.paymentTerms || "").trim(),
+            invoiceNotes: String(data.invoiceNotes || "").trim(),
             gstRate: Math.max(0, Number(data.gstRate || 0)),
             gstMode: normalizeGstMode(data.gstMode),
             brdText: String(data.brdText || "").trim(),
@@ -357,13 +367,22 @@ export async function POST(req: Request) {
 
       const lineItems =
         milestones.length && Number(client.totalCost || 0) <= 0
-          ? milestones.map((m: any) => ({
-              description: String(m.title || "Project milestone"),
-              amount: Number(m.amount || 0),
-            }))
+          ? milestones.map((m: any) => {
+              const amount = Number(m.amount || 0);
+              const qty = Number(m.qty) > 0 ? Number(m.qty) : 1;
+              const rate = Number(m.rate) > 0 ? Number(m.rate) : amount;
+              return {
+                description: String(m.title || "Project milestone"),
+                qty,
+                rate,
+                amount,
+              };
+            })
           : [
               {
                 description: `${client.projectName || "Website development"} — full project`,
+                qty: 1,
+                rate: totals.subtotal,
                 amount: totals.subtotal,
               },
             ];
@@ -371,6 +390,7 @@ export async function POST(req: Request) {
       const invoiceNumber = nextInvoiceNumber(
         await db.collection("invoices").countDocuments()
       );
+      const currency = String(client.currency || "INR").toUpperCase();
       const dueDate = computeDueDate(now);
       const invoiceDoc = {
         invoiceNumber,
@@ -380,8 +400,14 @@ export async function POST(req: Request) {
         clientName: client.name,
         clientCompany: client.company,
         clientEmail: client.email,
+        clientPhone: client.contactPhone || client.phone || "",
+        billingAddress: client.billingAddress || "",
+        country: client.country || "",
         projectName: client.projectName,
         websiteUrl: client.websiteUrl || "",
+        currency,
+        paymentTerms: client.paymentTerms || "",
+        notes: client.invoiceNotes || "",
         lineItems,
         subtotal: totals.subtotal,
         discount: totals.discount,
@@ -398,6 +424,7 @@ export async function POST(req: Request) {
           clientEmail: client.email,
           projectName: client.projectName,
           websiteUrl: client.websiteUrl || "",
+          currency,
           lineItems,
           totals,
           dueDate,

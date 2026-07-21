@@ -283,8 +283,15 @@ export default function AdminShell(props: Stats) {
       .map((line) => line.trim())
       .filter(Boolean)
       .map((line) => {
-        const [title, amount, dueDate] = line.split("|").map((x) => x.trim());
-        return { title, amount: Number(amount || 0), dueDate };
+        // Title | amount | dueDate | qty | rate  (qty/rate optional)
+        const [title, amount, dueDate, qty, rate] = line.split("|").map((x) => x.trim());
+        return {
+          title,
+          amount: Number(amount || 0),
+          dueDate,
+          qty: qty ? Number(qty) : undefined,
+          rate: rate ? Number(rate) : undefined,
+        };
       });
 
     const ok = await submitOperation(
@@ -299,11 +306,16 @@ export default function AdminShell(props: Stats) {
         status: data.get("status"),
         projectName: data.get("projectName"),
         websiteUrl: data.get("websiteUrl"),
+        billingAddress: data.get("billingAddress"),
+        country: data.get("country"),
         reportsTo: data.get("reportsTo"),
         theirContact: data.get("theirContact"),
         contactEmail: data.get("contactEmail"),
         contactPhone: data.get("contactPhone"),
         totalCost: data.get("totalCost"),
+        currency: data.get("currency"),
+        paymentTerms: data.get("paymentTerms"),
+        invoiceNotes: data.get("invoiceNotes"),
         gstRate: data.get("gstRate"),
         gstMode: data.get("gstMode"),
         brdText,
@@ -330,11 +342,16 @@ export default function AdminShell(props: Stats) {
     setMilestonesText(
       Array.isArray(client.milestones)
         ? client.milestones
-            .map((m: any) =>
-              [m.title, Number(m.amount || 0) > 0 ? Number(m.amount || 0) : "", m.dueDate || ""]
-                .filter((part) => part !== "")
-                .join(" | ")
-            )
+            .map((m: any) => {
+              const parts = [
+                m.title,
+                Number(m.amount || 0) > 0 ? Number(m.amount || 0) : "",
+                m.dueDate || "",
+              ];
+              // Only round-trip qty/rate when they carry real information.
+              if (Number(m.qty) > 1) parts.push(Number(m.qty), Number(m.rate || 0));
+              return parts.filter((part) => part !== "").join(" | ");
+            })
             .join("\n")
         : ""
     );
@@ -742,11 +759,43 @@ export default function AdminShell(props: Stats) {
                       label="Contact person phone"
                       defaultValue={editingClient?.contactPhone || ""}
                     />
+                    <Field
+                      name="country"
+                      label="Country (billing)"
+                      placeholder="United Kingdom"
+                      defaultValue={editingClient?.country || ""}
+                    />
+                    <Select
+                      name="currency"
+                      label="Invoice currency"
+                      defaultValue={editingClient?.currency || "INR"}
+                      options={["INR", "USD", "GBP", "EUR", "AED"]}
+                    />
+                    <Field
+                      name="paymentTerms"
+                      label="Payment terms"
+                      placeholder="Net 7 days from invoice date"
+                      defaultValue={editingClient?.paymentTerms || ""}
+                    />
                   </div>
                   <Textarea
+                    name="billingAddress"
+                    label="Billing address (appears under Bill To)"
+                    placeholder={"Unit 4, Riverside Park\nLondon, SE1 7TP"}
+                    compact
+                    defaultValue={editingClient?.billingAddress || ""}
+                  />
+                  <Textarea
+                    name="invoiceNotes"
+                    label="Invoice notes (optional)"
+                    placeholder="Anything you want printed in the Notes section of the invoice."
+                    compact
+                    defaultValue={editingClient?.invoiceNotes || ""}
+                  />
+                  <Textarea
                     name="milestones"
-                    label="Milestones (optional)"
-                    placeholder={"Discovery | 25000 | 2026-07-20\nMVP delivery | 75000 | 2026-08-15"}
+                    label="Invoice line items / milestones (optional)"
+                    placeholder={"Title | amount | dueDate | qty | rate   (qty & rate optional)\n\nUI Design | 25000 | 2026-07-20\nFrontend | 60000 | 2026-08-15\nSupport retainer | 60000 | 2026-09-01 | 3 | 20000"}
                     value={milestonesText}
                     onChange={setMilestonesText}
                   />
@@ -1612,6 +1661,7 @@ function Textarea({
   required,
   compact,
   value,
+  defaultValue,
   onChange,
 }: {
   name: string;
@@ -1620,6 +1670,7 @@ function Textarea({
   required?: boolean;
   compact?: boolean;
   value?: string;
+  defaultValue?: string;
   onChange?: (value: string) => void;
 }) {
   return (
@@ -1630,6 +1681,7 @@ function Textarea({
         required={required}
         placeholder={placeholder}
         value={value}
+        defaultValue={defaultValue}
         onChange={onChange ? (event) => onChange(event.target.value) : undefined}
         rows={compact ? 2 : 5}
         className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"

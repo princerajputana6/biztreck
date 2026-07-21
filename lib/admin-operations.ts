@@ -2,11 +2,25 @@ import { ObjectId } from "@/lib/mongodb";
 
 export type ClientMilestone = {
   title: string;
+  qty: number;
+  rate: number;
   amount: number;
   dueDate?: string;
   status: "planned" | "completed" | "invoiced" | "paid";
   invoiceId?: string;
 };
+
+export const CURRENCIES = ["INR", "USD", "GBP", "EUR", "AED"] as const;
+
+/** `INR 1,80,000` / `GBP 1,800.00` — currency code prefix keeps the PDF font-safe. */
+export function formatMoney(value: number, currency = "INR") {
+  const n = Number(value || 0);
+  const isInr = currency === "INR";
+  return `${currency} ${n.toLocaleString(isInr ? "en-IN" : "en-US", {
+    minimumFractionDigits: isInr ? 0 : 2,
+    maximumFractionDigits: isInr ? 0 : 2,
+  })}`;
+}
 
 export function toObjectId(id: string) {
   if (!ObjectId.isValid(id)) {
@@ -18,13 +32,27 @@ export function toObjectId(id: string) {
 export function parseMilestones(input: unknown): ClientMilestone[] {
   if (!Array.isArray(input)) return [];
   return input
-    .map((m: any) => ({
-      title: String(m?.title || "").trim(),
-      amount: Number(m?.amount || 0),
-      dueDate: m?.dueDate ? String(m.dueDate) : "",
-      status: (m?.status || "planned") as ClientMilestone["status"],
-      invoiceId: m?.invoiceId ? String(m.invoiceId) : "",
-    }))
+    .map((m: any) => {
+      // Qty/rate are optional. When both are given they drive the amount;
+      // otherwise the line is a single unit priced at its amount.
+      const rawQty = Number(m?.qty);
+      const rawRate = Number(m?.rate);
+      const hasQty = Number.isFinite(rawQty) && rawQty > 0;
+      const hasRate = Number.isFinite(rawRate) && rawRate > 0;
+      const amount =
+        hasQty && hasRate ? rawQty * rawRate : Number(m?.amount || 0);
+      const qty = hasQty ? rawQty : 1;
+      const rate = hasRate ? rawRate : amount;
+      return {
+        title: String(m?.title || "").trim(),
+        qty,
+        rate,
+        amount,
+        dueDate: m?.dueDate ? String(m.dueDate) : "",
+        status: (m?.status || "planned") as ClientMilestone["status"],
+        invoiceId: m?.invoiceId ? String(m.invoiceId) : "",
+      };
+    })
     .filter((m) => m.title && Number.isFinite(m.amount) && m.amount > 0);
 }
 
@@ -32,6 +60,45 @@ export function nextInvoiceNumber(count: number) {
   const year = new Date().getFullYear();
   return `BT-${year}-${String(count + 1).padStart(4, "0")}`;
 }
+
+/**
+ * Company identity, tax IDs, banking rails, and boilerplate used on invoices.
+ * Every value is env-overridable so nothing sensitive is pinned to the code.
+ */
+export function companyProfile() {
+  return {
+    name: process.env.COMPANY_NAME || "Biztreck Solutions",
+    address: process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
+    website: process.env.COMPANY_WEBSITE || "https://www.biztreck.world",
+    email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
+    phone: process.env.COMPANY_PHONE || "+91 87408 63229",
+    gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
+    pan: process.env.COMPANY_PAN || "HRTPK7815L",
+    bank: {
+      name: process.env.COMPANY_BANK_NAME || "Kotak Mahindra Bank",
+      holder: process.env.COMPANY_BANK_HOLDER || process.env.COMPANY_NAME || "Biztreck Solutions",
+      account: process.env.COMPANY_BANK_ACCOUNT || "0549633882",
+      ifsc: process.env.COMPANY_BANK_IFSC || "KKBK0000180",
+      branch: process.env.COMPANY_BANK_BRANCH || "Noida - Sector 63",
+      swift: process.env.COMPANY_BANK_SWIFT || "",
+      upi: process.env.COMPANY_UPI || "8740863229@kotakbank",
+      wise: process.env.COMPANY_WISE || "",
+      paypal: process.env.COMPANY_PAYPAL || "",
+    },
+    signatory: {
+      name: process.env.COMPANY_SIGNATORY_NAME || "Prince Kumar",
+      title: process.env.COMPANY_SIGNATORY_TITLE || "Founder",
+    },
+  };
+}
+
+export const DEFAULT_INVOICE_TERMS = [
+  "Payment is due on or before the due date stated on this invoice.",
+  "Work, deployment, and support may pause on overdue accounts until payment is cleared.",
+  "Source code, deployable assets, and documentation are handed over after the corresponding payment is cleared.",
+  "All amounts are in the currency stated above. Bank transfer charges, if any, are borne by the sender.",
+  "Please quote the invoice number in your payment reference.",
+];
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 
@@ -358,6 +425,7 @@ export function buildProjectInvoiceMarkdown(invoice: {
   clientEmail?: string;
   projectName: string;
   websiteUrl?: string;
+  currency?: string;
   lineItems: InvoiceLineItem[];
   totals: InvoiceTotals;
   dueDate?: string;
@@ -370,7 +438,7 @@ export function buildProjectInvoiceMarkdown(invoice: {
     logo: process.env.COMPANY_LOGO_URL || "",
     email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
   };
-  const inr = (v: number) => `INR ${Number(v || 0).toLocaleString("en-IN")}`;
+  const inr = (v: number) => formatMoney(v, invoice.currency || "INR");
   const today = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
