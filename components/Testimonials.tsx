@@ -5,27 +5,27 @@ import { Quote, Star } from "lucide-react";
 const items = [
   {
     quote:
-      "Biztreck rebuilt our entire e-commerce site in 5 weeks. Page speed jumped 3x and conversions are up 47%. The team felt like part of our company.",
-    name: "Aarav Mehta",
-    role: "Founder, NovaCart",
+      "Two of our staff spent most of their week consolidating spreadsheets. After the production platform went live, month-end reporting dropped from four days to same-day and both were redeployed to planning.",
+    name: "Operations Director",
+    role: "Manufacturing · 120 staff",
   },
   {
     quote:
-      "From a Figma sketch to a live mobile app on the App Store in under 8 weeks. Their senior team handled engineering, infra, and our launch flawlessly.",
-    name: "Sara Khan",
-    role: "CEO, Pulsewell Health",
+      "Expired subcontractor certificates used to be discovered on site. The vendor portal chases them automatically now — that problem has effectively disappeared, and onboarding went from weeks to days.",
+    name: "Commercial Manager",
+    role: "Construction · 80 staff",
   },
   {
     quote:
-      "Their DevOps team migrated us to AWS and set up CI/CD that cut our deploy time from 40 minutes to 4. Zero downtime through the whole migration.",
-    name: "Daniel Rivera",
-    role: "CTO, Lumenly",
+      "Every booking used to be entered into three systems. Invoice disputes from mismatched data have dropped sharply and we invoice faster, which showed up directly in cash collection.",
+    name: "Managing Director",
+    role: "Logistics · 45 staff",
   },
   {
     quote:
-      "We grew organic traffic 5x in 6 months. Biztreck&apos;s SEO process is the most transparent I&apos;ve worked with — every dollar tied to a metric.",
-    name: "Priya Iyer",
-    role: "Head of Growth, Trillo",
+      "Board pack preparation took three days of manual work every month. It now arrives automatically, and we finally argue about the decision rather than whose number is right.",
+    name: "Finance Director",
+    role: "Professional services · 60 staff",
   },
 ];
 

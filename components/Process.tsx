@@ -1,32 +1,56 @@
 "use client";
 import { motion } from "framer-motion";
-import { Compass, PenTool, Code, Rocket, LineChart } from "lucide-react";
+import {
+  ClipboardCheck,
+  Code,
+  Compass,
+  LayoutGrid,
+  LineChart,
+  PenTool,
+  Rocket,
+  SearchCheck,
+} from "lucide-react";
 
 const steps = [
   {
     icon: Compass,
-    title: "Discovery",
-    desc: "We listen, audit, and turn your goals into a clear, prioritised roadmap.",
+    title: "Discovery call",
+    desc: "A focused conversation about where work slows down and what growth is blocked by.",
+  },
+  {
+    icon: SearchCheck,
+    title: "Business audit",
+    desc: "We map your current workflows, systems and data, then quantify the opportunity in hours and cost.",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Solution planning",
+    desc: "A phased roadmap with clear scope, milestones and fixed costs — sequenced by payback.",
   },
   {
     icon: PenTool,
-    title: "Design",
-    desc: "Wireframes, brand-aligned UI and user flows — validated before a line of code.",
+    title: "UX & architecture",
+    desc: "Screens, data model and system architecture agreed before a line of production code.",
   },
   {
     icon: Code,
-    title: "Build",
-    desc: "Senior engineers ship in weekly sprints with full visibility on Slack & GitHub.",
+    title: "Development",
+    desc: "Short, reviewable increments with working previews you can use at every milestone.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Testing",
+    desc: "Automated tests, security review and user acceptance against the agreed scope.",
   },
   {
     icon: Rocket,
     title: "Launch",
-    desc: "CI/CD-driven release, infra hardening, and a smooth go-live with zero downtime.",
+    desc: "Data migration, training and a controlled go-live — with the old system running alongside where needed.",
   },
   {
     icon: LineChart,
-    title: "Grow",
-    desc: "Monitoring, SEO, A/B testing and iteration — we stay with you after launch.",
+    title: "Continuous improvement",
+    desc: "Real usage data drives the next iteration. The highest-value changes appear after launch.",
   },
 ];
 

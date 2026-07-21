@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import { SITE } from "@/lib/site";
-import { SERVICES } from "@/lib/services";
+import { SOLUTIONS } from "@/lib/solutions";
 import WebMCP from "@/components/WebMCP";
 import "./globals.css";
 
@@ -133,13 +133,13 @@ const orgJsonLd = {
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Software & IT services",
-    itemListElement: SERVICES.map((s) => ({
+    itemListElement: SOLUTIONS.map((s) => ({
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
         name: s.name,
         serviceType: s.serviceType,
-        url: `${SITE.url}/services/${s.slug}`,
+        url: `${SITE.url}/solutions/${s.slug}`,
       },
     })),
   },

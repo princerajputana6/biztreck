@@ -4,34 +4,34 @@ import { ShieldCheck, Zap, Users, Globe, Clock, Award } from "lucide-react";
 
 const reasons = [
   {
-    icon: Zap,
-    title: "Fast turnarounds",
-    desc: "MVPs in 4–8 weeks. Revamps in 2–6. We move fast without compromising quality.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Production-grade",
-    desc: "Tested, monitored, secure by default. Every project ships with proper CI/CD.",
+    icon: Award,
+    title: "Business-first approach",
+    desc: "We start with the process that's costing you money, not with a technology preference. If software isn't the answer, we say so.",
   },
   {
     icon: Users,
-    title: "Senior team only",
-    desc: "No juniors learning on your dime. Senior designers, engineers, and SREs.",
+    title: "Senior engineers only",
+    desc: "No juniors learning on your budget. Senior engineers and architects who have shipped this before.",
   },
   {
-    icon: Globe,
-    title: "Global delivery",
-    desc: "Clients across India, UAE, US, EU. Async-first communication that respects time zones.",
+    icon: ShieldCheck,
+    title: "Scalable architecture",
+    desc: "Modular systems that extend without a rewrite. Tested, monitored and secure by default.",
   },
   {
     icon: Clock,
-    title: "Transparent process",
-    desc: "Live dashboards, weekly demos, shared Notion roadmap. You always know the status.",
+    title: "Transparent communication",
+    desc: "Working previews at every milestone, clear scope, and no surprises on cost or timeline.",
   },
   {
-    icon: Award,
-    title: "Outcomes, not hours",
-    desc: "Fixed-scope quotes, milestone-based billing, and a real focus on business outcomes.",
+    icon: Zap,
+    title: "Agile delivery",
+    desc: "Short, reviewable increments so you see value early — not a year of silence followed by a big reveal.",
+  },
+  {
+    icon: Globe,
+    title: "International experience",
+    desc: "Delivering for growing businesses across the US, UK, Canada, Australia, New Zealand, Singapore and the UAE.",
   },
 ];
 

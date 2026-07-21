@@ -1,15 +1,25 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
 import { getDb } from "@/lib/mongodb";
-import { SERVICES } from "@/lib/services";
+import { SOLUTIONS } from "@/lib/solutions";
+import { INDUSTRIES } from "@/lib/industries";
 
 export const dynamic = "force-dynamic";
 
 const staticRoutes = [
   "",
   "/about",
-  "/services",
-  ...SERVICES.map((s) => `/services/${s.slug}`),
+  "/solutions",
+  ...SOLUTIONS.map((s) => `/solutions/${s.slug}`),
+  "/industries",
+  ...INDUSTRIES.map((i) => `/industries/${i.slug}`),
+  "/case-studies",
+  "/portfolio",
+  "/faq",
+  "/contact",
+  "/resources",
+  "/resources/business-audit",
+  "/book-strategy-call",
   "/careers",
   "/blog",
   "/legal/privacy-policy",
@@ -68,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: (r === "" ? "daily" : "monthly") as
         | "daily"
         | "monthly",
-      priority: r === "" ? 1.0 : r.startsWith("/services") ? 0.9 : 0.6,
+      priority: r === "" ? 1.0 : r.startsWith("/solutions") ? 0.9 : 0.6,
     })),
     ...dyn,
   ];

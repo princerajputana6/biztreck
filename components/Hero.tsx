@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-const rotatingWords = ["Builds.", "Revamps.", "Ranks.", "Scales.", "Launches."];
+const rotatingWords = ["Business.", "Operations.", "Workflows.", "Team.", "Growth."];
 
 // Heaviest visual: defer to client only and skip on first paint.
 const HeroOrb = dynamic(() => import("./HeroOrb"), {
@@ -21,8 +21,8 @@ const HeroOrb = dynamic(() => import("./HeroOrb"), {
 
 /* ───── Letter-reveal headline ───── */
 function AnimatedHeadline() {
-  const line1 = "We build digital".split("");
-  const line2 = "products that".split("");
+  const line1 = "Custom Software & AI".split("");
+  const line2 = "Solutions built around".split("");
   const c = {
     hidden: {},
     show: { transition: { staggerChildren: 0.025, delayChildren: 0.15 } },
@@ -39,7 +39,7 @@ function AnimatedHeadline() {
   return (
     <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
       <span className="sr-only">
-        We build digital products that move your business forward.
+        Custom software and AI solutions built around your business.
       </span>
       <motion.span
         variants={c}
@@ -344,13 +344,13 @@ export default function Hero() {
             className="eyebrow"
           >
             <Sparkles size={14} />
-            <span>Greater Noida · Senior product studio</span>
+            <span>Business growth · AI automation · Custom software</span>
           </motion.div>
 
           <div className="mt-6">
             <AnimatedHeadline />
             <div className="mt-2 font-display text-5xl font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">
-              <span className="text-white">move you forward —&nbsp;</span>
+              <span className="text-white">your&nbsp;</span>
               <RotatingWord />
             </div>
           </div>
@@ -361,10 +361,10 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-7 max-w-xl text-lg leading-relaxed text-slate-300"
           >
-            Biztreck Solutions revamps tired websites, ships fast new web & app
-            experiences, automates infrastructure with DevOps, ranks you on
-            Google, and walks startups from{" "}
-            <strong className="text-white">idea to launch</strong>.
+            We help growing businesses automate operations, modernise outdated
+            systems, and build{" "}
+            <strong className="text-white">scalable software that drives
+            measurable growth</strong>.
           </motion.p>
 
           <motion.div
@@ -373,10 +373,12 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mt-10 flex flex-wrap items-center gap-4"
           >
-            <MagneticButton href="#contact" primary>
-              Get in touch <ArrowRight size={18} />
+            <MagneticButton href="/book-strategy-call" primary>
+              Book Strategy Call <ArrowRight size={18} />
             </MagneticButton>
-            <MagneticButton href="#services">Explore services</MagneticButton>
+            <MagneticButton href="/resources/business-audit">
+              Get Free Business Audit
+            </MagneticButton>
           </motion.div>
 
           <motion.div
