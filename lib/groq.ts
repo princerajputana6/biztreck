@@ -1,28 +1,80 @@
-import Groq from "groq-sdk";
+// LLM helper — every model call in the app routes through OpenRouter's
+// OpenAI-compatible API. Key: OPEN_ROUTE_API_KEY. Model: override with
+// OPENROUTER_MODEL, otherwise a capable, cost-effective default.
 
-const apiKey = process.env.GROQ_API_KEY;
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const apiKey = process.env.OPEN_ROUTE_API_KEY;
+const MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct";
 
-let _groq: Groq | null = null;
-function getGroq() {
-  if (!apiKey) throw new Error("GROQ_API_KEY missing");
-  if (!_groq) _groq = new Groq({ apiKey });
-  return _groq;
+/** The active model id, for provenance labels on generated content. */
+export const LLM_MODEL = MODEL;
+
+/** True when an OpenRouter key is configured — callers can pick a fallback. */
+export function hasLLM(): boolean {
+  return Boolean(apiKey);
 }
 
-const MODEL = "llama-3.3-70b-versatile";
+// Models occasionally wrap JSON in prose or ``` fences; recover the raw object
+// so downstream JSON.parse stays reliable across whatever model is configured.
+function extractJson(text: string): string {
+  let t = text.trim();
+  const fence = t.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fence) t = fence[1].trim();
+  if (t.startsWith("{") || t.startsWith("[")) return t;
+  const starts = [t.indexOf("{"), t.indexOf("[")].filter((i) => i >= 0);
+  if (!starts.length) return t;
+  const start = Math.min(...starts);
+  const end = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+  return end > start ? t.slice(start, end + 1) : t;
+}
 
-async function complete(system: string, user: string, json = false) {
-  const groq = getGroq();
-  const res = await groq.chat.completions.create({
-    model: MODEL,
-    temperature: 0.75,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-    ...(json ? { response_format: { type: "json_object" as const } } : {}),
-  });
-  return res.choices?.[0]?.message?.content?.trim() ?? "";
+export async function complete(
+  system: string,
+  user: string,
+  json = false,
+  temperature = 0.75
+): Promise<string> {
+  if (!apiKey) throw new Error("OPEN_ROUTE_API_KEY missing");
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60_000);
+  try {
+    const res = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        // Optional attribution headers OpenRouter surfaces in its dashboard.
+        "HTTP-Referer": "https://www.biztreck.world",
+        "X-Title": "Biztreck LeadOS",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        ...(json ? { response_format: { type: "json_object" as const } } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `OpenRouter ${res.status}: ${detail.slice(0, 300) || res.statusText}`
+      );
+    }
+
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+    return json ? extractJson(content) : content;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export type GeneratedBlog = {

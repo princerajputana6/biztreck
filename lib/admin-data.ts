@@ -23,6 +23,7 @@ export type AdminView =
   | "scraper"
   | "clients"
   | "invoices"
+  | "leados"
   | "people"
   | "team"
   | "content"
@@ -109,6 +110,7 @@ const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
   clients: ["clients", "documents"],
   invoices: ["invoices", "clients"],
   people: ["employees", "hiring", "socialTasks", "expenses"],
+  leados: [],
   team: ["employees", "hiring", "socialTasks"],
   content: ["blogs", "jobs"],
   submissions: ["applicationsCount", "contactsCount", "commentsCount"],

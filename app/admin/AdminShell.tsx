@@ -23,6 +23,7 @@ import {
   Sparkles,
   Trash2,
   UserPlus,
+  Target,
   Users,
   Wallet,
   X,
@@ -30,6 +31,7 @@ import {
 import Logo from "@/components/Logo";
 import { FormEvent, useMemo, useState } from "react";
 import ScraperView from "./scraper/ScraperView";
+import LeadOSView from "./leados/LeadOSView";
 
 type AnyDoc = Record<string, any>;
 
@@ -56,6 +58,7 @@ type AdminView =
   | "scraper"
   | "clients"
   | "invoices"
+  | "leados"
   | "people"
   | "team"
   | "content"
@@ -448,6 +451,7 @@ export default function AdminShell(props: Stats) {
   const navItems: { href: string; label: string; icon: any; view: AdminView }[] = [
     { href: "/admin", label: "Dashboard", icon: Building2, view: "dashboard" },
     { href: "/admin/ai-publishing", label: "AI publishing", icon: Sparkles, view: "ai-publishing" },
+    { href: "/admin/leados", label: "LeadOS", icon: Target, view: "leados" },
     { href: "/admin/scraper", label: "Lead scraper", icon: MapPinned, view: "scraper" },
     { href: "/admin/clients", label: "Clients & docs", icon: FileSignature, view: "clients" },
     { href: "/admin/invoices", label: "Payment & Invoice", icon: ReceiptText, view: "invoices" },
@@ -473,6 +477,10 @@ export default function AdminShell(props: Stats) {
     clients: {
       title: "Clients and documents",
       description: "Add clients, generate agreements from BRDs, and review generated documents.",
+    },
+    leados: {
+      title: "LeadOS",
+      description: "Find, analyse, score and work international B2B leads.",
     },
     invoices: {
       title: "Payment & Invoice",
@@ -944,6 +952,8 @@ export default function AdminShell(props: Stats) {
             </div>
           </>
         )}
+
+        {view === "leados" && <LeadOSView />}
 
         {view === "people" && (() => {
           const activeEmployees = employees.filter((e) => e.status !== "inactive");
