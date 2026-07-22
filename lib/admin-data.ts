@@ -14,13 +14,11 @@ export type AdminData = {
   hiring: any[];
   socialTasks: any[];
   expenses: any[];
-  places: any[];
 };
 
 export type AdminView =
   | "dashboard"
   | "ai-publishing"
-  | "scraper"
   | "clients"
   | "invoices"
   | "leados"
@@ -57,7 +55,6 @@ const EMPTY: AdminData = {
   hiring: [],
   socialTasks: [],
   expenses: [],
-  places: [],
 };
 
 // One query per data slice. Each admin view only pulls the slices it renders, so
@@ -88,8 +85,6 @@ const QUERIES: Record<keyof AdminData, (db: Db) => Promise<any>> = {
   socialTasks: (db) =>
     db.collection("social_tasks").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
   expenses: (db) => db.collection("expenses").find({}).sort({ createdAt: -1 }).limit(120).toArray(),
-  places: (db) =>
-    db.collection("scraped_places").find({}).sort({ scrapedAt: -1 }).limit(1000).toArray(),
 };
 
 // The exact slices each view reads. Views not listed here (or with no DB reads,
@@ -106,7 +101,6 @@ const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
     "commentsCount",
   ],
   "ai-publishing": [],
-  scraper: ["places"],
   clients: ["clients", "documents"],
   invoices: ["invoices", "clients"],
   people: ["employees", "hiring", "socialTasks", "expenses"],

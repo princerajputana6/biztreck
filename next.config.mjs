@@ -29,6 +29,14 @@ const nextConfig = {
       "./node_modules/pdfkit/js/data/**/*",
       "./public/logo.png",
     ],
+    "/api/admin/leados/[leadKey]/audit-pdf": [
+      "./node_modules/pdfkit/js/data/**/*",
+      "./public/logo.png",
+    ],
+    "/audit/[token]/pdf": [
+      "./node_modules/pdfkit/js/data/**/*",
+      "./public/logo.png",
+    ],
   },
   // Map the dot-prefixed /.well-known/* paths (which the App Router cannot host
   // directly, since folders beginning with "." are ignored) onto real route

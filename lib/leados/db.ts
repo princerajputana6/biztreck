@@ -35,6 +35,8 @@ export function ensureLeadIndexes(): Promise<void> {
         col.createIndex({ createdAt: -1 }),
         col.createIndex({ lastAnalyzedAt: 1 }),
         col.createIndex({ domain: 1 }),
+        // Sparse: only shared leads have a token, and it must be unique.
+        col.createIndex({ shareToken: 1 }, { unique: true, sparse: true }),
         // Free-text search across the fields a salesperson actually types.
         col.createIndex(
           { businessName: "text", city: "text", businessCategory: "text" },
@@ -160,6 +162,13 @@ export async function upsertLeads(leads: Lead[]) {
 export async function getLeadByKey(leadKey: string): Promise<Lead | null> {
   const col = await leadsCollection();
   return col.findOne({ leadKey });
+}
+
+/** Public audit lookup — only returns a lead that has been shared and audited. */
+export async function getLeadByShareToken(token: string): Promise<Lead | null> {
+  if (!token || token.length < 16) return null;
+  const col = await leadsCollection();
+  return col.findOne({ shareToken: token });
 }
 
 export async function addTimelineEvent(

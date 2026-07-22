@@ -746,6 +746,51 @@ function auditToHtml(lead: AnyDoc): string {
 
 export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => void }) {
   const a = lead.audit;
+  const pdfHref = `/api/admin/leados/${encodeURIComponent(lead.leadKey)}/audit-pdf`;
+  const [shareToken, setShareToken] = useState<string>(lead.shareToken || "");
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareUrl = shareToken
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/audit/${shareToken}`
+    : "";
+
+  const createShare = async () => {
+    setSharing(true);
+    try {
+      const res = await fetch("/api/admin/leados", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "share-audit", leadKey: lead.leadKey }),
+      });
+      const data = await res.json();
+      if (data.ok && data.token) setShareToken(data.token);
+    } finally {
+      setSharing(false);
+    }
+  };
+  const revokeShare = async () => {
+    setSharing(true);
+    try {
+      await fetch("/api/admin/leados", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "unshare-audit", leadKey: lead.leadKey }),
+      });
+      setShareToken("");
+    } finally {
+      setSharing(false);
+    }
+  };
+  const copyShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+
   const download = () => {
     const blob = new Blob([auditToHtml(lead)], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -779,13 +824,22 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <p className="mt-1 text-sm text-accent-glow">{a.headline}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={pdfHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+              title="Download the audit as a PDF"
+            >
+              <FileText size={13} /> PDF
+            </a>
             <button
               type="button"
               onClick={download}
               className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
-              title="Download a shareable HTML report"
+              title="Download a self-contained HTML report"
             >
-              <Download size={13} /> Download
+              <Download size={13} /> HTML
             </button>
             <button
               type="button"
@@ -805,6 +859,66 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-300 capitalize">
               Priority <span className="text-white">{a.priority}</span>
             </span>
+          </div>
+
+          {/* Public share link */}
+          <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
+            {shareToken ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
+                  <Globe size={13} /> Public link is live
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    readOnly
+                    value={shareUrl}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="min-w-0 flex-1 rounded-lg border border-navy-700/70 bg-navy-950/60 px-3 py-2 text-xs text-slate-200 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={copyShare}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-accent-cyan/10 px-3 py-2 text-xs text-accent-cyan"
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "Copied" : "Copy"}
+                  </button>
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-navy-700/70 bg-navy-800/50 px-3 py-2 text-xs text-slate-200 hover:border-accent-cyan"
+                  >
+                    <ExternalLink size={12} /> Open
+                  </a>
+                  <button
+                    type="button"
+                    onClick={revokeShare}
+                    disabled={sharing}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-xs text-rose-300 disabled:opacity-60"
+                  >
+                    {sharing ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Revoke
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Anyone with this link can view the audit (no login). Revoke to disable it.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-slate-400">
+                  Create an unlisted public link to send this audit to the prospect.
+                </p>
+                <button
+                  type="button"
+                  onClick={createShare}
+                  disabled={sharing}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/40 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:opacity-60"
+                >
+                  {sharing ? <Loader2 size={12} className="animate-spin" /> : <Globe size={12} />}
+                  Create public link
+                </button>
+              </div>
+            )}
           </div>
 
           <div>

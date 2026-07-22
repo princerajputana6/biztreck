@@ -15,7 +15,6 @@ import {
   Loader2,
   LogOut,
   Mail,
-  MapPinned,
   Megaphone,
   MessageSquare,
   PlusCircle,
@@ -30,7 +29,6 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { FormEvent, useMemo, useState } from "react";
-import ScraperView from "./scraper/ScraperView";
 import LeadOSView from "./leados/LeadOSView";
 
 type AnyDoc = Record<string, any>;
@@ -49,13 +47,11 @@ type Stats = {
   hiring: AnyDoc[];
   socialTasks: AnyDoc[];
   expenses: AnyDoc[];
-  places: AnyDoc[];
 };
 
 type AdminView =
   | "dashboard"
   | "ai-publishing"
-  | "scraper"
   | "clients"
   | "invoices"
   | "leados"
@@ -124,7 +120,6 @@ export default function AdminShell(props: Stats) {
     hiring,
     socialTasks,
     expenses,
-    places,
   } = props;
   const view = props.view || "dashboard";
   const router = useRouter();
@@ -452,7 +447,6 @@ export default function AdminShell(props: Stats) {
     { href: "/admin", label: "Dashboard", icon: Building2, view: "dashboard" },
     { href: "/admin/ai-publishing", label: "AI publishing", icon: Sparkles, view: "ai-publishing" },
     { href: "/admin/leados", label: "LeadOS", icon: Target, view: "leados" },
-    { href: "/admin/scraper", label: "Lead scraper", icon: MapPinned, view: "scraper" },
     { href: "/admin/clients", label: "Clients & docs", icon: FileSignature, view: "clients" },
     { href: "/admin/invoices", label: "Payment & Invoice", icon: ReceiptText, view: "invoices" },
     { href: "/admin/people", label: "People ops", icon: Users, view: "people" },
@@ -469,10 +463,6 @@ export default function AdminShell(props: Stats) {
     "ai-publishing": {
       title: "AI publishing",
       description: "Generate blogs and job posts manually, while daily blog cron keeps running.",
-    },
-    scraper: {
-      title: "Lead scraper",
-      description: "Run the Apify Google Places scraper daily, browse businesses as cards, filter by category, and open any card for full details.",
     },
     clients: {
       title: "Clients and documents",
@@ -666,7 +656,6 @@ export default function AdminShell(props: Stats) {
         </section>
         )}
 
-        {view === "scraper" && <ScraperView places={places} />}
 
         {notice && (
           <div

@@ -278,6 +278,9 @@ export type Lead = {
   contacts?: LeadContact[];
   audit?: LeadAudit;
   lastAuditAt?: string | null;
+  /** Unguessable token for the public audit report; presence == shared. */
+  shareToken?: string | null;
+  sharedAt?: string | null;
   outreach?: LeadOutreach;
   lastOutreachAt?: string | null;
 

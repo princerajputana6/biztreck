@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { isAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { SITE } from "@/lib/site";
 import {
   addTimelineEvent,
   ensureLeadIndexes,
@@ -296,6 +298,50 @@ export async function POST(req: Request) {
       if (lead.stage === "new") await setStage(leadKey, "audit_generated");
 
       return NextResponse.json({ ok: true, audit });
+    }
+
+    // --- Module 7: share / unshare the audit as a public link ----------------
+    if (action === "share-audit") {
+      const leadKey = String(body.leadKey || "");
+      if (!leadKey) {
+        return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
+      }
+      const col = await leadsCollection();
+      const lead = await col.findOne({ leadKey });
+      if (!lead) {
+        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
+      }
+      if (!lead.audit) {
+        return NextResponse.json(
+          { ok: false, error: "Generate an audit before sharing it." },
+          { status: 400 }
+        );
+      }
+      // Reuse an existing token so the link stays stable across re-shares.
+      const token = lead.shareToken || randomBytes(16).toString("hex");
+      const now = new Date().toISOString();
+      await col.updateOne(
+        { leadKey },
+        { $set: { shareToken: token, sharedAt: now, updatedAt: now } }
+      );
+      return NextResponse.json({
+        ok: true,
+        token,
+        url: `${SITE.url}/audit/${token}`,
+      });
+    }
+
+    if (action === "unshare-audit") {
+      const leadKey = String(body.leadKey || "");
+      if (!leadKey) {
+        return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
+      }
+      const col = await leadsCollection();
+      await col.updateOne(
+        { leadKey },
+        { $set: { updatedAt: new Date().toISOString() }, $unset: { shareToken: "", sharedAt: "" } } as never
+      );
+      return NextResponse.json({ ok: true });
     }
 
     // --- Module 8: generate the AI outreach kit ------------------------------
