@@ -16,6 +16,7 @@ import { marked } from "marked";
 import type { Lead } from "@/lib/leados/types";
 import { createCalendarEvent } from "@/lib/google";
 import { getGoogleAccessToken } from "@/lib/integrations-store";
+import { getDb } from "@/lib/mongodb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,9 @@ const TOOLS = `
 - draft_outreach { business: string } — draft a cold email + follow-ups grounded in that lead's audit.
 - send_email { business: string, to?: string } — send the drafted cold email to a lead. REQUIRES the user to confirm; the app shows a confirm button.
 - schedule_meeting { with?: string (lead business name or an email address), title?: string, startISO: string (naive local wall-clock ISO, e.g. "2026-07-25T15:00:00" — NOT UTC, no trailing Z), durationMinutes?: number, timeZone?: string (IANA zone, e.g. "Asia/Kolkata") } — books a Google Calendar event if Google is connected (else explains how to connect). REQUIRES the user to confirm.
-- get_stats {} — pipeline counts and top leads.`;
+- get_stats {} — LeadOS pipeline counts and top leads only.
+- get_portal_overview {} — company-wide snapshot across the WHOLE admin: number of clients, total & paid invoicing (revenue), active team size, blog & job-post counts, job applications received, and lead totals. Use for ANY "how many / how much / what's my …" question about the business (clients, revenue, team, content, applications, leads).
+- navigate { to: "dashboard"|"leados"|"clients"|"content"|"team"|"integrations"|"users" } — open/switch the admin to that section for the user (e.g. "open clients", "go to team", "take me to integrations").`;
 
 type Plan = { reply: string; action: { name: string; args: any } | null };
 
@@ -61,9 +64,11 @@ async function planTurn(messages: { role: string; content: string }[]): Promise<
     hour12: false,
   }).format(new Date());
   const system =
-    "You are Shadow, Biztreck's LeadOS voice assistant. You help the owner find, research, audit, " +
-    "and reach out to B2B leads by calling tools. Decide ONE tool call per turn, or none if the user " +
-    "is just chatting. Keep replies short and natural — they are spoken aloud.\n\n" +
+    "You are Shadow, the owner's voice assistant for the ENTIRE Biztreck admin portal. You can answer " +
+    "questions and take actions across every area of the app: LeadOS (leads, audits, outreach, meetings), " +
+    "Clients & billing, Content (blogs & job posts), Team (employees, hiring, submissions, expenses), " +
+    "Integrations, and Users. Decide ONE tool call per turn, or none if you can answer directly by chatting. " +
+    "Keep replies short and natural — they are spoken aloud.\n\n" +
     `Current local date/time: ${localNow}, timezone ${defaultTz}. Use this as "today"/"now" for resolving ` +
     `relative dates. Use timezone ${defaultTz} unless the user names another.\n\n` +
     "Available tools:\n" + TOOLS + "\n\n" +
@@ -80,7 +85,10 @@ async function planTurn(messages: { role: string; content: string }[]): Promise<
     "current local date/time above. If the date/time is unclear, DON'T guess — ask (action null). Otherwise " +
     "ALWAYS include the action and phrase the reply as a confirmation question " +
     "(e.g. \"Shall I book a meeting with … on …?\"). The app requires the user to confirm before booking.\n" +
-    "- Never invent lead data; use tools to fetch it.";
+    "- For any general business question (how many clients/leads/employees, revenue, invoicing, blog/job counts, " +
+    "applications, etc.), call get_portal_overview. Use get_stats ONLY for LeadOS pipeline specifics.\n" +
+    "- When the user asks to open/go to/show a section or page of the app, call navigate with the matching 'to'.\n" +
+    "- Never invent data; use tools to fetch it.";
   const convo = messages.slice(-12);
   const raw = await complete(system, JSON.stringify({ conversation: convo }), true, 0.3);
   const parsed = JSON.parse(raw);
@@ -313,6 +321,66 @@ async function execStats() {
   };
 }
 
+const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+const NAV_PATHS: Record<string, { path: string; label: string }> = {
+  dashboard: { path: "/admin", label: "the dashboard" },
+  leados: { path: "/admin/leados", label: "LeadOS" },
+  clients: { path: "/admin/clients", label: "Clients and billing" },
+  content: { path: "/admin/content", label: "Content" },
+  team: { path: "/admin/team", label: "Team" },
+  integrations: { path: "/admin/integrations", label: "Integrations" },
+  users: { path: "/admin/users", label: "Users and access" },
+};
+
+async function execPortalOverview() {
+  const db = await getDb();
+  const leads = await leadsCollection();
+  const [clientsCount, invoices, activeEmployees, blogsCount, jobsCount, applicationsCount, leadsCount, hotLeads] =
+    await Promise.all([
+      db.collection("clients").countDocuments({}),
+      db.collection("invoices").find({}, { projection: { amount: 1, status: 1 } }).toArray(),
+      db.collection("employees").countDocuments({ status: { $ne: "inactive" } }),
+      db.collection("blogs").countDocuments({}),
+      db.collection("jobs").countDocuments({}),
+      db.collection("applications").countDocuments({}),
+      leads.countDocuments({}),
+      leads.countDocuments({ "scores.priority": "hot" }),
+    ]);
+  const revenue = invoices.reduce((s, i) => s + Number(i.amount || 0), 0);
+  const paid = invoices
+    .filter((i) => i.status === "paid")
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
+  return {
+    data: {
+      clients: clientsCount,
+      invoicesRaised: revenue,
+      invoicesPaid: paid,
+      activeTeam: activeEmployees,
+      blogs: blogsCount,
+      jobs: jobsCount,
+      applications: applicationsCount,
+      leads: leadsCount,
+      hotLeads,
+    },
+    speak:
+      `You have ${clientsCount} client${clientsCount === 1 ? "" : "s"}, ${leadsCount} leads (${hotLeads} hot), ` +
+      `and ${activeEmployees} active team member${activeEmployees === 1 ? "" : "s"}. ` +
+      `Invoicing stands at ${inr.format(revenue)} raised, ${inr.format(paid)} paid. ` +
+      `Content: ${blogsCount} blog post${blogsCount === 1 ? "" : "s"} and ${jobsCount} open role${jobsCount === 1 ? "" : "s"}, ` +
+      `with ${applicationsCount} job application${applicationsCount === 1 ? "" : "s"} received.`,
+  };
+}
+
+function execNavigate(args: any) {
+  const to = String(args.to || "").toLowerCase().trim();
+  const dest = NAV_PATHS[to];
+  if (!dest) {
+    return { speak: "I'm not sure which section you mean. Try dashboard, LeadOS, clients, content, team, integrations, or users." };
+  }
+  return { data: { navigateTo: dest.path }, speak: `Opening ${dest.label}.` };
+}
+
 async function execute(name: string, args: any): Promise<{ speak: string; data?: any }> {
   switch (name) {
     case "search_leads":
@@ -329,6 +397,10 @@ async function execute(name: string, args: any): Promise<{ speak: string; data?:
       return execSend(args);
     case "get_stats":
       return execStats();
+    case "get_portal_overview":
+      return execPortalOverview();
+    case "navigate":
+      return execNavigate(args);
     case "schedule_meeting":
       return execSchedule(args);
     default:
