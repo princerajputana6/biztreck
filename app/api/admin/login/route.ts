@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { ADMIN_COOKIE, makeToken } from "@/lib/auth";
+import { ADMIN_COOKIE, ENV_ADMIN_SUB, makeToken } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 
 export const runtime = "nodejs";
@@ -12,29 +12,31 @@ export async function POST(req: Request) {
       typeof email === "string" ? email.trim().toLowerCase() : "";
     const inputPassword = typeof password === "string" ? password : "";
 
-    let valid = false;
+    // The token subject identifies who logged in (drives their permissions).
+    let sub: string | null = null;
     if (normalizedEmail && inputPassword) {
       const db = await getDb();
       const admin = await db.collection("admin_users").findOne({
         email: normalizedEmail,
         active: { $ne: false },
       });
-      if (admin?.passwordHash) {
-        valid = await bcrypt.compare(inputPassword, admin.passwordHash);
+      if (admin?.passwordHash && (await bcrypt.compare(inputPassword, admin.passwordHash))) {
+        sub = normalizedEmail;
       }
     }
 
-    if (!valid && inputPassword && inputPassword === process.env.ADMIN_PASSWORD) {
-      valid = true;
+    // Env-password fallback = bootstrap owner (full access).
+    if (!sub && inputPassword && inputPassword === process.env.ADMIN_PASSWORD) {
+      sub = ENV_ADMIN_SUB;
     }
 
-    if (!valid) {
+    if (!sub) {
       return NextResponse.json(
-        { ok: false, error: "Invalid password" },
+        { ok: false, error: "Invalid email or password" },
         { status: 401 }
       );
     }
-    const token = makeToken();
+    const token = makeToken(sub);
     const res = NextResponse.json({ ok: true });
     res.cookies.set(ADMIN_COOKIE, token, {
       httpOnly: true,

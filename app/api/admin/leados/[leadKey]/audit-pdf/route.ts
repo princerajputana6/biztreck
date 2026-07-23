@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { getLeadByKey } from "@/lib/leados/db";
 import { buildAuditPdf } from "@/lib/leados/audit-pdf";
 
@@ -20,7 +20,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ leadKey: string }> }
 ) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("leados"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const { leadKey } = await params;

@@ -18,6 +18,7 @@ export type AdminData = {
 
 export type AdminView =
   | "dashboard"
+  | "assistant"
   | "ai-publishing"
   | "clients"
   | "invoices"
@@ -25,7 +26,9 @@ export type AdminView =
   | "people"
   | "team"
   | "content"
-  | "submissions";
+  | "submissions"
+  | "integrations"
+  | "users";
 
 function serializeAdminValue(value: any): any {
   if (value == null) return value;
@@ -108,6 +111,9 @@ const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
   team: ["employees", "hiring", "socialTasks"],
   content: ["blogs", "jobs"],
   submissions: ["applicationsCount", "contactsCount", "commentsCount"],
+  assistant: [],
+  integrations: [],
+  users: [],
 };
 
 /**

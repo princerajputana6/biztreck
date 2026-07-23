@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { autoPublishJobs } from "@/lib/auto-publish-jobs";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ const MAX_COUNT = 6;
  * Gated by the admin session cookie. Body (optional): { count?: number }
  */
 export async function POST(req: Request) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("ai-publishing"))) {
     return NextResponse.json(
       { ok: false, error: "Unauthorized" },
       { status: 401 }

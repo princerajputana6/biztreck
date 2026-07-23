@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("content"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const { slug } = await params;

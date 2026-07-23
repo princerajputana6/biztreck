@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { SITE } from "@/lib/site";
 import {
@@ -33,8 +33,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 async function guard() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  if (!(await guardPermission("leados"))) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
   return null;
 }
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
       }
 
-      const { analysis, intel, scores, opportunities } = await enrichLead(lead);
+      const { analysis, intel, scores, opportunities, email } = await enrichLead(lead);
       const now = new Date().toISOString();
 
       await col.updateOne(
@@ -184,6 +184,7 @@ export async function POST(req: Request) {
             intel,
             scores,
             opportunities,
+            ...(email ? { email } : {}),
             lastAnalyzedAt: now,
             updatedAt: now,
           },
@@ -214,7 +215,7 @@ export async function POST(req: Request) {
       let done = 0;
       for (const lead of pending) {
         try {
-          const { analysis, intel, scores, opportunities } = await enrichLead(lead);
+          const { analysis, intel, scores, opportunities, email } = await enrichLead(lead);
           const now = new Date().toISOString();
           await col.updateOne(
             { leadKey: lead.leadKey },
@@ -224,6 +225,7 @@ export async function POST(req: Request) {
                 intel,
                 scores,
                 opportunities,
+                ...(email ? { email } : {}),
                 lastAnalyzedAt: now,
                 updatedAt: now,
               },

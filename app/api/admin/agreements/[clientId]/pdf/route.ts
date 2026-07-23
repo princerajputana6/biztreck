@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import PDFDocument from "pdfkit";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { getDb, ObjectId } from "@/lib/mongodb";
 import { agreementClauses, computeInvoiceTotals } from "@/lib/admin-operations";
 
@@ -259,7 +259,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("clients"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const { clientId } = await params;

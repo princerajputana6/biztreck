@@ -1,5 +1,5 @@
-import { notFound, redirect } from "next/navigation";
-import { isAdmin } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { requireView } from "@/lib/auth";
 import { getLeadByKey } from "@/lib/leados/db";
 import LeadProfileClient from "./LeadProfileClient";
 
@@ -11,7 +11,7 @@ export default async function LeadProfilePage({
 }: {
   params: Promise<{ leadKey: string }>;
 }) {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await requireView("leados");
   const { leadKey } = await params;
   const lead = await getLeadByKey(decodeURIComponent(leadKey));
   if (!lead) notFound();

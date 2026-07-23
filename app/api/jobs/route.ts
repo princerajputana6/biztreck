@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("content"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   try {

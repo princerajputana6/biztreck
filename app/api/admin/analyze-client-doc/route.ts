@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { analyzeClientDocument } from "@/lib/groq";
 import mammoth from "mammoth";
 
@@ -83,7 +83,7 @@ async function extractTextFromRequest(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("clients"))) {
     return NextResponse.json(
       { ok: false, error: "Unauthorized" },
       { status: 401 }

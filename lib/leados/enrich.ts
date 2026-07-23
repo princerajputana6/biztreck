@@ -5,6 +5,7 @@
 import { analyzeWebsite } from "./website-analysis";
 import { deriveIntel } from "./intelligence";
 import { deriveOpportunities, scoreLead } from "./scoring";
+import { findEmailForDomain } from "./hunter";
 import type { Lead } from "./types";
 
 export async function enrichLead(lead: Lead) {
@@ -14,5 +15,7 @@ export async function enrichLead(lead: Lead) {
   const scored: Lead = { ...withAnalysis, intel };
   const scores = scoreLead(scored);
   const opportunities = deriveOpportunities(scored);
-  return { analysis, intel, scores, opportunities };
+  // Only look up an email when the lead doesn't already have one.
+  const email = !lead.email && lead.domain ? await findEmailForDomain(lead.domain) : "";
+  return { analysis, intel, scores, opportunities, ...(email ? { email } : {}) };
 }

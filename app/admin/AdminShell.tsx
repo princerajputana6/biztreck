@@ -18,7 +18,10 @@ import {
   Megaphone,
   MessageSquare,
   PlusCircle,
+  Mic,
+  Plug,
   ReceiptText,
+  ShieldCheck,
   Sparkles,
   Trash2,
   UserPlus,
@@ -30,6 +33,10 @@ import {
 import Logo from "@/components/Logo";
 import { FormEvent, useMemo, useState } from "react";
 import LeadOSView from "./leados/LeadOSView";
+import UsersView from "./users/UsersView";
+import AssistantView from "./assistant/AssistantView";
+import IntegrationsView from "./integrations/IntegrationsView";
+import { can, type Session } from "@/lib/rbac";
 
 type AnyDoc = Record<string, any>;
 
@@ -47,6 +54,7 @@ type Stats = {
   hiring: AnyDoc[];
   socialTasks: AnyDoc[];
   expenses: AnyDoc[];
+  session: Session;
 };
 
 type AdminView =
@@ -58,7 +66,10 @@ type AdminView =
   | "people"
   | "team"
   | "content"
-  | "submissions";
+  | "submissions"
+  | "assistant"
+  | "integrations"
+  | "users";
 
 type AutoState = {
   busy: boolean;
@@ -122,6 +133,7 @@ export default function AdminShell(props: Stats) {
     expenses,
   } = props;
   const view = props.view || "dashboard";
+  const session = props.session;
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [operationBusy, setOperationBusy] = useState<string | null>(null);
@@ -445,6 +457,7 @@ export default function AdminShell(props: Stats) {
 
   const navItems: { href: string; label: string; icon: any; view: AdminView }[] = [
     { href: "/admin", label: "Dashboard", icon: Building2, view: "dashboard" },
+    { href: "/admin/assistant", label: "AI Assistant", icon: Mic, view: "assistant" },
     { href: "/admin/ai-publishing", label: "AI publishing", icon: Sparkles, view: "ai-publishing" },
     { href: "/admin/leados", label: "LeadOS", icon: Target, view: "leados" },
     { href: "/admin/clients", label: "Clients & docs", icon: FileSignature, view: "clients" },
@@ -453,7 +466,11 @@ export default function AdminShell(props: Stats) {
     { href: "/admin/team", label: "Team", icon: UserPlus, view: "team" },
     { href: "/admin/content", label: "Content", icon: FileText, view: "content" },
     { href: "/admin/submissions", label: "Submissions", icon: Mail, view: "submissions" },
+    { href: "/admin/integrations", label: "Integrations", icon: Plug, view: "integrations" },
+    { href: "/admin/users", label: "Users & access", icon: ShieldCheck, view: "users" },
   ];
+  // Only show modules this session is permitted to open.
+  const visibleNav = navItems.filter((item) => can(session, item.view));
 
   const pageCopy: Record<AdminView, { title: string; description: string }> = {
     dashboard: {
@@ -492,11 +509,23 @@ export default function AdminShell(props: Stats) {
       title: "Submissions",
       description: "Track applications, inquiries, and comments.",
     },
+    assistant: {
+      title: "AI Assistant",
+      description: "Speak or type commands — the agent searches, researches, audits, and drafts outreach across LeadOS.",
+    },
+    integrations: {
+      title: "Integrations",
+      description: "Connect Google, GitHub, and social accounts to power scheduling, outreach, and more.",
+    },
+    users: {
+      title: "Users & access",
+      description: "Create team members and assign exactly which modules each can access.",
+    },
   };
 
   return (
     <div className="min-h-screen bg-navy-950 lg:flex">
-      <AdminSidebar navItems={navItems} activeView={view} logout={logout} />
+      <AdminSidebar navItems={visibleNav} activeView={view} logout={logout} session={session} />
 
       <div className="min-w-0 flex-1 lg:pl-72">
         <header className="sticky top-0 z-50 border-b border-navy-700/40 bg-navy-950/85 backdrop-blur-xl lg:hidden">
@@ -514,7 +543,7 @@ export default function AdminShell(props: Stats) {
               <LogOut size={14} /> Logout
             </button>
           </div>
-          <MobileAdminNav navItems={navItems} activeView={view} />
+          <MobileAdminNav navItems={visibleNav} activeView={view} />
         </header>
 
         <main className="mx-auto w-full max-w-[1500px] px-5 py-8 sm:px-8 lg:py-10">
@@ -943,6 +972,12 @@ export default function AdminShell(props: Stats) {
         )}
 
         {view === "leados" && <LeadOSView />}
+
+        {view === "assistant" && <AssistantView />}
+
+        {view === "integrations" && <IntegrationsView />}
+
+        {view === "users" && <UsersView session={session} />}
 
         {view === "people" && (() => {
           const activeEmployees = employees.filter((e) => e.status !== "inactive");
@@ -1482,10 +1517,12 @@ function AdminSidebar({
   navItems,
   activeView,
   logout,
+  session,
 }: {
   navItems: { href: string; label: string; icon: any; view: AdminView }[];
   activeView: AdminView;
   logout: () => void;
+  session: Session;
 }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-50 w-72 border-r border-navy-700/45 bg-navy-950/95 px-4 py-5 backdrop-blur-xl max-lg:hidden lg:flex lg:flex-col">
@@ -1515,6 +1552,15 @@ function AdminSidebar({
       </nav>
 
       <div className="space-y-3 border-t border-navy-700/40 pt-4">
+        <div className="flex items-center gap-2 px-3 py-1 text-xs text-slate-400">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent-cyan/15 text-[11px] font-bold uppercase text-accent-cyan">
+            {(session.name || session.email).slice(0, 2)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-slate-200">{session.name || session.email}</span>
+            <span className="capitalize text-slate-500">{session.role}</span>
+          </span>
+        </div>
         <Link
           href="/"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-navy-800/70 hover:text-white"

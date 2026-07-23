@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
+import type { Permission } from "@/lib/rbac";
 import {
   buildAgreementMarkdown,
   buildInvoiceMarkdown,
@@ -19,23 +20,41 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-async function requireAdmin() {
-  if (!(await isAdmin())) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-  return null;
-}
+// Which module each operation belongs to, so a member can only run the ones
+// they've been granted.
+const ACTION_PERM: Record<string, Permission> = {
+  "create-client": "clients",
+  "update-client": "clients",
+  "delete-client": "clients",
+  "delete-document": "clients",
+  "update-milestone-status": "clients",
+  "update-client-discount": "clients",
+  "add-client-payment": "clients",
+  "generate-client-invoice": "clients",
+  "update-invoice-status": "invoices",
+  "add-employee": "people",
+  "add-hiring": "people",
+  "add-social-task": "people",
+  "add-expense": "people",
+};
 
 export async function POST(req: Request) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  let data: any;
+  try {
+    data = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
+  }
+  const action = String(data?.action || "");
+  const perm = ACTION_PERM[action];
+  if (!perm) {
+    return NextResponse.json({ ok: false, error: "Unknown action" }, { status: 400 });
+  }
+  if (!(await guardPermission(perm))) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
 
   try {
-    const data = await req.json();
-    const action = String(data?.action || "");
     const db = await getDb();
     const now = new Date();
 

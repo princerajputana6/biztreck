@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/auth";
+import { guardPermission } from "@/lib/auth";
 import { generateBlog, coverImageUrl } from "@/lib/groq";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  if (!(await isAdmin())) {
+  if (!(await guardPermission("ai-publishing"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   try {
