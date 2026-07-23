@@ -4,15 +4,10 @@
 
 export type Permission =
   | "dashboard"
-  | "assistant"
   | "leados"
   | "clients"
-  | "invoices"
-  | "ai-publishing"
   | "content"
-  | "people"
   | "team"
-  | "submissions"
   | "integrations"
   | "users";
 
@@ -37,15 +32,10 @@ export const PERMISSIONS: {
   desc: string;
 }[] = [
   { key: "dashboard", label: "Dashboard", path: "/admin", desc: "Company overview & stats" },
-  { key: "assistant", label: "AI Assistant", path: "/admin/assistant", desc: "Voice-driven agent over LeadOS" },
-  { key: "leados", label: "LeadOS", path: "/admin/leados", desc: "Lead generation, audits & outreach" },
-  { key: "clients", label: "Clients & docs", path: "/admin/clients", desc: "Clients, agreements & milestones" },
-  { key: "invoices", label: "Invoices", path: "/admin/invoices", desc: "Invoices & payments" },
-  { key: "ai-publishing", label: "AI publishing", path: "/admin/ai-publishing", desc: "Generate blogs & job posts" },
-  { key: "content", label: "Content", path: "/admin/content", desc: "Manage published posts & roles" },
-  { key: "people", label: "People ops", path: "/admin/people", desc: "Employees, hiring, expenses" },
-  { key: "team", label: "Team", path: "/admin/team", desc: "Team overview" },
-  { key: "submissions", label: "Submissions", path: "/admin/submissions", desc: "Applications & inquiries" },
+  { key: "leados", label: "LeadOS", path: "/admin/leados", desc: "Lead generation, audits & outreach — Shadow assistant for owners" },
+  { key: "clients", label: "Clients & billing", path: "/admin/clients", desc: "Clients, agreements, milestones, invoices & payments" },
+  { key: "content", label: "Content", path: "/admin/content", desc: "Generate & manage published posts and roles" },
+  { key: "team", label: "Team", path: "/admin/team", desc: "Employees, hiring, job posts, submissions & expenses" },
   { key: "integrations", label: "Integrations", path: "/admin/integrations", desc: "Connect Google, GitHub, social accounts" },
   { key: "users", label: "Users & access", path: "/admin/users", desc: "Create users, assign permissions" },
 ];
@@ -55,9 +45,9 @@ export const ALL_PERMISSIONS: Permission[] = PERMISSIONS.map((p) => p.key);
 /** Quick-assign templates the admin can pick when creating a user. */
 export const PRESETS: { name: string; permissions: Permission[] }[] = [
   { name: "Full access", permissions: ALL_PERMISSIONS },
-  { name: "Marketing", permissions: ["dashboard", "assistant", "leados", "clients", "content", "submissions"] },
-  { name: "Sales", permissions: ["dashboard", "assistant", "leados", "clients"] },
-  { name: "Finance", permissions: ["dashboard", "clients", "invoices"] },
+  { name: "Marketing", permissions: ["dashboard", "leados", "clients", "content"] },
+  { name: "Sales", permissions: ["dashboard", "leados", "clients"] },
+  { name: "Finance", permissions: ["dashboard", "clients"] },
 ];
 
 export function can(session: Session | null | undefined, perm: Permission): boolean {

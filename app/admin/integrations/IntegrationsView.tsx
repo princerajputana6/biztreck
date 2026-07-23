@@ -8,9 +8,9 @@ type Status = Record<
   { connected: boolean; updatedAt: string | null; fields: string[]; email: string | null }
 >;
 
-export default function IntegrationsView() {
-  const [status, setStatus] = useState<Status>({});
-  const [loading, setLoading] = useState(true);
+export default function IntegrationsView({ initialStatus }: { initialStatus?: Status }) {
+  const [status, setStatus] = useState<Status>(initialStatus || {});
+  const [loading, setLoading] = useState(!initialStatus);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; msg: string } | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -28,7 +28,9 @@ export default function IntegrationsView() {
   }, []);
 
   useEffect(() => {
-    load();
+    // Already have SSR-fetched data for first paint — skip the redundant refetch.
+    if (!initialStatus) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
   // Show a notice after the Google OAuth redirect lands back here, then

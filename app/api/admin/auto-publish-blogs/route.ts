@@ -17,7 +17,7 @@ const MAX_COUNT = 10;
  * Body (optional): { count?: number }
  */
 export async function POST(req: Request) {
-  if (!(await guardPermission("ai-publishing"))) {
+  if (!(await guardPermission("content"))) {
     return NextResponse.json(
       { ok: false, error: "Unauthorized" },
       { status: 401 }

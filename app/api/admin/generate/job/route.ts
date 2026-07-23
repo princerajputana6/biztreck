@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  if (!(await guardPermission("ai-publishing"))) {
+  if (!(await guardPermission("content"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   try {

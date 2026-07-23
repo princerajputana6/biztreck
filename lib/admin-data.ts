@@ -4,6 +4,7 @@ import type { Db } from "mongodb";
 export type AdminData = {
   blogs: any[];
   jobs: any[];
+  applications: any[];
   applicationsCount: number;
   contactsCount: number;
   commentsCount: number;
@@ -14,19 +15,16 @@ export type AdminData = {
   hiring: any[];
   socialTasks: any[];
   expenses: any[];
+  users: any[];
+  integrationsStatus: Record<string, { connected: boolean; updatedAt: string | null; fields: string[]; email: string | null }>;
 };
 
 export type AdminView =
   | "dashboard"
-  | "assistant"
-  | "ai-publishing"
   | "clients"
-  | "invoices"
   | "leados"
-  | "people"
   | "team"
   | "content"
-  | "submissions"
   | "integrations"
   | "users";
 
@@ -48,6 +46,7 @@ function serializeAdminValue(value: any): any {
 const EMPTY: AdminData = {
   blogs: [],
   jobs: [],
+  applications: [],
   applicationsCount: 0,
   contactsCount: 0,
   commentsCount: 0,
@@ -58,7 +57,34 @@ const EMPTY: AdminData = {
   hiring: [],
   socialTasks: [],
   expenses: [],
+  users: [],
+  integrationsStatus: {},
 };
+
+function publicUser(u: any) {
+  return {
+    email: u.email,
+    name: u.name || "",
+    role: u.role === "owner" ? "owner" : u.role || (u.permissions ? "member" : "owner"),
+    permissions: Array.isArray(u.permissions) ? u.permissions : [],
+    active: u.active !== false,
+    createdAt: u.createdAt || null,
+  };
+}
+
+async function integrationsStatusQuery(db: Db) {
+  const docs = await db.collection("integrations").find({}).toArray();
+  const status: AdminData["integrationsStatus"] = {};
+  for (const d of docs) {
+    status[d.provider] = {
+      connected: Boolean(d.connected),
+      updatedAt: d.updatedAt || null,
+      fields: d.config ? Object.keys(d.config).filter((k) => d.config[k]) : [],
+      email: d.email || null,
+    };
+  }
+  return status;
+}
 
 // One query per data slice. Each admin view only pulls the slices it renders, so
 // navigating between tabs doesn't re-fetch the entire dataset every time.
@@ -70,6 +96,7 @@ const QUERIES: Record<keyof AdminData, (db: Db) => Promise<any>> = {
       .sort({ createdAt: -1 })
       .toArray(),
   jobs: (db) => db.collection("jobs").find({}).sort({ createdAt: -1 }).toArray(),
+  applications: (db) => db.collection("applications").find({}).sort({ createdAt: -1 }).limit(50).toArray(),
   applicationsCount: (db) => db.collection("applications").countDocuments(),
   contactsCount: (db) => db.collection("contacts").countDocuments(),
   commentsCount: (db) => db.collection("comments").countDocuments(),
@@ -88,10 +115,18 @@ const QUERIES: Record<keyof AdminData, (db: Db) => Promise<any>> = {
   socialTasks: (db) =>
     db.collection("social_tasks").find({}).sort({ createdAt: -1 }).limit(80).toArray(),
   expenses: (db) => db.collection("expenses").find({}).sort({ createdAt: -1 }).limit(120).toArray(),
+  users: (db) =>
+    db
+      .collection("admin_users")
+      .find({}, { projection: { passwordHash: 0 } })
+      .sort({ createdAt: -1 })
+      .toArray()
+      .then((docs) => docs.map(publicUser)),
+  integrationsStatus: (db) => integrationsStatusQuery(db),
 };
 
 // The exact slices each view reads. Views not listed here (or with no DB reads,
-// like "ai-publishing" and "people") fetch nothing.
+// like "leados", which fetches its own data client-side) get nothing.
 const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
   dashboard: [
     "blogs",
@@ -103,17 +138,12 @@ const VIEW_NEEDS: Record<AdminView, (keyof AdminData)[]> = {
     "contactsCount",
     "commentsCount",
   ],
-  "ai-publishing": [],
-  clients: ["clients", "documents"],
-  invoices: ["invoices", "clients"],
-  people: ["employees", "hiring", "socialTasks", "expenses"],
+  clients: ["clients", "documents", "invoices"],
   leados: [],
-  team: ["employees", "hiring", "socialTasks"],
+  team: ["employees", "hiring", "socialTasks", "expenses", "applications", "contactsCount", "commentsCount"],
   content: ["blogs", "jobs"],
-  submissions: ["applicationsCount", "contactsCount", "commentsCount"],
-  assistant: [],
-  integrations: [],
-  users: [],
+  integrations: ["integrationsStatus"],
+  users: ["users"],
 };
 
 /**
@@ -129,7 +159,8 @@ export async function loadAdminData(view: AdminView = "dashboard"): Promise<Admi
     await Promise.all(
       needs.map(async (key) => {
         const raw = await QUERIES[key](db);
-        (out as any)[key] = typeof raw === "number" ? raw : (raw as any[]).map(serializeAdminValue);
+        (out as any)[key] =
+          typeof raw === "number" ? raw : Array.isArray(raw) ? raw.map(serializeAdminValue) : serializeAdminValue(raw);
       })
     );
     return out;

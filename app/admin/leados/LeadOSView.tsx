@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Bot,
   Check,
   Columns3,
   Copy,
@@ -32,6 +34,16 @@ import {
   resolveChannel,
   type ChannelKey,
 } from "@/lib/leados/channel";
+import type { Session } from "@/lib/rbac";
+
+const ShadowAssistant = dynamic(() => import("./ShadowAssistant"), {
+  ssr: false,
+  loading: () => (
+    <div className="mt-8 flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+      <Loader2 size={16} className="animate-spin" /> Loading Shadow…
+    </div>
+  ),
+});
 
 const CHANNEL_ICON: Record<ChannelKey, typeof Mail> = {
   email: Mail,
@@ -134,7 +146,7 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-export default function LeadOSView() {
+export default function LeadOSView({ session }: { session: Session }) {
   const [leads, setLeads] = useState<AnyDoc[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -150,7 +162,7 @@ export default function LeadOSView() {
   const [country, setCountry] = useState("");
   const [flags, setFlags] = useState<Record<string, boolean>>({});
 
-  const [view, setView] = useState<"list" | "board">("list");
+  const [view, setView] = useState<"list" | "board" | "shadow">("list");
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
@@ -501,11 +513,24 @@ export default function LeadOSView() {
           >
             <Columns3 size={15} /> Board
           </button>
+          {session.role === "owner" && (
+            <button
+              type="button"
+              onClick={() => setView("shadow")}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
+                view === "shadow" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Bot size={15} /> Shadow
+            </button>
+          )}
         </div>
       </div>
 
       {/* Lead list */}
-      {loading ? (
+      {view === "shadow" ? (
+        <ShadowAssistant />
+      ) : loading ? (
         <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
           <Loader2 size={16} className="animate-spin" /> Loading leads…
         </div>

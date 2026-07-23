@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { guardPermission } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { complete, hasLLM } from "@/lib/groq";
 import { runApifyScraper, normalizePlaces } from "@/lib/scraper";
 import {
@@ -61,8 +61,8 @@ async function planTurn(messages: { role: string; content: string }[]): Promise<
     hour12: false,
   }).format(new Date());
   const system =
-    "You are Biztreck's LeadOS voice assistant. You help the user find, research, audit, and " +
-    "reach out to B2B leads by calling tools. Decide ONE tool call per turn, or none if the user " +
+    "You are Shadow, Biztreck's LeadOS voice assistant. You help the owner find, research, audit, " +
+    "and reach out to B2B leads by calling tools. Decide ONE tool call per turn, or none if the user " +
     "is just chatting. Keep replies short and natural — they are spoken aloud.\n\n" +
     `Current local date/time: ${localNow}, timezone ${defaultTz}. Use this as "today"/"now" for resolving ` +
     `relative dates. Use timezone ${defaultTz} unless the user names another.\n\n` +
@@ -337,13 +337,15 @@ async function execute(name: string, args: any): Promise<{ speak: string; data?:
 }
 
 export async function POST(req: Request) {
-  if (!(await guardPermission("assistant"))) {
+  // Shadow lives inside LeadOS but is owner-only — there's no standalone permission for it.
+  const session = await getSession();
+  if (!session || session.role !== "owner") {
     return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
   if (!hasLLM()) {
     return NextResponse.json({
       ok: true,
-      reply: "The assistant needs an OpenRouter key (OPEN_ROUTE_API_KEY) configured to understand commands.",
+      reply: "Shadow needs an OpenRouter key (OPEN_ROUTE_API_KEY) configured to understand commands.",
     });
   }
 

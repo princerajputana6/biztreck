@@ -35,11 +35,17 @@ const empty = {
   permissions: new Set<Permission>(),
 };
 
-export default function UsersView({ session }: { session: Session }) {
+export default function UsersView({
+  session,
+  initialUsers,
+}: {
+  session: Session;
+  initialUsers?: AnyUser[];
+}) {
   const isOwner = session.role === "owner";
-  const [users, setUsers] = useState<AnyUser[]>([]);
-  const [me, setMe] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<AnyUser[]>(initialUsers || []);
+  const [me, setMe] = useState(session.email);
+  const [loading, setLoading] = useState(!initialUsers);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; msg: string } | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -61,7 +67,9 @@ export default function UsersView({ session }: { session: Session }) {
   }, []);
 
   useEffect(() => {
-    load();
+    // Already have SSR-fetched data for first paint — skip the redundant refetch.
+    if (!initialUsers) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
   const resetForm = () => {

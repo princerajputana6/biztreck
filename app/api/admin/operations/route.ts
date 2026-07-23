@@ -31,11 +31,13 @@ const ACTION_PERM: Record<string, Permission> = {
   "update-client-discount": "clients",
   "add-client-payment": "clients",
   "generate-client-invoice": "clients",
-  "update-invoice-status": "invoices",
-  "add-employee": "people",
-  "add-hiring": "people",
-  "add-social-task": "people",
-  "add-expense": "people",
+  "update-invoice-status": "clients",
+  "add-employee": "team",
+  "update-employee": "team",
+  "delete-employee": "team",
+  "add-hiring": "team",
+  "add-social-task": "team",
+  "add-expense": "team",
 };
 
 export async function POST(req: Request) {
@@ -491,6 +493,19 @@ export async function POST(req: Request) {
         createdAt: now,
         updatedAt: now,
       });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === "update-employee") {
+      await db.collection("employees").updateOne(
+        { _id: toObjectId(data.employeeId) },
+        { $set: { status: String(data.status || "active"), updatedAt: now } }
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === "delete-employee") {
+      await db.collection("employees").deleteOne({ _id: toObjectId(data.employeeId) });
       return NextResponse.json({ ok: true });
     }
 

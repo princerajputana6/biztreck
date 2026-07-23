@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   Banknote,
@@ -16,9 +17,7 @@ import {
   LogOut,
   Mail,
   Megaphone,
-  MessageSquare,
   PlusCircle,
-  Mic,
   Plug,
   ReceiptText,
   ShieldCheck,
@@ -32,11 +31,25 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { FormEvent, useMemo, useState } from "react";
-import LeadOSView from "./leados/LeadOSView";
-import UsersView from "./users/UsersView";
-import AssistantView from "./assistant/AssistantView";
-import IntegrationsView from "./integrations/IntegrationsView";
 import { can, type Session } from "@/lib/rbac";
+
+const LeadOSView = dynamic(() => import("./leados/LeadOSView"), {
+  loading: () => <ViewSkeleton />,
+});
+const UsersView = dynamic(() => import("./users/UsersView"), {
+  loading: () => <ViewSkeleton />,
+});
+const IntegrationsView = dynamic(() => import("./integrations/IntegrationsView"), {
+  loading: () => <ViewSkeleton />,
+});
+
+function ViewSkeleton() {
+  return (
+    <div className="mt-8 flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+      <Loader2 size={16} className="animate-spin" /> Loading…
+    </div>
+  );
+}
 
 type AnyDoc = Record<string, any>;
 
@@ -44,6 +57,7 @@ type Stats = {
   view?: AdminView;
   blogs: AnyDoc[];
   jobs: AnyDoc[];
+  applications: AnyDoc[];
   applicationsCount: number;
   contactsCount: number;
   commentsCount: number;
@@ -54,20 +68,17 @@ type Stats = {
   hiring: AnyDoc[];
   socialTasks: AnyDoc[];
   expenses: AnyDoc[];
+  users: AnyDoc[];
+  integrationsStatus: Record<string, { connected: boolean; updatedAt: string | null; fields: string[]; email: string | null }>;
   session: Session;
 };
 
 type AdminView =
   | "dashboard"
-  | "ai-publishing"
   | "clients"
-  | "invoices"
   | "leados"
-  | "people"
   | "team"
   | "content"
-  | "submissions"
-  | "assistant"
   | "integrations"
   | "users";
 
@@ -121,6 +132,7 @@ export default function AdminShell(props: Stats) {
   const {
     blogs,
     jobs,
+    applications,
     applicationsCount,
     contactsCount,
     commentsCount,
@@ -131,6 +143,8 @@ export default function AdminShell(props: Stats) {
     hiring,
     socialTasks,
     expenses,
+    users,
+    integrationsStatus,
   } = props;
   const view = props.view || "dashboard";
   const session = props.session;
@@ -143,12 +157,13 @@ export default function AdminShell(props: Stats) {
   const [milestonesText, setMilestonesText] = useState("");
   const [brdText, setBrdText] = useState("");
   const [showClientForm, setShowClientForm] = useState(false);
+  const [clientsTab, setClientsTab] = useState<"roster" | "billing">("roster");
   const [editingClient, setEditingClient] = useState<AnyDoc | null>(null);
   const [selectedClient, setSelectedClient] = useState<AnyDoc | null>(null);
-  const [peopleTab, setPeopleTab] = useState<
-    "employees" | "hiring" | "social" | "expenses"
-  >("employees");
-  const [peopleFormOpen, setPeopleFormOpen] = useState(false);
+  const [teamTab, setTeamTab] = useState<
+    "dashboard" | "employees" | "hiring" | "submissions" | "social" | "expenses"
+  >("dashboard");
+  const [teamFormOpen, setTeamFormOpen] = useState(false);
 
   const finance = useMemo(() => {
     const invoiceTotal = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
@@ -272,15 +287,32 @@ export default function AdminShell(props: Stats) {
     }
   };
 
-  // Submit a People-ops form, then collapse the add panel on success.
-  const submitPeople = async (
+  // Submit a Team form, then collapse the add panel on success.
+  const submitTeam = async (
     key: string,
     payload: AnyDoc,
     success: string,
     form: HTMLFormElement
   ) => {
     const ok = await submitOperation(key, payload, success, form);
-    if (ok) setPeopleFormOpen(false);
+    if (ok) setTeamFormOpen(false);
+  };
+
+  const updateEmployeeStatus = async (employee: AnyDoc, status: string) => {
+    await submitOperation(
+      `employee-status-${employee._id}`,
+      { action: "update-employee", employeeId: employee._id, status },
+      "Employee updated."
+    );
+  };
+
+  const deleteEmployee = async (employee: AnyDoc) => {
+    if (!confirm(`Remove ${employee.name} from the team?`)) return;
+    await submitOperation(
+      `delete-employee-${employee._id}`,
+      { action: "delete-employee", employeeId: employee._id },
+      "Employee removed."
+    );
   };
 
   const createClient = async (event: FormEvent<HTMLFormElement>) => {
@@ -457,15 +489,10 @@ export default function AdminShell(props: Stats) {
 
   const navItems: { href: string; label: string; icon: any; view: AdminView }[] = [
     { href: "/admin", label: "Dashboard", icon: Building2, view: "dashboard" },
-    { href: "/admin/assistant", label: "AI Assistant", icon: Mic, view: "assistant" },
-    { href: "/admin/ai-publishing", label: "AI publishing", icon: Sparkles, view: "ai-publishing" },
     { href: "/admin/leados", label: "LeadOS", icon: Target, view: "leados" },
-    { href: "/admin/clients", label: "Clients & docs", icon: FileSignature, view: "clients" },
-    { href: "/admin/invoices", label: "Payment & Invoice", icon: ReceiptText, view: "invoices" },
-    { href: "/admin/people", label: "People ops", icon: Users, view: "people" },
-    { href: "/admin/team", label: "Team", icon: UserPlus, view: "team" },
+    { href: "/admin/clients", label: "Clients & billing", icon: FileSignature, view: "clients" },
     { href: "/admin/content", label: "Content", icon: FileText, view: "content" },
-    { href: "/admin/submissions", label: "Submissions", icon: Mail, view: "submissions" },
+    { href: "/admin/team", label: "Team", icon: Users, view: "team" },
     { href: "/admin/integrations", label: "Integrations", icon: Plug, view: "integrations" },
     { href: "/admin/users", label: "Users & access", icon: ShieldCheck, view: "users" },
   ];
@@ -477,41 +504,21 @@ export default function AdminShell(props: Stats) {
       title: "Company dashboard",
       description: "A quick view of company stats and recent activity.",
     },
-    "ai-publishing": {
-      title: "AI publishing",
-      description: "Generate blogs and job posts manually, while daily blog cron keeps running.",
-    },
     clients: {
-      title: "Clients and documents",
-      description: "Add clients, generate agreements from BRDs, and review generated documents.",
+      title: "Clients & billing",
+      description: "Add clients, generate agreements, record payments, and manage invoices — all in one place.",
     },
     leados: {
       title: "LeadOS",
-      description: "Find, analyse, score and work international B2B leads.",
-    },
-    invoices: {
-      title: "Payment & Invoice",
-      description: "Pick a client to record payments and generate invoices, then download the branded PDF.",
-    },
-    people: {
-      title: "People operations",
-      description: "Add employees, hiring items, social tasks, and company expenses.",
+      description: "Find, analyse, score and work international B2B leads. Owners get Shadow, the voice assistant.",
     },
     team: {
-      title: "Team overview",
-      description: "Review employees, hiring pipeline, and social work at a glance.",
+      title: "Team",
+      description: "Employees, hiring, job posts, submissions, social, and expenses — the whole team in one place.",
     },
     content: {
       title: "Content",
-      description: "Manage published blogs and open roles.",
-    },
-    submissions: {
-      title: "Submissions",
-      description: "Track applications, inquiries, and comments.",
-    },
-    assistant: {
-      title: "AI Assistant",
-      description: "Speak or type commands — the agent searches, researches, audits, and drafts outreach across LeadOS.",
+      description: "Generate and manage published blogs and open roles.",
     },
     integrations: {
       title: "Integrations",
@@ -633,59 +640,6 @@ export default function AdminShell(props: Stats) {
           </>
         )}
 
-        {view === "ai-publishing" && (
-        <section
-          id="ai-publishing"
-          className="mb-8 scroll-mt-28 rounded-xl border border-navy-700/40 bg-navy-900/35 p-5 lg:scroll-mt-8"
-        >
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-xl font-bold text-white">AI publishing</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Vercel cron calls /api/cron/generate-blogs daily at 00:30 UTC.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/admin/blogs/new" className="btn-primary shine inline-flex items-center gap-2">
-                <PlusCircle size={16} /> Generate blog
-              </Link>
-              <button
-                type="button"
-                onClick={autoPublishBlogs}
-                disabled={autoBlogs.busy}
-                className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {autoBlogs.busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                Auto-publish 5 blogs
-              </button>
-              <Link href="/admin/jobs/new" className="btn-ghost inline-flex items-center gap-2">
-                <PlusCircle size={16} /> Generate job
-              </Link>
-              <button
-                type="button"
-                onClick={autoPublishJobs}
-                disabled={autoJobs.busy}
-                className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {autoJobs.busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                Auto-publish 3 roles
-              </button>
-            </div>
-          </div>
-          {(autoBlogs.result || autoJobs.result) && (
-            <div className="space-y-3">
-              {autoBlogs.result && (
-                <AutoResultBanner result={autoBlogs.result} hrefBuilder={(slug) => `/blog/${slug}`} />
-              )}
-              {autoJobs.result && (
-                <AutoResultBanner result={autoJobs.result} hrefBuilder={(slug) => `/careers/${slug}`} />
-              )}
-            </div>
-          )}
-        </section>
-        )}
-
-
         {notice && (
           <div
             className={`mb-8 rounded-xl border px-5 py-4 text-sm ${
@@ -699,7 +653,17 @@ export default function AdminShell(props: Stats) {
         )}
 
         {view === "clients" && (
-          <>
+          <div className="mt-2">
+            <TabBar
+              tabs={[
+                { key: "roster", label: "Clients", icon: FileSignature },
+                { key: "billing", label: "Billing", icon: ReceiptText },
+              ]}
+              active={clientsTab}
+              onChange={setClientsTab}
+            />
+            {clientsTab === "roster" && (
+              <div className="mt-6 space-y-6">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4">
               <p className="text-sm text-slate-400">Manage clients, documents, milestones, and milestone invoices.</p>
               <button
@@ -968,40 +932,48 @@ export default function AdminShell(props: Stats) {
                 </Panel>
               </aside>
             </div>
-          </>
+              </div>
+            )}
+            {clientsTab === "billing" && <BillingTab
+              clients={clients}
+              invoices={invoices}
+              finance={finance}
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+              operationBusy={operationBusy}
+              submitOperation={submitOperation}
+              updateClientDiscount={updateClientDiscount}
+              addClientPayment={addClientPayment}
+              generateClientInvoice={generateClientInvoice}
+              updateMilestoneStatus={updateMilestoneStatus}
+            />}
+          </div>
         )}
 
-        {view === "leados" && <LeadOSView />}
+        {view === "leados" && <LeadOSView session={session} />}
 
-        {view === "assistant" && <AssistantView />}
+        {view === "integrations" && (
+          <IntegrationsView initialStatus={integrationsStatus} />
+        )}
 
-        {view === "integrations" && <IntegrationsView />}
+        {view === "users" && <UsersView session={session} initialUsers={users as any} />}
 
-        {view === "users" && <UsersView session={session} />}
-
-        {view === "people" && (() => {
+        {view === "team" && (() => {
           const activeEmployees = employees.filter((e) => e.status !== "inactive");
           const openRoles = hiring.filter((h) => h.stage !== "closed");
           const queuedSocial = socialTasks.filter((s) => s.status !== "posted");
           const tabs = [
+            { key: "dashboard" as const, label: "Dashboard", icon: Building2, count: employees.length },
             { key: "employees" as const, label: "Employees", icon: Users, count: employees.length },
             { key: "hiring" as const, label: "Hiring", icon: UserPlus, count: hiring.length },
+            { key: "submissions" as const, label: "Submissions", icon: Mail, count: applications.length },
             { key: "social" as const, label: "Social", icon: Megaphone, count: socialTasks.length },
             { key: "expenses" as const, label: "Expenses", icon: Banknote, count: expenses.length },
           ];
-          const noun = {
-            employees: "employee",
-            hiring: "role",
-            social: "task",
-            expenses: "expense",
-          }[peopleTab];
-          const busyKey = {
-            employees: "employee",
-            hiring: "hiring",
-            social: "social",
-            expenses: "expense",
-          }[peopleTab];
-          const activeTab = tabs.find((t) => t.key === peopleTab)!;
+          const noun: Record<string, string> = { employees: "employee", hiring: "role", social: "task", expenses: "expense" };
+          const busyKeyMap: Record<string, string> = { employees: "employee", hiring: "hiring", social: "social", expenses: "expense" };
+          const canAdd = teamTab === "employees" || teamTab === "hiring" || teamTab === "social" || teamTab === "expenses";
+          const activeTab = tabs.find((t) => t.key === teamTab)!;
 
           return (
             <div className="mt-8 space-y-6">
@@ -1009,38 +981,11 @@ export default function AdminShell(props: Stats) {
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatTile icon={Users} tone="cyan" label="Team members" value={employees.length} hint={`${activeEmployees.length} active · ${money.format(finance.salaryTotal)}/mo payroll`} />
                 <StatTile icon={UserPlus} tone="violet" label="Open roles" value={openRoles.length} hint={`${hiring.length} in pipeline`} />
-                <StatTile icon={Megaphone} tone="emerald" label="Social queued" value={queuedSocial.length} hint={`${socialTasks.length} total tasks`} />
+                <StatTile icon={Mail} tone="slate" label="Applications" value={applications.length} hint={`${contactsCount} inquiries · ${commentsCount} comments`} />
                 <StatTile icon={Wallet} tone="amber" label="Monthly expenses" value={money.format(finance.expenseTotal)} hint={`${expenses.length} entries logged`} />
               </div>
 
-              {/* Segmented tab switcher */}
-              <div className="flex flex-wrap gap-1.5 rounded-xl border border-navy-700/40 bg-navy-900/40 p-1.5">
-                {tabs.map((t) => {
-                  const Icon = t.icon;
-                  const active = peopleTab === t.key;
-                  return (
-                    <button
-                      key={t.key}
-                      type="button"
-                      onClick={() => {
-                        setPeopleTab(t.key);
-                        setPeopleFormOpen(false);
-                      }}
-                      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-                        active
-                          ? "border border-accent-cyan/30 bg-accent-cyan/15 text-white"
-                          : "border border-transparent text-slate-400 hover:bg-navy-800/60 hover:text-white"
-                      }`}
-                    >
-                      <Icon size={16} className={active ? "text-accent-cyan" : "text-slate-500"} />
-                      {t.label}
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] ${active ? "bg-accent-cyan/20 text-accent-cyan" : "bg-navy-800/80 text-slate-500"}`}>
-                        {t.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              <TabBar tabs={tabs} active={teamTab} onChange={setTeamTab} />
 
               {/* Active section */}
               <div className="rounded-xl border border-navy-700/40 bg-navy-900/35 p-5">
@@ -1050,39 +995,41 @@ export default function AdminShell(props: Stats) {
                     <h2 className="font-display text-lg font-bold text-white">{activeTab.label}</h2>
                     <span className="rounded-full bg-navy-800/80 px-2 py-0.5 text-xs text-slate-400">{activeTab.count}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setPeopleFormOpen((o) => !o)}
-                    className="btn-primary inline-flex items-center gap-2 px-3.5 py-2 text-sm"
-                  >
-                    {peopleFormOpen ? <X size={15} /> : <PlusCircle size={15} />}
-                    {peopleFormOpen ? "Close" : `Add ${noun}`}
-                  </button>
+                  {canAdd && (
+                    <button
+                      type="button"
+                      onClick={() => setTeamFormOpen((o) => !o)}
+                      className="btn-primary inline-flex items-center gap-2 px-3.5 py-2 text-sm"
+                    >
+                      {teamFormOpen ? <X size={15} /> : <PlusCircle size={15} />}
+                      {teamFormOpen ? "Close" : `Add ${noun[teamTab]}`}
+                    </button>
+                  )}
                 </div>
 
                 {/* Add form (collapsed by default) */}
-                {peopleFormOpen && (
+                {canAdd && teamFormOpen && (
                   <motion.form
-                    key={peopleTab}
+                    key={teamTab}
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     onSubmit={(event) => {
                       event.preventDefault();
                       const form = event.currentTarget;
                       const data = new FormData(form);
-                      if (peopleTab === "employees") {
-                        submitPeople("employee", { action: "add-employee", name: data.get("name"), role: data.get("role"), email: data.get("email"), salaryMonthly: data.get("salaryMonthly"), status: data.get("status"), joiningDate: data.get("joiningDate") }, "Employee added.", form);
-                      } else if (peopleTab === "hiring") {
-                        submitPeople("hiring", { action: "add-hiring", title: data.get("title"), department: data.get("department"), stage: data.get("stage"), candidateName: data.get("candidateName"), notes: data.get("notes") }, "Hiring item added.", form);
-                      } else if (peopleTab === "social") {
-                        submitPeople("social", { action: "add-social-task", title: data.get("title"), channel: data.get("channel"), status: data.get("status"), scheduledFor: data.get("scheduledFor"), notes: data.get("notes") }, "Social task added.", form);
+                      if (teamTab === "employees") {
+                        submitTeam("employee", { action: "add-employee", name: data.get("name"), role: data.get("role"), email: data.get("email"), salaryMonthly: data.get("salaryMonthly"), status: data.get("status"), joiningDate: data.get("joiningDate") }, "Employee added.", form);
+                      } else if (teamTab === "hiring") {
+                        submitTeam("hiring", { action: "add-hiring", title: data.get("title"), department: data.get("department"), stage: data.get("stage"), candidateName: data.get("candidateName"), notes: data.get("notes") }, "Hiring item added.", form);
+                      } else if (teamTab === "social") {
+                        submitTeam("social", { action: "add-social-task", title: data.get("title"), channel: data.get("channel"), status: data.get("status"), scheduledFor: data.get("scheduledFor"), notes: data.get("notes") }, "Social task added.", form);
                       } else {
-                        submitPeople("expense", { action: "add-expense", title: data.get("title"), category: data.get("category"), amount: data.get("amount"), paidOn: data.get("paidOn"), recurring: data.get("recurring") === "on", notes: data.get("notes") }, "Expense added.", form);
+                        submitTeam("expense", { action: "add-expense", title: data.get("title"), category: data.get("category"), amount: data.get("amount"), paidOn: data.get("paidOn"), recurring: data.get("recurring") === "on", notes: data.get("notes") }, "Expense added.", form);
                       }
                     }}
                     className="mb-5 rounded-xl border border-accent-cyan/20 bg-navy-950/40 p-4"
                   >
-                    {peopleTab === "employees" && (
+                    {teamTab === "employees" && (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <Field name="name" label="Name" required />
                         <Field name="role" label="Role" />
@@ -1092,7 +1039,7 @@ export default function AdminShell(props: Stats) {
                         <Select name="status" label="Status" options={["active", "contract", "intern", "inactive"]} />
                       </div>
                     )}
-                    {peopleTab === "hiring" && (
+                    {teamTab === "hiring" && (
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Field name="title" label="Role title" required />
                         <Field name="department" label="Department" />
@@ -1101,7 +1048,7 @@ export default function AdminShell(props: Stats) {
                         <div className="sm:col-span-2"><Textarea name="notes" label="Notes" compact /></div>
                       </div>
                     )}
-                    {peopleTab === "social" && (
+                    {teamTab === "social" && (
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Field name="title" label="Task title" required />
                         <Select name="channel" label="Channel" options={["LinkedIn", "Instagram", "X", "YouTube", "Blog"]} />
@@ -1110,7 +1057,7 @@ export default function AdminShell(props: Stats) {
                         <div className="sm:col-span-2"><Textarea name="notes" label="Notes" compact /></div>
                       </div>
                     )}
-                    {peopleTab === "expenses" && (
+                    {teamTab === "expenses" && (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <Field name="title" label="Expense title" required />
                         <Field name="category" label="Category" />
@@ -1122,25 +1069,82 @@ export default function AdminShell(props: Stats) {
                         </label>
                       </div>
                     )}
-                    <SubmitButton busy={operationBusy === busyKey} label={`Save ${noun}`} icon={PlusCircle} compact />
+                    <SubmitButton busy={operationBusy === busyKeyMap[teamTab]} label={`Save ${noun[teamTab]}`} icon={PlusCircle} compact />
                   </motion.form>
                 )}
 
-                {/* Records */}
-                {peopleTab === "employees" && (
+                {/* Dashboard */}
+                {teamTab === "dashboard" && (
+                  <div className="grid gap-8 xl:grid-cols-2">
+                    <div>
+                      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Team</h3>
+                      <ListEmpty show={employees.length === 0} label="No employees yet." />
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {employees.slice(0, 10).map((employee) => (
+                          <RecordRow
+                            key={employee._id}
+                            title={employee.name}
+                            meta={`${employee.role || "Team"} | ${money.format(Number(employee.salaryMonthly || 0))}/mo | ${employee.status}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid gap-5">
+                      <div>
+                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Hiring</h3>
+                        <ListEmpty show={hiring.length === 0} label="No hiring items yet." />
+                        <div className="space-y-3">
+                          {hiring.slice(0, 6).map((item) => (
+                            <RecordRow key={item._id} title={item.title} meta={`${item.department || "Team"} | ${item.stage}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Social</h3>
+                        <ListEmpty show={socialTasks.length === 0} label="No social tasks yet." />
+                        <div className="space-y-3">
+                          {socialTasks.slice(0, 6).map((item) => (
+                            <RecordRow key={item._id} title={item.title} meta={`${item.channel} | ${item.status} | ${item.scheduledFor || "unscheduled"}`} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Employees */}
+                {teamTab === "employees" && (
                   <>
                     <ListEmpty show={employees.length === 0} label="No employees yet. Add your first team member." />
                     <div className="grid gap-3 md:grid-cols-2">
                       {employees.map((emp) => (
-                        <div key={emp._id} className="flex items-center gap-3 rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
-                          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-white">{initials(emp.name)}</div>
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate font-semibold text-white">{emp.name}</div>
-                            <div className="mt-0.5 truncate text-xs text-slate-400">{emp.role || "Team"}{emp.email ? ` · ${emp.email}` : ""}</div>
+                        <div key={emp._id} className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-white">{initials(emp.name)}</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-semibold text-white">{emp.name}</div>
+                              <div className="mt-0.5 truncate text-xs text-slate-400">{emp.role || "Team"}{emp.email ? ` · ${emp.email}` : ""}</div>
+                            </div>
+                            <div className="shrink-0 text-sm font-semibold text-white">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
                           </div>
-                          <div className="shrink-0 text-right">
-                            <div className="text-sm font-semibold text-white">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
-                            <div className="mt-1"><StatusBadge value={emp.status} /></div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <select
+                              value={emp.status || "active"}
+                              onChange={(e) => updateEmployeeStatus(emp, e.target.value)}
+                              className="flex-1 rounded-lg border border-navy-700/70 bg-navy-950/70 px-2 py-1.5 text-xs text-white"
+                            >
+                              {["active", "contract", "intern", "inactive"].map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => deleteEmployee(emp)}
+                              disabled={operationBusy === `delete-employee-${emp._id}`}
+                              className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs text-rose-300 disabled:opacity-60"
+                            >
+                              Remove
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -1148,8 +1152,20 @@ export default function AdminShell(props: Stats) {
                   </>
                 )}
 
-                {peopleTab === "hiring" && (
+                {/* Hiring */}
+                {teamTab === "hiring" && (
                   <>
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent-cyan/20 bg-accent-cyan/5 p-3">
+                      <p className="text-xs text-slate-400">
+                        Public job posts live in Content. {jobs.length} open role{jobs.length === 1 ? "" : "s"} published.
+                      </p>
+                      <Link
+                        href="/admin/jobs/new"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan"
+                      >
+                        <PlusCircle size={12} /> Create a job post
+                      </Link>
+                    </div>
                     <ListEmpty show={hiring.length === 0} label="No open roles yet. Add a position to track." />
                     <div className="grid gap-3 md:grid-cols-2">
                       {hiring.map((item) => (
@@ -1168,7 +1184,41 @@ export default function AdminShell(props: Stats) {
                   </>
                 )}
 
-                {peopleTab === "social" && (
+                {/* Submissions */}
+                {teamTab === "submissions" && (
+                  <>
+                    <ListEmpty show={applications.length === 0} label="No applications yet." />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {applications.map((app) => (
+                        <div key={app._id} className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate font-semibold text-white">{app.name}</div>
+                              <div className="mt-0.5 truncate text-xs text-slate-400">{app.jobTitle || "General application"}{app.email ? ` · ${app.email}` : ""}</div>
+                            </div>
+                            <StatusBadge value={app.status} />
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                            {app.phone && <span>{app.phone}</span>}
+                            <span>{dateLabel(app.createdAt)}</span>
+                          </div>
+                          {(app.resumeUrl || app.portfolio) && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {app.resumeUrl && (
+                                <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200 hover:border-accent-cyan">Resume</a>
+                              )}
+                              {app.portfolio && (
+                                <a href={app.portfolio} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200 hover:border-accent-cyan">Portfolio</a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {teamTab === "social" && (
                   <>
                     <ListEmpty show={socialTasks.length === 0} label="No social tasks yet. Plan your first post." />
                     <div className="grid gap-3 md:grid-cols-2">
@@ -1191,7 +1241,7 @@ export default function AdminShell(props: Stats) {
                   </>
                 )}
 
-                {peopleTab === "expenses" && (
+                {teamTab === "expenses" && (
                   <>
                     <ListEmpty show={expenses.length === 0} label="No expenses logged yet." />
                     <div className="grid gap-3 md:grid-cols-2">
@@ -1216,299 +1266,365 @@ export default function AdminShell(props: Stats) {
           );
         })()}
 
-        {view === "invoices" && (
-        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-          <section className="space-y-6">
-            <Panel id="payment-invoice" title="Record payment & generate invoice" icon={ReceiptText}>
-              <label className="grid gap-1 text-sm text-slate-300">
-                Select client
-                <select
-                  value={selectedClient?._id || ""}
-                  onChange={(e) =>
-                    setSelectedClient(
-                      clients.find((c) => String(c._id) === e.target.value) || null
-                    )
-                  }
-                  className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
-                >
-                  <option value="">Select a client…</option>
-                  {clients.map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {(c.company || c.name) + (c.projectName ? ` — ${c.projectName}` : "")}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {!selectedClient && (
-                <p className="mt-4 text-sm text-slate-400">
-                  Pick a client to see totals, record payments, and generate a branded invoice PDF.
+        {view === "content" && (
+        <div id="content" className="mt-8 space-y-8">
+          <section className="scroll-mt-28 rounded-xl border border-navy-700/40 bg-navy-900/35 p-5 lg:scroll-mt-8">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl font-bold text-white">Generate</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Vercel cron calls /api/cron/generate-blogs daily at 00:30 UTC.
                 </p>
-              )}
-
-              {selectedClient && (
-                <div className="mt-5 space-y-4">
-                  {(() => {
-                    const f = clientFinancials(selectedClient);
-                    const clientInvoices = invoices.filter(
-                      (inv) => String(inv.clientId) === String(selectedClient._id)
-                    );
-                    const latestInvoice = clientInvoices[0];
-                    return (
-                      <>
-                        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                          <Metric label="Total cost" value={money.format(f.gross)} />
-                          <Metric label="Discount" value={money.format(f.discount)} />
-                          <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
-                          <Metric label="Payable" value={money.format(f.net)} />
-                          <Metric label="Paid" value={money.format(f.paid)} />
-                          <Metric label="Left" value={money.format(f.left)} />
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3">
-                          <button
-                            type="button"
-                            onClick={() => generateClientInvoice(selectedClient)}
-                            disabled={operationBusy === `generate-invoice-${selectedClient._id}`}
-                            className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <ReceiptText size={16} />
-                            Generate full invoice
-                          </button>
-                          {latestInvoice && (
-                            <a
-                              href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
-                            >
-                              <Download size={14} />
-                              Download {latestInvoice.invoiceNumber}
-                            </a>
-                          )}
-                          <span className="text-xs text-slate-400">
-                            Uses the total website cost, discount, and GST from the client record.
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <form
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        updateClientDiscount(selectedClient, event.currentTarget);
-                      }}
-                      className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
-                    >
-                      <div className="mb-3 text-sm font-semibold text-white">Discount</div>
-                      <Field
-                        name="discountAmount"
-                        label="Discount amount"
-                        type="number"
-                        defaultValue={selectedClient.discountAmount || 0}
-                      />
-                      <SubmitButton
-                        busy={operationBusy === `discount-${selectedClient._id}`}
-                        label="Save discount"
-                        icon={IndianRupee}
-                        compact
-                      />
-                    </form>
-                    <form
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        addClientPayment(selectedClient, event.currentTarget);
-                      }}
-                      className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
-                    >
-                      <div className="mb-3 text-sm font-semibold text-white">Record payment</div>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Field name="amount" label="Amount received" type="number" required />
-                        <Select
-                          name="method"
-                          label="Method"
-                          options={["cash", "upi", "bank transfer", "card", "cheque", "other"]}
-                        />
-                        <Field
-                          name="receivedOn"
-                          label="Received on"
-                          type="date"
-                          defaultValue={new Date().toISOString().slice(0, 10)}
-                        />
-                        <Select
-                          name="milestoneIndex"
-                          label="Milestone"
-                          options={[
-                            "",
-                            ...(selectedClient.milestones || []).map(
-                              (m: any, i: number) => `${i}:${m.title}`
-                            ),
-                          ]}
-                        />
-                      </div>
-                      <Textarea name="note" label="Payment note" compact />
-                      <SubmitButton
-                        busy={operationBusy === `payment-${selectedClient._id}`}
-                        label="Record payment"
-                        icon={Banknote}
-                        compact
-                      />
-                    </form>
-                  </div>
-
-                  <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
-                    <div className="mb-3 text-sm font-semibold text-white">Payment history</div>
-                    <ListEmpty
-                      show={!selectedClient.payments?.length}
-                      label="No payments recorded yet."
-                    />
-                    <div className="space-y-2">
-                      {selectedClient.payments?.map((payment: any, index: number) => (
-                        <div
-                          key={`${payment.createdAt || payment.receivedOn}-${index}`}
-                          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-300"
-                        >
-                          <span>{money.format(Number(payment.amount || 0))}</span>
-                          <span>{payment.method || "payment"}</span>
-                          <span>{payment.receivedOn || dateLabel(payment.createdAt)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="text-sm font-semibold text-white">Milestone invoices</div>
-                    <ListEmpty show={!selectedClient.milestones?.length} label="No milestones saved." />
-                    {selectedClient.milestones?.map((m: any, index: number) => (
-                      <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
-                        <div className="font-semibold text-white">{m.title}</div>
-                        <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "completed")} disabled={Boolean(m.invoiceId)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:cursor-not-allowed disabled:opacity-50">Complete & generate invoice</button>
-                          <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "paid")} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">Mark paid</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </Panel>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/admin/blogs/new" className="btn-primary shine inline-flex items-center gap-2">
+                  <PlusCircle size={16} /> Generate blog
+                </Link>
+                <button
+                  type="button"
+                  onClick={autoPublishBlogs}
+                  disabled={autoBlogs.busy}
+                  className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {autoBlogs.busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  Auto-publish 5 blogs
+                </button>
+                <Link href="/admin/jobs/new" className="btn-ghost inline-flex items-center gap-2">
+                  <PlusCircle size={16} /> Generate job
+                </Link>
+                <button
+                  type="button"
+                  onClick={autoPublishJobs}
+                  disabled={autoJobs.busy}
+                  className="btn-ghost inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {autoJobs.busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  Auto-publish 3 roles
+                </button>
+              </div>
+            </div>
+            {(autoBlogs.result || autoJobs.result) && (
+              <div className="space-y-3">
+                {autoBlogs.result && (
+                  <AutoResultBanner result={autoBlogs.result} hrefBuilder={(slug) => `/blog/${slug}`} />
+                )}
+                {autoJobs.result && (
+                  <AutoResultBanner result={autoJobs.result} hrefBuilder={(slug) => `/careers/${slug}`} />
+                )}
+              </div>
+            )}
           </section>
 
-          <aside className="space-y-8">
-            <Panel id="invoices" title="All invoices" icon={ReceiptText}>
-              <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
-                <Metric label="Total raised" value={money.format(finance.invoiceTotal)} />
-                <Metric label="Paid" value={money.format(finance.paidTotal)} />
-              </div>
-              <ListEmpty show={invoices.length === 0} label="No invoices yet." />
-              <div className="space-y-3">
-                {invoices.slice(0, 12).map((invoice) => (
-                  <div key={invoice._id} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate font-semibold text-white">{invoice.invoiceNumber}</div>
-                        <div className="mt-1 text-xs text-slate-400">
-                          {invoice.clientCompany || invoice.clientName} | {invoice.type === "project" ? "Full project invoice" : invoice.milestoneTitle}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
-                      </div>
-                      <a
-                        href={`/api/admin/invoices/${invoice._id}/pdf`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
-                        title="Download invoice PDF"
-                      >
-                        <Download size={14} />
-                      </a>
-                    </div>
-                    <select
-                      value={invoice.status || "draft"}
-                      onChange={(e) =>
-                        submitOperation(
-                          `invoice-${invoice._id}`,
-                          {
-                            action: "update-invoice-status",
-                            invoiceId: invoice._id,
-                            status: e.target.value,
-                          },
-                          "Invoice status updated."
-                        )
-                      }
-                      className="mt-3 w-full rounded-lg border border-navy-700/70 bg-navy-950/70 px-3 py-2 text-sm text-white"
-                    >
-                      {["draft", "sent", "paid", "overdue"].map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-              </div>
-            </Panel>
-          </aside>
-        </div>
-        )}
-
-        {view === "team" && (
-        <div className="mt-8 grid gap-8 xl:grid-cols-2">
-          <Panel id="team" title="Team overview" icon={Users}>
-            <ListEmpty show={employees.length === 0} label="No employees yet." />
-            <div className="grid gap-3 md:grid-cols-2">
-              {employees.slice(0, 10).map((employee) => (
-                <RecordRow
-                  key={employee._id}
-                  title={employee.name}
-                  meta={`${employee.role || "Team"} | ${money.format(Number(employee.salaryMonthly || 0))}/mo | ${employee.status}`}
-                />
-              ))}
-            </div>
-          </Panel>
-
-          <Panel id="hiring-social" title="Hiring and social" icon={CalendarClock}>
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Hiring</h3>
-                <ListEmpty show={hiring.length === 0} label="No hiring items yet." />
-                <div className="space-y-3">
-                  {hiring.slice(0, 6).map((item) => (
-                    <RecordRow key={item._id} title={item.title} meta={`${item.department || "Team"} | ${item.stage}`} />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Social</h3>
-                <ListEmpty show={socialTasks.length === 0} label="No social tasks yet." />
-                <div className="space-y-3">
-                  {socialTasks.slice(0, 6).map((item) => (
-                    <RecordRow key={item._id} title={item.title} meta={`${item.channel} | ${item.status} | ${item.scheduledFor || "unscheduled"}`} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Panel>
-        </div>
-        )}
-
-        {view === "content" && (
-        <div id="content" className="mt-8 grid scroll-mt-28 gap-8 xl:grid-cols-2 lg:scroll-mt-8">
-          <ContentList title="Posts" items={blogs} kind="blogs" remove={remove} busy={busy} />
-          <ContentList title="Open roles" items={jobs} kind="jobs" remove={remove} busy={busy} />
-        </div>
-        )}
-
-        {view === "submissions" && (
-        <div id="submissions" className="mt-8 grid scroll-mt-28 gap-4 sm:grid-cols-3 lg:scroll-mt-8">
-          <Metric label="Applications" value={applicationsCount} />
-          <Metric label="Inquiries" value={contactsCount} />
-          <Metric label="Comments" value={commentsCount} />
+          <div className="grid scroll-mt-28 gap-8 xl:grid-cols-2 lg:scroll-mt-8">
+            <ContentList title="Posts" items={blogs} kind="blogs" remove={remove} busy={busy} />
+            <ContentList title="Open roles" items={jobs} kind="jobs" remove={remove} busy={busy} />
+          </div>
         </div>
         )}
         </main>
       </div>
+    </div>
+  );
+}
+
+function TabBar<T extends string>({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: { key: T; label: string; icon: any; count?: number }[];
+  active: T;
+  onChange: (key: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5 rounded-xl border border-navy-700/40 bg-navy-900/40 p-1.5">
+      {tabs.map((t) => {
+        const Icon = t.icon;
+        const isActive = active === t.key;
+        return (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => onChange(t.key)}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+              isActive
+                ? "border border-accent-cyan/30 bg-accent-cyan/15 text-white"
+                : "border border-transparent text-slate-400 hover:bg-navy-800/60 hover:text-white"
+            }`}
+          >
+            <Icon size={16} className={isActive ? "text-accent-cyan" : "text-slate-500"} />
+            {t.label}
+            {t.count != null && (
+              <span className={`rounded-full px-2 py-0.5 text-[11px] ${isActive ? "bg-accent-cyan/20 text-accent-cyan" : "bg-navy-800/80 text-slate-500"}`}>
+                {t.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function BillingTab({
+  clients,
+  invoices,
+  finance,
+  selectedClient,
+  setSelectedClient,
+  operationBusy,
+  submitOperation,
+  updateClientDiscount,
+  addClientPayment,
+  generateClientInvoice,
+  updateMilestoneStatus,
+}: {
+  clients: AnyDoc[];
+  invoices: AnyDoc[];
+  finance: { invoiceTotal: number; paidTotal: number; salaryTotal: number; expenseTotal: number };
+  selectedClient: AnyDoc | null;
+  setSelectedClient: (c: AnyDoc | null) => void;
+  operationBusy: string | null;
+  submitOperation: (key: string, payload: AnyDoc, success: string, form?: HTMLFormElement) => Promise<boolean>;
+  updateClientDiscount: (client: AnyDoc, form: HTMLFormElement) => Promise<void>;
+  addClientPayment: (client: AnyDoc, form: HTMLFormElement) => Promise<void>;
+  generateClientInvoice: (client: AnyDoc) => Promise<void>;
+  updateMilestoneStatus: (client: AnyDoc, index: number, status: string) => Promise<void>;
+}) {
+  return (
+    <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+      <section className="space-y-6">
+        <Panel id="payment-invoice" title="Record payment & generate invoice" icon={ReceiptText}>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Select client
+            <select
+              value={selectedClient?._id || ""}
+              onChange={(e) =>
+                setSelectedClient(
+                  clients.find((c) => String(c._id) === e.target.value) || null
+                )
+              }
+              className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+            >
+              <option value="">Select a client…</option>
+              {clients.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {(c.company || c.name) + (c.projectName ? ` — ${c.projectName}` : "")}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {!selectedClient && (
+            <p className="mt-4 text-sm text-slate-400">
+              Pick a client to see totals, record payments, and generate a branded invoice PDF.
+            </p>
+          )}
+
+          {selectedClient && (
+            <div className="mt-5 space-y-4">
+              {(() => {
+                const f = clientFinancials(selectedClient);
+                const clientInvoices = invoices.filter(
+                  (inv) => String(inv.clientId) === String(selectedClient._id)
+                );
+                const latestInvoice = clientInvoices[0];
+                return (
+                  <>
+                    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                      <Metric label="Total cost" value={money.format(f.gross)} />
+                      <Metric label="Discount" value={money.format(f.discount)} />
+                      <Metric label={`GST ${f.taxRate}%`} value={money.format(f.tax)} />
+                      <Metric label="Payable" value={money.format(f.net)} />
+                      <Metric label="Paid" value={money.format(f.paid)} />
+                      <Metric label="Left" value={money.format(f.left)} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3">
+                      <button
+                        type="button"
+                        onClick={() => generateClientInvoice(selectedClient)}
+                        disabled={operationBusy === `generate-invoice-${selectedClient._id}`}
+                        className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <ReceiptText size={16} />
+                        Generate full invoice
+                      </button>
+                      {latestInvoice && (
+                        <a
+                          href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
+                        >
+                          <Download size={14} />
+                          Download {latestInvoice.invoiceNumber}
+                        </a>
+                      )}
+                      <span className="text-xs text-slate-400">
+                        Uses the total website cost, discount, and GST from the client record.
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    updateClientDiscount(selectedClient, event.currentTarget);
+                  }}
+                  className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
+                >
+                  <div className="mb-3 text-sm font-semibold text-white">Discount</div>
+                  <Field
+                    name="discountAmount"
+                    label="Discount amount"
+                    type="number"
+                    defaultValue={selectedClient.discountAmount || 0}
+                  />
+                  <SubmitButton
+                    busy={operationBusy === `discount-${selectedClient._id}`}
+                    label="Save discount"
+                    icon={IndianRupee}
+                    compact
+                  />
+                </form>
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    addClientPayment(selectedClient, event.currentTarget);
+                  }}
+                  className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3"
+                >
+                  <div className="mb-3 text-sm font-semibold text-white">Record payment</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field name="amount" label="Amount received" type="number" required />
+                    <Select
+                      name="method"
+                      label="Method"
+                      options={["cash", "upi", "bank transfer", "card", "cheque", "other"]}
+                    />
+                    <Field
+                      name="receivedOn"
+                      label="Received on"
+                      type="date"
+                      defaultValue={new Date().toISOString().slice(0, 10)}
+                    />
+                    <Select
+                      name="milestoneIndex"
+                      label="Milestone"
+                      options={[
+                        "",
+                        ...(selectedClient.milestones || []).map(
+                          (m: any, i: number) => `${i}:${m.title}`
+                        ),
+                      ]}
+                    />
+                  </div>
+                  <Textarea name="note" label="Payment note" compact />
+                  <SubmitButton
+                    busy={operationBusy === `payment-${selectedClient._id}`}
+                    label="Record payment"
+                    icon={Banknote}
+                    compact
+                  />
+                </form>
+              </div>
+
+              <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
+                <div className="mb-3 text-sm font-semibold text-white">Payment history</div>
+                <ListEmpty
+                  show={!selectedClient.payments?.length}
+                  label="No payments recorded yet."
+                />
+                <div className="space-y-2">
+                  {selectedClient.payments?.map((payment: any, index: number) => (
+                    <div
+                      key={`${payment.createdAt || payment.receivedOn}-${index}`}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-300"
+                    >
+                      <span>{money.format(Number(payment.amount || 0))}</span>
+                      <span>{payment.method || "payment"}</span>
+                      <span>{payment.receivedOn || dateLabel(payment.createdAt)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="text-sm font-semibold text-white">Milestone invoices</div>
+                <ListEmpty show={!selectedClient.milestones?.length} label="No milestones saved." />
+                {selectedClient.milestones?.map((m: any, index: number) => (
+                  <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
+                    <div className="font-semibold text-white">{m.title}</div>
+                    <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "completed")} disabled={Boolean(m.invoiceId)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:cursor-not-allowed disabled:opacity-50">Complete & generate invoice</button>
+                      <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "paid")} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">Mark paid</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Panel>
+      </section>
+
+      <aside className="space-y-8">
+        <Panel id="invoices" title="All invoices" icon={ReceiptText}>
+          <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
+            <Metric label="Total raised" value={money.format(finance.invoiceTotal)} />
+            <Metric label="Paid" value={money.format(finance.paidTotal)} />
+          </div>
+          <ListEmpty show={invoices.length === 0} label="No invoices yet." />
+          <div className="space-y-3">
+            {invoices.slice(0, 12).map((invoice) => (
+              <div key={invoice._id} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-white">{invoice.invoiceNumber}</div>
+                    <div className="mt-1 text-xs text-slate-400">
+                      {invoice.clientCompany || invoice.clientName} | {invoice.type === "project" ? "Full project invoice" : invoice.milestoneTitle}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
+                  </div>
+                  <a
+                    href={`/api/admin/invoices/${invoice._id}/pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
+                    title="Download invoice PDF"
+                  >
+                    <Download size={14} />
+                  </a>
+                </div>
+                <select
+                  value={invoice.status || "draft"}
+                  onChange={(e) =>
+                    submitOperation(
+                      `invoice-${invoice._id}`,
+                      {
+                        action: "update-invoice-status",
+                        invoiceId: invoice._id,
+                        status: e.target.value,
+                      },
+                      "Invoice status updated."
+                    )
+                  }
+                  className="mt-3 w-full rounded-lg border border-navy-700/70 bg-navy-950/70 px-3 py-2 text-sm text-white"
+                >
+                  {["draft", "sent", "paid", "overdue"].map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </aside>
     </div>
   );
 }

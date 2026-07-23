@@ -1,6 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Ear,
+  EarOff,
   Loader2,
   Mic,
   MicOff,
@@ -23,7 +25,11 @@ const SUGGESTIONS = [
   "What's in my pipeline?",
 ];
 
-export default function AssistantView() {
+const WAKE_RE = /\bshadow\b/i;
+const WAKE_PREF_KEY = "shadow_wake_enabled";
+const ARM_WINDOW_MS = 8000;
+
+export default function ShadowAssistant() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,12 +37,25 @@ export default function AssistantView() {
   const [listening, setListening] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [wakeEnabled, setWakeEnabled] = useState(false);
+  const [wakeArmed, setWakeArmed] = useState(false);
+  const [wakeError, setWakeError] = useState<string | null>(null);
+
   const recRef = useRef<any>(null);
+  const wakeRecRef = useRef<any>(null);
+  const wakeRunningRef = useRef(false);
+  const wakeEnabledRef = useRef(false);
+  const armedRef = useRef(false);
+  const armTimerRef = useRef<any>(null);
+  const speakingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     setSpeechSupported(Boolean(SR));
+    if (SR && window.localStorage.getItem(WAKE_PREF_KEY) === "1") {
+      setWakeEnabled(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -49,6 +68,17 @@ export default function AssistantView() {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.rate = 1.02;
+      // Pause wake-word listening while Shadow talks so it doesn't hear itself.
+      speakingRef.current = true;
+      u.onend = u.onerror = () => {
+        speakingRef.current = false;
+        if (wakeEnabledRef.current && !wakeRunningRef.current) startWakeListening();
+      };
+      if (wakeRunningRef.current) {
+        try {
+          wakeRecRef.current?.stop();
+        } catch {}
+      }
       window.speechSynthesis.speak(u);
     },
     [voiceOn]
@@ -109,6 +139,7 @@ export default function AssistantView() {
     setMessages((m) => [...m, { role: "assistant", content: "Okay, I won't send it." }]);
   };
 
+  // ---- Push-to-talk (manual mic tap) --------------------------------------
   const toggleListen = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) return;
@@ -136,10 +167,143 @@ export default function AssistantView() {
     };
     recRef.current = rec;
     setListening(true);
-    // Stop any speaking so the mic doesn't hear the assistant.
     window.speechSynthesis?.cancel();
+    // Pause wake-word listening so the two recognition sessions don't collide.
+    if (wakeRunningRef.current) {
+      try {
+        wakeRecRef.current?.stop();
+      } catch {}
+    }
     rec.start();
   };
+
+  // ---- Wake-word ("Shadow") continuous listening --------------------------
+  const armWindow = () => {
+    armedRef.current = true;
+    setWakeArmed(true);
+    if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    armTimerRef.current = setTimeout(() => {
+      armedRef.current = false;
+      setWakeArmed(false);
+    }, ARM_WINDOW_MS);
+  };
+
+  const handleWakeTranscript = useCallback(
+    (raw: string) => {
+      const text = raw.trim();
+      if (!text) return;
+      if (armedRef.current) {
+        armedRef.current = false;
+        setWakeArmed(false);
+        if (armTimerRef.current) clearTimeout(armTimerRef.current);
+        send(text);
+        return;
+      }
+      const match = text.toLowerCase().match(WAKE_RE);
+      if (!match) return; // not directed at Shadow — ignore
+      const idx = text.toLowerCase().indexOf(match[0]);
+      const after = text
+        .slice(idx + match[0].length)
+        .replace(/^[\s,.\-:]+/, "")
+        .trim();
+      if (after) {
+        send(after);
+      } else {
+        speak("Yes?");
+        armWindow();
+      }
+    },
+    [send, speak]
+  );
+
+  function startWakeListening() {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR || wakeRunningRef.current || listening) return;
+    const rec = new SR();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.continuous = true;
+    rec.onresult = (e: any) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) handleWakeTranscript(r[0].transcript);
+      }
+    };
+    rec.onerror = (e: any) => {
+      if (e.error === "not-allowed" || e.error === "audio-capture") {
+        wakeEnabledRef.current = false;
+        wakeRunningRef.current = false;
+        setWakeEnabled(false);
+        window.localStorage.setItem(WAKE_PREF_KEY, "0");
+        setWakeError(
+          e.error === "not-allowed"
+            ? "Microphone permission is blocked — allow it in the browser's site settings to use Shadow's wake word."
+            : "No microphone found."
+        );
+      }
+      // Other errors (no-speech, aborted, network) are transient — onend handles restart.
+    };
+    rec.onend = () => {
+      wakeRunningRef.current = false;
+      if (wakeEnabledRef.current && !speakingRef.current && !listening) {
+        setTimeout(() => startWakeListening(), 300);
+      }
+    };
+    try {
+      rec.start();
+      wakeRecRef.current = rec;
+      wakeRunningRef.current = true;
+      setWakeError(null);
+    } catch {
+      wakeRunningRef.current = false;
+    }
+  }
+
+  const stopWakeListening = () => {
+    wakeEnabledRef.current = false;
+    wakeRunningRef.current = false;
+    armedRef.current = false;
+    setWakeArmed(false);
+    try {
+      wakeRecRef.current?.stop();
+    } catch {}
+  };
+
+  const toggleWake = () => {
+    if (wakeEnabled) {
+      setWakeEnabled(false);
+      window.localStorage.setItem(WAKE_PREF_KEY, "0");
+      stopWakeListening();
+    } else {
+      setWakeEnabled(true);
+      window.localStorage.setItem(WAKE_PREF_KEY, "1");
+      setWakeError(null);
+    }
+  };
+
+  useEffect(() => {
+    wakeEnabledRef.current = wakeEnabled;
+    if (wakeEnabled && speechSupported) {
+      startWakeListening();
+    } else if (!wakeEnabled) {
+      stopWakeListening();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wakeEnabled, speechSupported]);
+
+  useEffect(() => {
+    // Manual push-to-talk takes priority — pause wake listening while it's active.
+    if (listening && wakeRunningRef.current) {
+      try {
+        wakeRecRef.current?.stop();
+      } catch {}
+    } else if (!listening && wakeEnabledRef.current && !wakeRunningRef.current && !speakingRef.current) {
+      startWakeListening();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listening]);
+
+  useEffect(() => stopWakeListening, []);
 
   return (
     <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_260px]">
@@ -152,8 +316,8 @@ export default function AssistantView() {
                 <Mic size={28} />
               </div>
               <p className="mt-4 max-w-sm text-sm">
-                Tap the mic and speak, or type below. Try &ldquo;find law firms in Dubai and research
-                them&rdquo;.
+                Tap the mic and speak, type below, or enable Shadow&apos;s wake word and just say
+                &ldquo;Shadow, find law firms in Dubai&rdquo;.
               </p>
             </div>
           ) : (
@@ -218,6 +382,7 @@ export default function AssistantView() {
 
         {/* Input bar */}
         <div className="border-t border-navy-700/40 p-3">
+          {wakeError && <p className="mb-2 px-2 text-[11px] text-rose-300">{wakeError}</p>}
           <div className="flex items-center gap-2">
             {speechSupported && (
               <button
@@ -237,9 +402,29 @@ export default function AssistantView() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send(input)}
-              placeholder={listening ? "Listening…" : "Ask or command… e.g. find gyms in Berlin"}
+              placeholder={
+                listening
+                  ? "Listening…"
+                  : wakeArmed
+                    ? "Shadow is waiting for your command…"
+                    : "Ask or command… e.g. find gyms in Berlin"
+              }
               className="flex-1 rounded-full border border-navy-700/70 bg-navy-950/50 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"
             />
+            {speechSupported && (
+              <button
+                type="button"
+                onClick={toggleWake}
+                title={wakeEnabled ? "Shadow is always listening for its name — click to disable" : "Enable Shadow's wake word"}
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border transition ${
+                  wakeEnabled
+                    ? `border-emerald-400/40 bg-emerald-400/10 text-emerald-300 ${wakeArmed ? "animate-pulse" : ""}`
+                    : "border-navy-700/70 bg-navy-800/50 text-slate-300 hover:text-white"
+                }`}
+              >
+                {wakeEnabled ? <Ear size={18} /> : <EarOff size={18} />}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setVoiceOn((v) => !v)}
@@ -260,6 +445,13 @@ export default function AssistantView() {
           {!speechSupported && (
             <p className="mt-2 px-2 text-[11px] text-slate-500">
               Voice input isn&apos;t supported in this browser — try Chrome or Edge. You can still type.
+            </p>
+          )}
+          {speechSupported && (
+            <p className="mt-2 px-2 text-[11px] text-slate-500">
+              {wakeEnabled
+                ? "Shadow is listening for its name — just say “Shadow, ...”, no mic tap needed."
+                : "Tap the ear icon once to let Shadow listen for its name in the background (needs mic permission)."}
             </p>
           )}
         </div>
@@ -286,9 +478,9 @@ export default function AssistantView() {
           </div>
         </div>
         <div className="rounded-2xl border border-navy-700/40 bg-navy-900/40 p-4 text-xs text-slate-500">
-          The assistant can search Google Places, research &amp; audit leads, draft outreach, and
-          book Google Calendar meetings (once connected in Integrations). It always asks you to
-          confirm before sending an email or booking a meeting.
+          Shadow can search Google Places, research &amp; audit leads, draft outreach, and book
+          Google Calendar meetings (once connected in Integrations). It always asks you to confirm
+          before sending an email or booking a meeting. Owner-only.
         </div>
       </div>
     </div>

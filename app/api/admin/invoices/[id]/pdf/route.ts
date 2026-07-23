@@ -411,7 +411,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await guardPermission("invoices"))) {
+  if (!(await guardPermission("clients"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
