@@ -17,6 +17,7 @@ import type { Lead } from "@/lib/leados/types";
 import { createCalendarEvent } from "@/lib/google";
 import { getGoogleAccessToken } from "@/lib/integrations-store";
 import { getDb } from "@/lib/mongodb";
+import { appendMessages, clearConversation, getConversation } from "@/lib/shadow-memory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +49,10 @@ const TOOLS = `
 
 type Plan = { reply: string; action: { name: string; args: any } | null };
 
-async function planTurn(messages: { role: string; content: string }[]): Promise<Plan> {
+async function planTurn(
+  messages: { role: string; content: string }[],
+  memory = ""
+): Promise<Plan> {
   const defaultTz = process.env.DEFAULT_TIMEZONE || "Asia/Kolkata";
   // Give the model the LOCAL wall-clock date/time directly (day name included) so it
   // doesn't have to convert from UTC itself — that conversion was a source of off-by-
@@ -88,8 +92,14 @@ async function planTurn(messages: { role: string; content: string }[]): Promise<
     "- For any general business question (how many clients/leads/employees, revenue, invoicing, blog/job counts, " +
     "applications, etc.), call get_portal_overview. Use get_stats ONLY for LeadOS pipeline specifics.\n" +
     "- When the user asks to open/go to/show a section or page of the app, call navigate with the matching 'to'.\n" +
-    "- Never invent data; use tools to fetch it.";
-  const convo = messages.slice(-12);
+    "- You have long-term memory of past conversations (below). Use it to recall earlier requests, tasks " +
+    "assigned, and what's pending — so you never say you forgot. If the user refers to something from before, " +
+    "rely on the memory and recent turns.\n" +
+    "- Never invent data; use tools to fetch it." +
+    (memory
+      ? `\n\nLONG-TERM MEMORY (durable notes from earlier conversations):\n${memory}`
+      : "");
+  const convo = messages.slice(-24);
   const raw = await complete(system, JSON.stringify({ conversation: convo }), true, 0.3);
   const parsed = JSON.parse(raw);
   return {
@@ -408,12 +418,28 @@ async function execute(name: string, args: any): Promise<{ speak: string; data?:
   }
 }
 
-export async function POST(req: Request) {
-  // Shadow lives inside LeadOS but is owner-only — there's no standalone permission for it.
+const nowISO = () => new Date().toISOString();
+
+// GET — load the owner's stored conversation so the widget can restore it on mount.
+export async function GET() {
   const session = await getSession();
   if (!session || session.role !== "owner") {
     return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
+  const { messages } = await getConversation(session.email);
+  return NextResponse.json({
+    ok: true,
+    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+  });
+}
+
+export async function POST(req: Request) {
+  // Shadow is owner-only — there's no standalone permission for it.
+  const session = await getSession();
+  if (!session || session.role !== "owner") {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+  const owner = session.email;
   if (!hasLLM()) {
     return NextResponse.json({
       ok: true,
@@ -429,30 +455,64 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Confirmed side-effect (e.g. sending an email) — execute directly.
+    // Clear memory ("forget everything" / new conversation).
+    if (body.reset) {
+      await clearConversation(owner);
+      return NextResponse.json({ ok: true, reply: "Okay, I've cleared our conversation history." });
+    }
+
+    // Confirmed side-effect (e.g. sending an email) — execute directly, then remember the outcome.
     if (body.confirm && body.confirm.name) {
       const out = await execute(String(body.confirm.name), body.confirm.args || {});
+      await appendMessages(owner, [{ role: "assistant", content: out.speak, at: nowISO() }]);
       return NextResponse.json({ ok: true, reply: out.speak, data: out.data ?? null });
     }
 
-    const messages = Array.isArray(body.messages) ? body.messages : [];
-    const plan = await planTurn(messages);
+    // Accept either a single {message} (preferred) or a legacy {messages:[...]} array.
+    const message =
+      typeof body.message === "string"
+        ? body.message.trim()
+        : Array.isArray(body.messages) && body.messages.length
+          ? String(body.messages[body.messages.length - 1]?.content || "").trim()
+          : "";
+    if (!message) {
+      return NextResponse.json({ ok: false, error: "Empty message" }, { status: 400 });
+    }
+
+    const { summary, messages: history } = await getConversation(owner);
+    const userTurn = { role: "user" as const, content: message, at: nowISO() };
+    const planContext = [...history, userTurn].map((m) => ({ role: m.role, content: m.content }));
+    const plan = await planTurn(planContext, summary);
+
+    // Side-effectful actions require an explicit confirm from the UI. Persist the
+    // user turn + the confirmation question so memory stays continuous.
+    if (plan.action && (plan.action.name === "send_email" || plan.action.name === "schedule_meeting")) {
+      await appendMessages(owner, [
+        userTurn,
+        { role: "assistant", content: plan.reply, at: nowISO() },
+      ]);
+      return NextResponse.json({ ok: true, reply: plan.reply, pendingAction: plan.action });
+    }
 
     if (!plan.action) {
+      await appendMessages(owner, [
+        userTurn,
+        { role: "assistant", content: plan.reply, at: nowISO() },
+      ]);
       return NextResponse.json({ ok: true, reply: plan.reply });
     }
 
-    // Side-effectful actions require an explicit confirm from the UI.
-    if (plan.action.name === "send_email" || plan.action.name === "schedule_meeting") {
-      return NextResponse.json({
-        ok: true,
-        reply: plan.reply,
-        pendingAction: plan.action,
-      });
-    }
-
     const out = await execute(plan.action.name, plan.action.args);
-    return NextResponse.json({ ok: true, reply: out.speak, action: plan.action.name, data: out.data ?? null });
+    await appendMessages(owner, [
+      userTurn,
+      { role: "assistant", content: out.speak, at: nowISO() },
+    ]);
+    return NextResponse.json({
+      ok: true,
+      reply: out.speak,
+      action: plan.action.name,
+      data: out.data ?? null,
+    });
   } catch (e: any) {
     console.error("[agent]", e);
     return NextResponse.json({ ok: false, error: e?.message || "Agent failed" }, { status: 500 });

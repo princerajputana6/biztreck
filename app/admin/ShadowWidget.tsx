@@ -3,13 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bot,
-  Ear,
-  EarOff,
   Loader2,
   Mic,
   MicOff,
+  RadioTower,
   Send,
   Sparkles,
+  Trash2,
   Volume2,
   VolumeX,
   X,
@@ -23,13 +23,19 @@ const SUGGESTIONS = [
   "How many clients do I have?",
   "Open my clients page",
   "Show me my hot leads",
-  "Find dental clinics in Manchester",
-  "Draft outreach for Old Builders Ltd",
 ];
 
 const WAKE_RE = /\bshadow\b/i;
-const WAKE_PREF_KEY = "shadow_wake_enabled";
-const ARM_WINDOW_MS = 8000;
+const PREFS = { mic: "shadow_mic_enabled", convo: "shadow_convo_mode" };
+// Flush an utterance this long after speech stops — long enough to let a full,
+// multi-clause sentence finish before we send it.
+const SILENCE_MS = 1300;
+const MIN_SEND_CHARS = 2;
+const ECHO_WINDOW_MS = 4000;
+
+function words(s: string): string[] {
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
+}
 
 /** Best available "Indian man" voice for spoken replies. */
 function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
@@ -38,7 +44,7 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
   return (
     byName(/rishi/i) || // macOS en-IN male
     voices.find((v) => v.lang === "en-IN" && /\b(male|rishi|prabhat|hemant|ravi)\b/i.test(v.name)) ||
-    voices.find((v) => v.lang === "en-IN") || // any Indian English (Chrome ships one)
+    voices.find((v) => v.lang === "en-IN") ||
     byName(/\bhindi\b|\bindia\b/i) ||
     voices.find((v) => v.lang?.startsWith("en") && /\b(male|daniel|alex|rishi|arthur|george)\b/i.test(v.name)) ||
     voices.find((v) => v.lang?.startsWith("en")) ||
@@ -50,31 +56,44 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
 export default function ShadowWidget() {
   const router = useRouter();
   const pathname = usePathname();
-  // Not on the pre-login / dead-end screens.
   const hidden = pathname === "/admin/login" || pathname === "/admin/no-access";
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Pending>(null);
-  const [listening, setListening] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(false);
-  const [wakeEnabled, setWakeEnabled] = useState(false);
-  const [wakeArmed, setWakeArmed] = useState(false);
-  const [wakeError, setWakeError] = useState<string | null>(null);
+  const [micEnabled, setMicEnabled] = useState(false);
+  const [convoMode, setConvoMode] = useState(true); // always-listen (no wake word) by default
+  const [speaking, setSpeaking] = useState(false);
+  const [interim, setInterim] = useState("");
+  const [micError, setMicError] = useState<string | null>(null);
 
   const recRef = useRef<any>(null);
-  const wakeRecRef = useRef<any>(null);
-  const wakeRunningRef = useRef(false);
-  const wakeEnabledRef = useRef(false);
-  const armedRef = useRef(false);
-  const armTimerRef = useRef<any>(null);
+  const runningRef = useRef(false);
+  const stoppingRef = useRef(false);
+  const micEnabledRef = useRef(false);
+  const convoModeRef = useRef(true);
+  const busyRef = useRef(false);
   const speakingRef = useRef(false);
+  const bufferRef = useRef("");
+  const silenceTimerRef = useRef<any>(null);
+  const restartTimerRef = useRef<any>(null);
+  const lastSpokenSetRef = useRef<Set<string>>(new Set());
+  const lastSpokeAtRef = useRef(0);
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // ---- Voice picking (async — voices load lazily) -------------------------
+  useEffect(() => {
+    convoModeRef.current = convoMode;
+  }, [convoMode]);
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+
+  // ---- Voice picking (async) ----------------------------------------------
   useEffect(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     const load = () => {
@@ -89,7 +108,33 @@ export default function ShadowWidget() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, pending, open]);
+  }, [messages, pending, open, interim]);
+
+  // Restore persisted conversation on mount.
+  useEffect(() => {
+    if (hidden) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/agent");
+        const data = await res.json();
+        if (!cancelled && data.ok && Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        }
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hidden]);
+
+  const stopSpeaking = useCallback(() => {
+    try {
+      window.speechSynthesis?.cancel();
+    } catch {}
+    speakingRef.current = false;
+    setSpeaking(false);
+  }, []);
 
   const speak = useCallback(
     (text: string) => {
@@ -102,38 +147,49 @@ export default function ShadowWidget() {
       } else {
         u.lang = "en-IN";
       }
-      u.rate = 1.05; // natural, not sluggish
+      u.rate = 1.05;
       u.pitch = 1;
-      // Pause wake-word listening while Shadow talks so it doesn't hear itself.
+      lastSpokenSetRef.current = new Set(words(text));
+      lastSpokeAtRef.current = Date.now();
       speakingRef.current = true;
+      setSpeaking(true);
       u.onend = u.onerror = () => {
         speakingRef.current = false;
-        if (wakeEnabledRef.current && !wakeRunningRef.current) startWakeListening();
+        lastSpokeAtRef.current = Date.now();
+        setSpeaking(false);
       };
-      if (wakeRunningRef.current) {
-        try {
-          wakeRecRef.current?.stop();
-        } catch {}
-      }
       window.speechSynthesis.speak(u);
     },
     [voiceOn]
   );
 
+  const isEcho = useCallback((candidate: string) => {
+    const w = words(candidate);
+    if (!w.length) return false;
+    const set = lastSpokenSetRef.current;
+    if (!set.size) return false;
+    if (Date.now() - lastSpokeAtRef.current > ECHO_WINDOW_MS) return false;
+    const overlap = w.filter((x) => set.has(x)).length;
+    return overlap / w.length > 0.55;
+  }, []);
+
   const send = useCallback(
     async (text: string) => {
       const content = text.trim();
-      if (!content || busy) return;
+      if (!content || busyRef.current) return;
+      stopSpeaking();
       setOpen(true);
+      setInterim("");
       const next: Msg[] = [...messages, { role: "user", content }];
       setMessages(next);
       setInput("");
       setBusy(true);
+      busyRef.current = true;
       try {
         const res = await fetch("/api/admin/agent", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+          body: JSON.stringify({ message: content }),
         });
         const data = await res.json();
         const reply = data.reply || data.error || "Sorry, something went wrong.";
@@ -145,14 +201,16 @@ export default function ShadowWidget() {
         setMessages((m) => [...m, { role: "assistant", content: "Network error — please try again." }]);
       } finally {
         setBusy(false);
+        busyRef.current = false;
       }
     },
-    [busy, messages, speak, router]
+    [messages, speak, router, stopSpeaking]
   );
 
   const confirmPending = useCallback(async () => {
     if (!pending) return;
     setBusy(true);
+    busyRef.current = true;
     const action = pending;
     setPending(null);
     try {
@@ -169,6 +227,7 @@ export default function ShadowWidget() {
       setMessages((m) => [...m, { role: "assistant", content: "Network error — please try again." }]);
     } finally {
       setBusy(false);
+      busyRef.current = false;
     }
   }, [pending, speak]);
 
@@ -177,218 +236,186 @@ export default function ShadowWidget() {
     setMessages((m) => [...m, { role: "assistant", content: "Okay, cancelled." }]);
   };
 
-  // ---- Push-to-talk (manual mic tap) --------------------------------------
-  const toggleListen = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) return;
-    if (listening) {
-      recRef.current?.stop();
-      setListening(false);
+  const clearMemory = useCallback(async () => {
+    if (!window.confirm("Clear Shadow's memory of this conversation?")) return;
+    try {
+      await fetch("/api/admin/agent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reset: true }),
+      });
+    } catch {}
+    setMessages([]);
+    setPending(null);
+  }, []);
+
+  // ---- Continuous recognition engine --------------------------------------
+  const flush = useCallback(() => {
+    const text = bufferRef.current.trim();
+    bufferRef.current = "";
+    setInterim("");
+    if (!text || text.length < MIN_SEND_CHARS) return;
+    if (isEcho(text)) return; // dropped Shadow's own voice
+    if (busyRef.current) return; // still answering — ignore stray audio
+
+    if (convoModeRef.current) {
+      send(text);
       return;
     }
-    const rec = new SR();
-    rec.lang = "en-IN";
-    rec.interimResults = true;
-    rec.continuous = false;
-    let transcript = "";
-    rec.onresult = (e: any) => {
-      transcript = Array.from(e.results)
-        .map((r: any) => r[0].transcript)
-        .join(" ");
-      setInput(transcript);
-    };
-    rec.onerror = () => setListening(false);
-    rec.onend = () => {
-      setListening(false);
-      const finalText = transcript.trim();
-      if (finalText) send(finalText);
-    };
-    recRef.current = rec;
-    setListening(true);
-    window.speechSynthesis?.cancel();
-    if (wakeRunningRef.current) {
-      try {
-        wakeRecRef.current?.stop();
-      } catch {}
-    }
-    rec.start();
-  };
+    // Wake-word mode: only act on "Shadow …".
+    const m = text.toLowerCase().match(WAKE_RE);
+    if (!m) return;
+    const idx = text.toLowerCase().indexOf(m[0]);
+    const after = text.slice(idx + m[0].length).replace(/^[\s,.\-:]+/, "").trim();
+    if (after) send(after);
+    else speak("Yes?");
+  }, [isEcho, send, speak]);
 
-  // ---- Wake-word ("Shadow") continuous listening --------------------------
-  const armWindow = () => {
-    armedRef.current = true;
-    setWakeArmed(true);
-    if (armTimerRef.current) clearTimeout(armTimerRef.current);
-    armTimerRef.current = setTimeout(() => {
-      armedRef.current = false;
-      setWakeArmed(false);
-    }, ARM_WINDOW_MS);
-  };
+  const scheduleFlush = useCallback(() => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    silenceTimerRef.current = setTimeout(flush, SILENCE_MS);
+  }, [flush]);
 
-  const handleWakeTranscript = useCallback(
-    (raw: string) => {
-      const text = raw.trim();
-      if (!text) return;
-      if (armedRef.current) {
-        armedRef.current = false;
-        setWakeArmed(false);
-        if (armTimerRef.current) clearTimeout(armTimerRef.current);
-        setOpen(true);
-        send(text);
-        return;
-      }
-      const match = text.toLowerCase().match(WAKE_RE);
-      if (!match) return; // not directed at Shadow — ignore
-      const idx = text.toLowerCase().indexOf(match[0]);
-      const after = text
-        .slice(idx + match[0].length)
-        .replace(/^[\s,.\-:]+/, "")
-        .trim();
-      if (after) {
-        setOpen(true);
-        send(after);
-      } else {
-        setOpen(true);
-        speak("Yes?");
-        armWindow();
-      }
-    },
-    [send, speak]
-  );
-
-  function startWakeListening() {
+  const startEngine = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR || wakeRunningRef.current || listening) return;
+    if (!SR || runningRef.current || !micEnabledRef.current) return;
     const rec = new SR();
     rec.lang = "en-IN";
-    rec.interimResults = false;
     rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    rec.onstart = () => {
+      runningRef.current = true;
+    };
     rec.onresult = (e: any) => {
+      let interimText = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
-        if (r.isFinal) handleWakeTranscript(r[0].transcript);
+        if (r.isFinal) bufferRef.current += r[0].transcript + " ";
+        else interimText += r[0].transcript;
       }
+      const live = (bufferRef.current + " " + interimText).trim();
+      setInterim(live);
+      // Barge-in: user speaking over Shadow → stop talking and listen.
+      if (speakingRef.current && live && !isEcho(live)) stopSpeaking();
+      scheduleFlush();
     };
-    rec.onerror = (e: any) => {
-      if (e.error === "not-allowed" || e.error === "audio-capture") {
-        wakeEnabledRef.current = false;
-        wakeRunningRef.current = false;
-        setWakeEnabled(false);
-        window.localStorage.setItem(WAKE_PREF_KEY, "0");
-        setWakeError(
-          e.error === "not-allowed"
-            ? "Microphone is blocked. Click the mic to allow Shadow to listen."
+    rec.onerror = (ev: any) => {
+      if (ev.error === "not-allowed" || ev.error === "audio-capture") {
+        micEnabledRef.current = false;
+        runningRef.current = false;
+        setMicEnabled(false);
+        window.localStorage.setItem(PREFS.mic, "0");
+        setMicError(
+          ev.error === "not-allowed"
+            ? "Microphone is blocked. Allow it in your browser, then click the mic to let Shadow listen."
             : "No microphone found."
         );
       }
       // no-speech / aborted / network are transient — onend restarts.
     };
     rec.onend = () => {
-      wakeRunningRef.current = false;
-      if (wakeEnabledRef.current && !speakingRef.current && !listening) {
-        setTimeout(() => startWakeListening(), 300);
+      runningRef.current = false;
+      if (micEnabledRef.current && !stoppingRef.current) {
+        if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = setTimeout(() => startEngine(), 250);
       }
     };
     try {
       rec.start();
-      wakeRecRef.current = rec;
-      wakeRunningRef.current = true;
-      setWakeError(null);
+      recRef.current = rec;
+      runningRef.current = true;
+      stoppingRef.current = false;
+      setMicError(null);
     } catch {
-      wakeRunningRef.current = false;
+      runningRef.current = false;
     }
-  }
+  }, [isEcho, scheduleFlush, stopSpeaking]);
 
-  const stopWakeListening = () => {
-    wakeEnabledRef.current = false;
-    wakeRunningRef.current = false;
-    armedRef.current = false;
-    setWakeArmed(false);
+  const stopEngine = useCallback(() => {
+    stoppingRef.current = true;
+    runningRef.current = false;
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    bufferRef.current = "";
+    setInterim("");
     try {
-      wakeRecRef.current?.stop();
+      recRef.current?.stop();
     } catch {}
-  };
+  }, []);
 
-  // Request mic permission (prompts if needed) then enable wake listening.
-  const enableWake = useCallback(async () => {
+  // Prompt for mic permission (if needed), then turn listening on.
+  const enableMic = useCallback(async () => {
     try {
       if (navigator.mediaDevices?.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((t) => t.stop()); // SpeechRecognition opens its own capture
+        stream.getTracks().forEach((t) => t.stop());
       }
-      window.localStorage.setItem(WAKE_PREF_KEY, "1");
-      setWakeError(null);
-      setWakeEnabled(true);
+      window.localStorage.setItem(PREFS.mic, "1");
+      setMicError(null);
+      setMicEnabled(true);
     } catch {
-      setWakeEnabled(false);
-      setWakeError("Microphone is blocked. Allow it in your browser to let Shadow listen.");
+      setMicEnabled(false);
+      setMicError("Microphone is blocked. Allow it in your browser to let Shadow listen.");
     }
   }, []);
 
-  const toggleWake = () => {
-    if (wakeEnabled) {
-      setWakeEnabled(false);
-      window.localStorage.setItem(WAKE_PREF_KEY, "0");
-      stopWakeListening();
+  const toggleMic = () => {
+    if (micEnabled) {
+      setMicEnabled(false);
+      window.localStorage.setItem(PREFS.mic, "0");
     } else {
-      enableWake();
+      enableMic();
     }
   };
 
+  const toggleConvoMode = () => {
+    setConvoMode((v) => {
+      const next = !v;
+      window.localStorage.setItem(PREFS.convo, next ? "1" : "0");
+      return next;
+    });
+  };
+
+  // Detect support + restore prefs.
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     setSpeechSupported(Boolean(SR));
+    if (window.localStorage.getItem(PREFS.convo) === "0") setConvoMode(false);
   }, []);
 
-  // Auto-enable for the owner (widget only mounts for owners) once on a real
-  // admin page, unless they explicitly turned Shadow off. Re-checks when the
-  // route enters/leaves the hidden (login/no-access) screens.
+  // Auto-enable listening for the owner on a real admin page (unless turned off).
   useEffect(() => {
     if (hidden || !speechSupported) {
-      stopWakeListening();
+      stopEngine();
       return;
     }
-    const pref = window.localStorage.getItem(WAKE_PREF_KEY);
-    if (pref !== "0" && !wakeEnabledRef.current) {
-      // If mic is already granted this resolves silently → straight into listening;
-      // otherwise it prompts the user once.
-      enableWake();
-    }
+    const pref = window.localStorage.getItem(PREFS.mic);
+    if (pref !== "0" && !micEnabledRef.current) enableMic();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hidden, speechSupported]);
 
+  // Start/stop the engine when the enable flag flips.
   useEffect(() => {
-    wakeEnabledRef.current = wakeEnabled;
-    if (wakeEnabled && speechSupported && !hidden) {
-      startWakeListening();
-    } else if (!wakeEnabled) {
-      stopWakeListening();
-    }
+    micEnabledRef.current = micEnabled;
+    if (micEnabled && speechSupported && !hidden) startEngine();
+    else stopEngine();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wakeEnabled, speechSupported, hidden]);
+  }, [micEnabled, speechSupported, hidden]);
 
-  useEffect(() => {
-    if (listening && wakeRunningRef.current) {
-      try {
-        wakeRecRef.current?.stop();
-      } catch {}
-    } else if (!listening && wakeEnabledRef.current && !wakeRunningRef.current && !speakingRef.current) {
-      startWakeListening();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listening]);
-
-  useEffect(() => stopWakeListening, []);
-
-  const statusLabel = listening
-    ? "Listening…"
-    : wakeArmed
-      ? "Go ahead…"
-      : wakeEnabled
-        ? "Listening for “Shadow”"
-        : "Tap to talk";
+  useEffect(() => stopEngine, [stopEngine]);
 
   if (hidden) return null;
+
+  const status = !micEnabled
+    ? "Mic off"
+    : speaking
+      ? "Speaking… (just talk to interrupt)"
+      : interim
+        ? "Listening…"
+        : convoMode
+          ? "Listening — just talk"
+          : "Say “Shadow …”";
 
   return (
     <>
@@ -400,8 +427,10 @@ export default function ShadowWidget() {
           aria-label="Open Shadow assistant"
           className="group fixed bottom-5 right-5 z-[60] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-accent-cyan to-violet-500 text-navy-950 shadow-lg shadow-accent-cyan/20 transition hover:scale-105"
         >
-          {wakeEnabled && (
-            <span className="absolute inset-0 rounded-full ring-2 ring-emerald-400/60 animate-ping" />
+          {micEnabled && (
+            <span
+              className={`absolute inset-0 rounded-full ring-2 ${speaking ? "ring-accent-cyan/70" : "ring-emerald-400/60"} animate-ping`}
+            />
           )}
           <Bot size={26} />
         </button>
@@ -415,20 +444,30 @@ export default function ShadowWidget() {
             <div className="flex items-center gap-2.5">
               <span className="relative grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-accent-cyan">
                 <Bot size={18} />
-                {(listening || wakeArmed) && (
-                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-navy-950" />
+                {micEnabled && (
+                  <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ${speaking ? "bg-accent-cyan" : "bg-emerald-400"} ring-2 ring-navy-950`} />
                 )}
               </span>
               <div className="leading-tight">
                 <div className="text-sm font-semibold text-white">Shadow</div>
-                <div className="text-[11px] text-slate-400">{statusLabel}</div>
+                <div className="text-[11px] text-slate-400">{status}</div>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => setVoiceOn((v) => !v)}
-                title={voiceOn ? "Mute voice replies" : "Enable voice replies"}
+                onClick={toggleConvoMode}
+                title={convoMode ? "Always listening — click for wake-word mode" : "Wake-word mode — click for always-on"}
+                className={`grid h-8 w-8 place-items-center rounded-full ${
+                  convoMode ? "text-accent-cyan" : "text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                }`}
+              >
+                <RadioTower size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => (voiceOn ? (setVoiceOn(false), stopSpeaking()) : setVoiceOn(true))}
+                title={voiceOn ? "Mute Shadow's voice" : "Unmute Shadow's voice"}
                 className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-navy-800/70 hover:text-white"
               >
                 {voiceOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -436,15 +475,23 @@ export default function ShadowWidget() {
               {speechSupported && (
                 <button
                   type="button"
-                  onClick={toggleWake}
-                  title={wakeEnabled ? "Shadow is listening for its name — click to turn off" : "Let Shadow listen for its name"}
+                  onClick={toggleMic}
+                  title={micEnabled ? "Turn Shadow's listening off" : "Turn Shadow's listening on"}
                   className={`grid h-8 w-8 place-items-center rounded-full ${
-                    wakeEnabled ? "text-emerald-300" : "text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                    micEnabled ? "text-emerald-300" : "text-slate-400 hover:bg-navy-800/70 hover:text-white"
                   }`}
                 >
-                  {wakeEnabled ? <Ear size={16} /> : <EarOff size={16} />}
+                  {micEnabled ? <Mic size={16} /> : <MicOff size={16} />}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={clearMemory}
+                title="Clear conversation & memory"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-navy-800/70 hover:text-white"
+              >
+                <Trash2 size={15} />
+              </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -465,7 +512,9 @@ export default function ShadowWidget() {
                 </div>
                 <p className="mt-3 text-sm text-slate-300">Hi, I&apos;m Shadow.</p>
                 <p className="mt-1 max-w-[15rem] text-xs">
-                  Ask me anything about your portal, or just say &ldquo;Shadow, …&rdquo;.
+                  {convoMode
+                    ? "I'm listening — just start talking, or type below."
+                    : "Say “Shadow, …”, or type below."}
                 </p>
                 <div className="mt-4 flex flex-col gap-1.5">
                   {SUGGESTIONS.map((s) => (
@@ -506,6 +555,14 @@ export default function ShadowWidget() {
               ))
             )}
 
+            {interim && (
+              <div className="flex justify-end">
+                <div className="max-w-[85%] rounded-2xl border border-accent-cyan/30 bg-accent-cyan/5 px-3.5 py-2 text-sm text-slate-400 italic">
+                  {interim}
+                </div>
+              </div>
+            )}
+
             {busy && (
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <Loader2 size={13} className="animate-spin" /> Working…
@@ -542,27 +599,27 @@ export default function ShadowWidget() {
 
           {/* Input bar */}
           <div className="border-t border-navy-700/50 bg-navy-900/40 p-3">
-            {wakeError && <p className="mb-2 px-1 text-[11px] text-rose-300">{wakeError}</p>}
+            {micError && <p className="mb-2 px-1 text-[11px] text-rose-300">{micError}</p>}
             <div className="flex items-center gap-2">
               {speechSupported && (
                 <button
                   type="button"
-                  onClick={toggleListen}
-                  title={listening ? "Stop" : "Speak"}
+                  onClick={toggleMic}
+                  title={micEnabled ? "Listening — click to mute" : "Click to let Shadow listen"}
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition ${
-                    listening
-                      ? "animate-pulse bg-rose-500/20 text-rose-300"
-                      : "bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/25"
+                    micEnabled
+                      ? "bg-emerald-400/15 text-emerald-300"
+                      : "bg-navy-800/60 text-slate-300 hover:text-white"
                   }`}
                 >
-                  {listening ? <MicOff size={17} /> : <Mic size={17} />}
+                  {micEnabled ? <Mic size={17} /> : <MicOff size={17} />}
                 </button>
               )}
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send(input)}
-                placeholder={listening ? "Listening…" : "Ask Shadow anything…"}
+                placeholder="Ask Shadow anything…"
                 className="flex-1 rounded-full border border-navy-700/70 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"
               />
               <button
