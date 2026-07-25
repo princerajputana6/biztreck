@@ -26,6 +26,9 @@ const SUGGESTIONS = [
 ];
 
 const WAKE_RE = /\bshadow\b/i;
+// Spoken yes/no for confirming a pending action (send email, book meeting…).
+const AFFIRM_RE = /^(yes|yeah|yep|yup|sure|ok|okay|send|send it|send them|send all|send those|go ahead|do it|confirm(ed)?|please do|absolutely|correct|right|proceed|go for it|go|yup|haan|haan ji|ji|book it|schedule it)\b/i;
+const NEGATE_RE = /^(no|nope|nah|cancel|skip|stop|don'?t|do not|not now|later|nahi|hold on|wait|forget it|never mind|nevermind)\b/i;
 const PREFS = { mic: "shadow_mic_enabled", convo: "shadow_convo_mode" };
 // Flush an utterance this long after speech stops — long enough to let a full,
 // multi-clause sentence finish before we send it.
@@ -77,6 +80,7 @@ export default function ShadowWidget() {
   const micEnabledRef = useRef(false);
   const convoModeRef = useRef(true);
   const busyRef = useRef(false);
+  const pendingRef = useRef<Pending>(null);
   const speakingRef = useRef(false);
   const bufferRef = useRef("");
   const silenceTimerRef = useRef<any>(null);
@@ -92,6 +96,9 @@ export default function ShadowWidget() {
   useEffect(() => {
     busyRef.current = busy;
   }, [busy]);
+  useEffect(() => {
+    pendingRef.current = pending;
+  }, [pending]);
 
   // ---- Voice picking (async) ----------------------------------------------
   useEffect(() => {
@@ -173,10 +180,69 @@ export default function ShadowWidget() {
     return overlap / w.length > 0.55;
   }, []);
 
+  const confirmPending = useCallback(async () => {
+    const action = pendingRef.current;
+    if (!action) return;
+    pendingRef.current = null;
+    setPending(null);
+    setBusy(true);
+    busyRef.current = true;
+    stopSpeaking();
+    try {
+      const res = await fetch("/api/admin/agent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirm: action }),
+      });
+      const data = await res.json();
+      const reply = data.reply || data.error || "Done.";
+      setMessages((m) => [...m, { role: "assistant", content: reply }]);
+      speak(reply);
+      if (data.data?.navigateTo) router.push(data.data.navigateTo);
+    } catch {
+      setMessages((m) => [...m, { role: "assistant", content: "Network error — please try again." }]);
+    } finally {
+      setBusy(false);
+      busyRef.current = false;
+    }
+  }, [speak, stopSpeaking, router]);
+
+  const cancelPending = useCallback(() => {
+    if (!pendingRef.current) return;
+    pendingRef.current = null;
+    setPending(null);
+    setMessages((m) => [...m, { role: "assistant", content: "Okay, cancelled." }]);
+  }, []);
+
   const send = useCallback(
     async (text: string) => {
       const content = text.trim();
       if (!content || busyRef.current) return;
+
+      // If we're waiting on a confirmation, treat a spoken/typed yes/no as the
+      // answer instead of a brand-new command (this is what caused the loop).
+      if (pendingRef.current) {
+        if (AFFIRM_RE.test(content)) {
+          setOpen(true);
+          setInterim("");
+          setInput("");
+          setMessages((m) => [...m, { role: "user", content }]);
+          confirmPending();
+          return;
+        }
+        if (NEGATE_RE.test(content)) {
+          setOpen(true);
+          setInterim("");
+          setInput("");
+          setMessages((m) => [...m, { role: "user", content }]);
+          cancelPending();
+          return;
+        }
+        // Anything else is a new instruction — drop the stale pending action.
+        pendingRef.current = null;
+        setPending(null);
+      }
+
       stopSpeaking();
       setOpen(true);
       setInterim("");
@@ -204,37 +270,8 @@ export default function ShadowWidget() {
         busyRef.current = false;
       }
     },
-    [messages, speak, router, stopSpeaking]
+    [messages, speak, router, stopSpeaking, confirmPending, cancelPending]
   );
-
-  const confirmPending = useCallback(async () => {
-    if (!pending) return;
-    setBusy(true);
-    busyRef.current = true;
-    const action = pending;
-    setPending(null);
-    try {
-      const res = await fetch("/api/admin/agent", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ confirm: action }),
-      });
-      const data = await res.json();
-      const reply = data.reply || data.error || "Done.";
-      setMessages((m) => [...m, { role: "assistant", content: reply }]);
-      speak(reply);
-    } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "Network error — please try again." }]);
-    } finally {
-      setBusy(false);
-      busyRef.current = false;
-    }
-  }, [pending, speak]);
-
-  const cancelPending = () => {
-    setPending(null);
-    setMessages((m) => [...m, { role: "assistant", content: "Okay, cancelled." }]);
-  };
 
   const clearMemory = useCallback(async () => {
     if (!window.confirm("Clear Shadow's memory of this conversation?")) return;
@@ -574,7 +611,10 @@ export default function ShadowWidget() {
                 <p className="text-xs text-amber-100">
                   {pending.name === "schedule_meeting"
                     ? "Confirm booking this meeting?"
-                    : "Confirm sending this email?"}
+                    : pending.name === "send_outreach_batch"
+                      ? "Confirm sending outreach to these leads?"
+                      : "Confirm sending this email?"}
+                  <span className="mt-1 block text-amber-200/70">Or just say “yes” / “no”.</span>
                 </p>
                 <div className="mt-2.5 flex gap-2">
                   <button

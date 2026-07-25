@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { complete, hasLLM } from "@/lib/groq";
+import { complete, FAST_MODEL, hasLLM } from "@/lib/groq";
 import { runApifyScraper, normalizePlaces } from "@/lib/scraper";
 import {
   leadFromScrapedPlace,
@@ -41,7 +41,8 @@ const TOOLS = `
 - research_leads { limit?: number } — run website analysis + scoring on the next un-analysed leads.
 - audit_lead { business: string } — generate the full AI business audit for one lead.
 - draft_outreach { business: string } — draft a cold email + follow-ups grounded in that lead's audit.
-- send_email { business: string, to?: string } — send the drafted cold email to a lead. REQUIRES the user to confirm; the app shows a confirm button.
+- send_email { business: string, to?: string } — send the drafted cold email to ONE specific named lead. REQUIRES the user to confirm.
+- send_outreach_batch { limit?: number (default 20, max 30), priority?: "hot"|"warm"|"cold", onlyUncontacted?: boolean (default true) } — send outreach emails to MULTIPLE leads at once, drafting + auditing any that aren't ready. Use this whenever the user says to email/reach out to several / all / "the N" leads. REQUIRES the user to confirm.
 - schedule_meeting { with?: string (lead business name or an email address), title?: string, startISO: string (naive local wall-clock ISO, e.g. "2026-07-25T15:00:00" — NOT UTC, no trailing Z), durationMinutes?: number, timeZone?: string (IANA zone, e.g. "Asia/Kolkata") } — books a Google Calendar event if Google is connected (else explains how to connect). REQUIRES the user to confirm.
 - get_stats {} — LeadOS pipeline counts and top leads only.
 - get_portal_overview {} — company-wide snapshot across the WHOLE admin: number of clients, total & paid invoicing (revenue), active team size, blog & job-post counts, job applications received, and lead totals. Use for ANY "how many / how much / what's my …" question about the business (clients, revenue, team, content, applications, leads).
@@ -83,8 +84,12 @@ async function planTurn(
     "- 'draft'/'write an email'/'prepare outreach' -> draft_outreach. 'audit'/'analyse the website' -> audit_lead.\n" +
     "- For audit_lead, draft_outreach and send_email, set args.business to the EXACT business name from the " +
     "conversation. If no specific business is clear, DON'T guess — reply asking which one (action null).\n" +
-    "- For send_email ALWAYS include the action and phrase reply as a confirmation question " +
-    "(e.g. \"Shall I send the outreach email to …?\"). The app requires the user to confirm.\n" +
+    "- send_email is for ONE specific named lead. For plural/bulk sends ('email all my hot leads', " +
+    "'send outreach to the 30 new leads', 'reach out to everyone') use send_outreach_batch — NEVER invent a " +
+    "single business name like 'Multiple' or 'the leads'.\n" +
+    "- For send_email and send_outreach_batch ALWAYS include the action and phrase the reply as a confirmation " +
+    "question that states who/how many (e.g. \"Shall I send outreach to your 30 uncontacted leads?\"). The app " +
+    "requires the user to confirm; do NOT re-ask once they've answered.\n" +
     "- For schedule_meeting, resolve relative dates/times (e.g. 'tomorrow at 3pm') into startISO using the " +
     "current local date/time above. If the date/time is unclear, DON'T guess — ask (action null). Otherwise " +
     "ALWAYS include the action and phrase the reply as a confirmation question " +
@@ -99,8 +104,10 @@ async function planTurn(
     (memory
       ? `\n\nLONG-TERM MEMORY (durable notes from earlier conversations):\n${memory}`
       : "");
-  const convo = messages.slice(-24);
-  const raw = await complete(system, JSON.stringify({ conversation: convo }), true, 0.3);
+  // Keep the live context small — long-term recall comes from the memory
+  // summary above, so a short recent window keeps each turn fast.
+  const convo = messages.slice(-10);
+  const raw = await complete(system, JSON.stringify({ conversation: convo }), true, 0.3, FAST_MODEL);
   const parsed = JSON.parse(raw);
   return {
     reply: String(parsed.reply || "").trim() || "Okay.",
@@ -241,26 +248,26 @@ async function execDraft(args: any) {
   };
 }
 
-async function execSend(args: any) {
-  const lead = await findLeadByName(args.business);
-  if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
-  const to = String(args.to || lead.email || "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
-    return { speak: `I don't have a valid email for ${lead.businessName}. What address should I use?` };
-  }
+// Send outreach to one lead, drafting (and auditing/enriching) on the fly if
+// needed. Shared by the single send and the bulk send.
+async function sendOutreachToLead(
+  lead: Lead,
+  toOverride?: string
+): Promise<{ ok: boolean; to?: string; subject?: string; error?: string }> {
+  const to = String(toOverride || lead.email || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return { ok: false, error: "no-email" };
   const col = await leadsCollection();
   let outreach = lead.outreach;
   if (!outreach) {
-    // Draft on the fly if the user jumped straight to sending.
-    const drafted = await execDraft({ business: lead.businessName });
+    await execDraft({ business: lead.businessName });
     const fresh = await col.findOne({ leadKey: lead.leadKey });
     outreach = fresh?.outreach;
-    if (!outreach) return { speak: drafted.speak };
+    if (!outreach) return { ok: false, error: "draft-failed" };
   }
   const email = outreach.coldEmail;
   const html = emailShell("New business outreach", marked.parse(email.body, { async: false }) as string);
   const result = await sendOutreachEmail({ to, subject: email.subject, html });
-  if (!result.ok) return { speak: `The email failed to send: ${result.error || "unknown error"}.` };
+  if (!result.ok) return { ok: false, error: result.error || "send-failed" };
   const now = new Date().toISOString();
   await col.updateOne(
     { leadKey: lead.leadKey },
@@ -269,7 +276,74 @@ async function execSend(args: any) {
       $push: { timeline: { at: now, type: "email", summary: `Sent outreach to ${to} via assistant: ${email.subject}` } },
     } as never
   );
-  return { data: { to, subject: email.subject }, speak: `Sent the outreach email to ${to} for ${lead.businessName}.` };
+  return { ok: true, to, subject: email.subject };
+}
+
+async function execSend(args: any) {
+  const lead = await findLeadByName(args.business);
+  if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
+  const r = await sendOutreachToLead(lead, args.to);
+  if (!r.ok) {
+    if (r.error === "no-email") {
+      return { speak: `I don't have a valid email for ${lead.businessName}. What address should I use?` };
+    }
+    return { speak: `The email failed to send: ${r.error}.` };
+  }
+  return { data: { to: r.to, subject: r.subject }, speak: `Sent the outreach email to ${r.to} for ${lead.businessName}.` };
+}
+
+async function execSendBatch(args: any) {
+  const col = await leadsCollection();
+  const filter: any = {};
+  const prioMap: Record<string, string> = {
+    hot: "hot", high: "hot", top: "hot", warm: "warm", medium: "warm", cold: "cold", low: "cold",
+  };
+  const prio = prioMap[String(args.priority || "").toLowerCase()];
+  if (prio) filter["scores.priority"] = prio;
+  // Default to leads we haven't contacted yet so a bulk send doesn't re-email people.
+  if (args.onlyUncontacted !== false) {
+    filter.$or = [{ lastContactedAt: { $exists: false } }, { lastContactedAt: null }];
+  }
+  const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 30);
+  const leads = (await col.find(filter).sort({ "scores.overall": -1 }).limit(limit).toArray()) as unknown as Lead[];
+  if (!leads.length) {
+    return { speak: "I couldn't find any matching leads to send outreach to." };
+  }
+
+  let sent = 0;
+  let noEmail = 0;
+  let failed = 0;
+  const sentNames: string[] = [];
+  for (const lead of leads) {
+    try {
+      const r = await sendOutreachToLead(lead);
+      if (r.ok) {
+        sent++;
+        sentNames.push(lead.businessName);
+      } else if (r.error === "no-email") {
+        noEmail++;
+      } else {
+        failed++;
+      }
+    } catch {
+      failed++;
+    }
+  }
+
+  const parts = [`Sent outreach to ${sent} lead${sent === 1 ? "" : "s"}`];
+  if (sentNames.length) parts[0] += ` — ${sentNames.slice(0, 3).join(", ")}${sentNames.length > 3 ? ` and ${sentNames.length - 3} more` : ""}`;
+  parts[0] += ".";
+  if (noEmail) parts.push(`${noEmail} had no email on file, so I skipped them.`);
+  if (failed) parts.push(`${failed} failed to send.`);
+  if (!sent && (noEmail || failed)) {
+    parts.length = 0;
+    parts.push(
+      noEmail
+        ? `None of those ${leads.length} leads had an email address on file, so nothing was sent. Try connecting Hunter or adding emails first.`
+        : `Couldn't send to any of them — ${failed} failed.`
+    );
+  }
+  return { data: { sent, noEmail, failed }, speak: parts.join(" ") };
 }
 
 async function execSchedule(args: any) {
@@ -405,6 +479,8 @@ async function execute(name: string, args: any): Promise<{ speak: string; data?:
       return execDraft(args);
     case "send_email":
       return execSend(args);
+    case "send_outreach_batch":
+      return execSendBatch(args);
     case "get_stats":
       return execStats();
     case "get_portal_overview":
@@ -486,7 +562,12 @@ export async function POST(req: Request) {
 
     // Side-effectful actions require an explicit confirm from the UI. Persist the
     // user turn + the confirmation question so memory stays continuous.
-    if (plan.action && (plan.action.name === "send_email" || plan.action.name === "schedule_meeting")) {
+    if (
+      plan.action &&
+      (plan.action.name === "send_email" ||
+        plan.action.name === "send_outreach_batch" ||
+        plan.action.name === "schedule_meeting")
+    ) {
       await appendMessages(owner, [
         userTurn,
         { role: "assistant", content: plan.reply, at: nowISO() },

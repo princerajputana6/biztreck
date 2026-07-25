@@ -6,6 +6,13 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const apiKey = process.env.OPEN_ROUTE_API_KEY;
 const MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct";
 
+// A small, fast model for low-latency interactive work (the Shadow voice
+// assistant's turn-by-turn planning). Speed matters far more than raw power for
+// picking one tool from a short list, so we default to a fast, cheap model.
+// Override with OPENROUTER_FAST_MODEL (e.g. "google/gemini-flash-1.5").
+export const FAST_MODEL =
+  process.env.OPENROUTER_FAST_MODEL || "openai/gpt-4o-mini";
+
 /** The active model id, for provenance labels on generated content. */
 export const LLM_MODEL = MODEL;
 
@@ -32,7 +39,8 @@ export async function complete(
   system: string,
   user: string,
   json = false,
-  temperature = 0.75
+  temperature = 0.75,
+  model?: string
 ): Promise<string> {
   if (!apiKey) throw new Error("OPEN_ROUTE_API_KEY missing");
 
@@ -50,7 +58,7 @@ export async function complete(
         "X-Title": "Biztreck LeadOS",
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: model || MODEL,
         temperature,
         messages: [
           { role: "system", content: system },

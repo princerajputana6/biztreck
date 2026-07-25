@@ -24,7 +24,10 @@ declare global {
  */
 const options = {
   maxPoolSize: 5,
-  minPoolSize: 0,
+  // Keep one connection warm per instance so the common case (an admin page or
+  // Shadow turn) skips the TCP+TLS handshake and answers immediately, while
+  // still staying well under Atlas's per-cluster connection ceiling.
+  minPoolSize: 1,
   maxIdleTimeMS: 60_000,
   serverSelectionTimeoutMS: 5_000,
   connectTimeoutMS: 5_000,

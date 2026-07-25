@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHmac, timingSafeEqual } from "crypto";
@@ -65,8 +66,12 @@ function ownerSession(sub: string, email: string, name: string): Session {
  * Resolve the current session from the cookie. Loads the user record each call
  * so permission edits and deactivations take effect immediately (no re-login).
  * Returns null when unauthenticated, deactivated, or deleted.
+ *
+ * Wrapped in React `cache()` so a single request that resolves the session more
+ * than once (e.g. the admin layout mounting Shadow AND the page's requireView)
+ * only makes one Mongo lookup instead of two.
  */
-export async function getSession(): Promise<Session | null> {
+export const getSession = cache(async (): Promise<Session | null> => {
   const c = await cookies();
   const v = verifyToken(c.get(COOKIE)?.value);
   if (!v) return null;
@@ -99,7 +104,7 @@ export async function getSession(): Promise<Session | null> {
   } catch {
     return null;
   }
-}
+});
 
 /** True when any valid session exists (kept for existing call sites). */
 export async function isAdmin() {

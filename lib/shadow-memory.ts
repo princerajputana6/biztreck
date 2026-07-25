@@ -46,7 +46,9 @@ export async function appendMessages(owner: string, msgs: StoredMsg[]) {
     } as never,
     { upsert: true }
   );
-  await maybeSummarize(owner);
+  // Summarization makes a second (slow) LLM call — never block the reply on it.
+  // Fire-and-forget; if it's cut short it just runs again next turn.
+  void maybeSummarize(owner).catch(() => {});
 }
 
 export async function clearConversation(owner: string) {
