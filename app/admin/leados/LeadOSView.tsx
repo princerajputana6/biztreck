@@ -134,9 +134,12 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
   );
 }
 
+type Counts = { total: number; analysed: number; pending: number; hot: number; audited: number; avgScore: number };
+
 export default function LeadOSView() {
   const [leads, setLeads] = useState<AnyDoc[]>([]);
   const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -165,7 +168,8 @@ export default function LeadOSView() {
     if (stage) p.set("stage", stage);
     if (country) p.set("country", country);
     Object.entries(flags).forEach(([k, v]) => v && p.set(k, "1"));
-    p.set("limit", "100");
+    // Show every lead in the database (the header still notes the count).
+    p.set("limit", "2000");
     return p.toString();
   }, [q, priority, stage, country, flags]);
 
@@ -177,6 +181,7 @@ export default function LeadOSView() {
       if (data.ok) {
         setLeads(data.leads);
         setTotal(data.total);
+        if (data.counts) setCounts(data.counts);
       }
     } finally {
       setLoading(false);
@@ -218,17 +223,27 @@ export default function LeadOSView() {
     }
   };
 
+  // Prefer the whole-database counts from the API (they cover every matching
+  // lead, not just the ≤100 currently loaded). Fall back to counting the loaded
+  // page only until the first response arrives.
   const stats = useMemo(() => {
+    if (counts) {
+      return {
+        hot: counts.hot,
+        analyzed: counts.analysed,
+        audited: counts.audited,
+        avg: counts.avgScore,
+        pending: counts.pending,
+      };
+    }
     const hot = leads.filter((l) => l.scores?.priority === "hot").length;
     const analyzed = leads.filter((l) => l.lastAnalyzedAt).length;
     const audited = leads.filter((l) => l.audit).length;
     const avg = leads.length
-      ? Math.round(
-          leads.reduce((s, l) => s + (l.scores?.overall || 0), 0) / leads.length
-        )
+      ? Math.round(leads.reduce((s, l) => s + (l.scores?.overall || 0), 0) / leads.length)
       : 0;
-    return { hot, analyzed, audited, avg };
-  }, [leads]);
+    return { hot, analyzed, audited, avg, pending: Math.max(0, total - analyzed) };
+  }, [counts, leads, total]);
 
   const toggle = (k: string) => setFlags((f) => ({ ...f, [k]: !f[k] }));
 
@@ -315,10 +330,10 @@ export default function LeadOSView() {
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {[
-          { icon: Target, label: "Leads shown", value: leads.length, hint: `${total} match filters` },
+          { icon: Target, label: "Total leads", value: total, hint: `${leads.length} shown` },
           { icon: Flame, label: "Hot leads", value: stats.hot, hint: "priority = hot" },
           { icon: TrendingUp, label: "Avg score", value: stats.avg, hint: "weighted 0–100" },
-          { icon: Check, label: "Analysed", value: stats.analyzed, hint: `${leads.length - stats.analyzed} pending` },
+          { icon: Check, label: "Analysed", value: stats.analyzed, hint: `${stats.pending} pending` },
           { icon: FileText, label: "Audited", value: stats.audited, hint: "AI reports ready" },
         ].map((s) => {
           const Icon = s.icon;

@@ -248,7 +248,7 @@ function coerceSections(raw: any): AuditSection[] {
  * Generate the audit. LLM-written when a Groq key is available (grounded in the
  * lead's real analysis), otherwise deterministically assembled. Never throws.
  */
-export async function generateAudit(lead: Lead): Promise<LeadAudit> {
+export async function generateAudit(lead: Lead, model?: string): Promise<LeadAudit> {
   const fallback = buildAuditDeterministic(lead);
   if (!hasLLM()) return fallback;
 
@@ -265,7 +265,7 @@ export async function generateAudit(lead: Lead): Promise<LeadAudit> {
     `"estimatedRoi": string, "nextSteps": string[], "callToAction": string}`;
 
   try {
-    const raw = await complete(system, JSON.stringify(facts), true, 0.6);
+    const raw = await complete(system, JSON.stringify(facts), true, 0.6, model);
     const parsed = JSON.parse(raw);
     const sections = coerceSections(parsed.sections);
     if (sections.length < 3) return fallback; // Too thin — trust the assembler.

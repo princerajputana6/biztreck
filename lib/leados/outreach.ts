@@ -125,7 +125,7 @@ function coerceEmail(raw: any, fb: OutreachEmail): OutreachEmail {
  * Generate the outreach kit. LLM-written when a key is available (grounded in the
  * audit facts), deterministic otherwise. Never throws.
  */
-export async function generateOutreach(lead: Lead): Promise<LeadOutreach> {
+export async function generateOutreach(lead: Lead, model?: string): Promise<LeadOutreach> {
   const fallback = buildOutreachDeterministic(lead);
   if (!hasLLM()) return fallback;
 
@@ -144,7 +144,7 @@ export async function generateOutreach(lead: Lead): Promise<LeadOutreach> {
     `"proposalSummary":string (a tight paragraph)}`;
 
   try {
-    const raw = await complete(system, JSON.stringify(facts), true, 0.7);
+    const raw = await complete(system, JSON.stringify(facts), true, 0.7, model);
     const p = JSON.parse(raw);
     return {
       generatedAt: new Date().toISOString(),

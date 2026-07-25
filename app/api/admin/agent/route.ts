@@ -8,7 +8,7 @@ import {
   setStage,
   upsertLeads,
 } from "@/lib/leados/db";
-import { enrichLead } from "@/lib/leados/enrich";
+import { enrichLead, mapWithConcurrency } from "@/lib/leados/enrich";
 import { generateAudit } from "@/lib/leados/audit";
 import { generateOutreach } from "@/lib/leados/outreach";
 import { emailShell, sendOutreachEmail } from "@/lib/resend";
@@ -18,6 +18,7 @@ import { createCalendarEvent } from "@/lib/google";
 import { getGoogleAccessToken } from "@/lib/integrations-store";
 import { getDb } from "@/lib/mongodb";
 import { appendMessages, clearConversation, getConversation } from "@/lib/shadow-memory";
+import { CacheNS, cached, invalidate } from "@/lib/cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ const TOOLS = `
 - audit_lead { business: string } — generate the full AI business audit for one lead.
 - draft_outreach { business: string } — draft a cold email + follow-ups grounded in that lead's audit.
 - send_email { business: string, to?: string } — send the drafted cold email to ONE specific named lead. REQUIRES the user to confirm.
-- send_outreach_batch { limit?: number (default 20, max 30), priority?: "hot"|"warm"|"cold", onlyUncontacted?: boolean (default true) } — send outreach emails to MULTIPLE leads at once, drafting + auditing any that aren't ready. Use this whenever the user says to email/reach out to several / all / "the N" leads. REQUIRES the user to confirm.
+- send_outreach_batch { limit?: number (default 30, max 40), priority?: "hot"|"warm"|"cold", onlyUncontacted?: boolean (default true) } — send audit-grounded cold emails to MULTIPLE leads at once. It automatically drafts the audit + outreach for each and ONLY targets leads that have an email address on file. Use whenever the user says to email / reach out to / send cold emails to several / all / "the N" leads. Reports how many were sent and how many remain (the user can say "continue"). REQUIRES the user to confirm.
 - schedule_meeting { with?: string (lead business name or an email address), title?: string, startISO: string (naive local wall-clock ISO, e.g. "2026-07-25T15:00:00" — NOT UTC, no trailing Z), durationMinutes?: number, timeZone?: string (IANA zone, e.g. "Asia/Kolkata") } — books a Google Calendar event if Google is connected (else explains how to connect). REQUIRES the user to confirm.
 - get_stats {} — LeadOS pipeline counts and top leads only.
 - get_portal_overview {} — company-wide snapshot across the WHOLE admin: number of clients, total & paid invoicing (revenue), active team size, blog & job-post counts, job applications received, and lead totals. Use for ANY "how many / how much / what's my …" question about the business (clients, revenue, team, content, applications, leads).
@@ -174,23 +175,25 @@ async function execFind(args: any) {
 
 async function execResearch(args: any) {
   const col = await leadsCollection();
-  const size = Math.min(Number(args.limit) || 10, 15);
+  const size = Math.min(Number(args.limit) || 15, 25);
   const pending = await col.find({ lastAnalyzedAt: null }).limit(size).toArray();
   let done = 0;
-  for (const lead of pending) {
+  // Enrich several leads at once — each is a slow website fetch + LLM call, so
+  // running them concurrently turns minutes into ~tens of seconds.
+  await mapWithConcurrency(pending, 8, async (lead) => {
     try {
-      const e = await enrichLead(lead);
+      const e = await enrichLead(lead, { intelModel: FAST_MODEL });
       const now = new Date().toISOString();
       await col.updateOne({ leadKey: lead.leadKey }, { $set: { ...e, lastAnalyzedAt: now, updatedAt: now } });
       done++;
     } catch {
       await col.updateOne({ leadKey: lead.leadKey }, { $set: { lastAnalyzedAt: new Date().toISOString() } });
     }
-  }
+  });
   const remaining = await col.countDocuments({ lastAnalyzedAt: null });
   return {
     data: { analyzed: done, remaining },
-    speak: `Researched ${done} lead${done === 1 ? "" : "s"} — analysed their websites and scored them.${remaining ? ` ${remaining} still pending.` : ""}`,
+    speak: `Researched ${done} lead${done === 1 ? "" : "s"} — analysed their websites and scored them.${remaining ? ` ${remaining} still pending; say “continue” to do more.` : ""}`,
   };
 }
 
@@ -218,28 +221,38 @@ async function execAudit(args: any) {
   };
 }
 
-async function execDraft(args: any) {
-  const lead = await findLeadByName(args.business);
-  if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
+// Ensure a lead has an audit + a fresh outreach kit, persisting both. `model`
+// lets bulk callers use the fast model to stay within time limits.
+async function draftOutreachForLead(lead: Lead, model?: string): Promise<Lead> {
   const col = await leadsCollection();
-  let full = lead;
+  let full: any = lead;
   if (!lead.audit) {
-    // Ensure analysis + audit exist so the outreach is grounded.
     if (!lead.lastAnalyzedAt) {
-      const e = await enrichLead(lead);
+      const e = await enrichLead(lead, model ? { intelModel: model } : undefined);
       full = { ...lead, ...e };
     }
-    const audit = await generateAudit(full);
+    const audit = await generateAudit(full, model);
     full = { ...full, audit };
     const now = new Date().toISOString();
-    await col.updateOne({ leadKey: lead.leadKey }, { $set: { analysis: full.analysis, intel: full.intel, scores: full.scores, opportunities: full.opportunities, audit, lastAnalyzedAt: now, lastAuditAt: now, updatedAt: now } });
+    await col.updateOne(
+      { leadKey: lead.leadKey },
+      { $set: { analysis: full.analysis, intel: full.intel, scores: full.scores, opportunities: full.opportunities, audit, lastAnalyzedAt: now, lastAuditAt: now, updatedAt: now } }
+    );
   }
-  const outreach = await generateOutreach(full);
+  const outreach = await generateOutreach(full, model);
   const now = new Date().toISOString();
   await col.updateOne(
     { leadKey: lead.leadKey },
     { $set: { outreach, lastOutreachAt: now, updatedAt: now } }
   );
+  return { ...full, outreach };
+}
+
+async function execDraft(args: any) {
+  const lead = await findLeadByName(args.business);
+  if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
+  const full = await draftOutreachForLead(lead);
+  const outreach = full.outreach!;
   return {
     data: { business: lead.businessName, subject: outreach.coldEmail.subject, hasEmail: Boolean(lead.email) },
     speak:
@@ -252,16 +265,15 @@ async function execDraft(args: any) {
 // needed. Shared by the single send and the bulk send.
 async function sendOutreachToLead(
   lead: Lead,
-  toOverride?: string
+  opts?: { to?: string; model?: string }
 ): Promise<{ ok: boolean; to?: string; subject?: string; error?: string }> {
-  const to = String(toOverride || lead.email || "").trim();
+  const to = String(opts?.to || lead.email || "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return { ok: false, error: "no-email" };
   const col = await leadsCollection();
   let outreach = lead.outreach;
   if (!outreach) {
-    await execDraft({ business: lead.businessName });
-    const fresh = await col.findOne({ leadKey: lead.leadKey });
-    outreach = fresh?.outreach;
+    const drafted = await draftOutreachForLead(lead, opts?.model);
+    outreach = drafted.outreach;
     if (!outreach) return { ok: false, error: "draft-failed" };
   }
   const email = outreach.coldEmail;
@@ -282,7 +294,7 @@ async function sendOutreachToLead(
 async function execSend(args: any) {
   const lead = await findLeadByName(args.business);
   if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
-  const r = await sendOutreachToLead(lead, args.to);
+  const r = await sendOutreachToLead(lead, { to: args.to });
   if (!r.ok) {
     if (r.error === "no-email") {
       return { speak: `I don't have a valid email for ${lead.businessName}. What address should I use?` };
@@ -294,56 +306,70 @@ async function execSend(args: any) {
 
 async function execSendBatch(args: any) {
   const col = await leadsCollection();
-  const filter: any = {};
   const prioMap: Record<string, string> = {
     hot: "hot", high: "hot", top: "hot", warm: "warm", medium: "warm", cold: "cold", low: "cold",
   };
   const prio = prioMap[String(args.priority || "").toLowerCase()];
-  if (prio) filter["scores.priority"] = prio;
-  // Default to leads we haven't contacted yet so a bulk send doesn't re-email people.
-  if (args.onlyUncontacted !== false) {
-    filter.$or = [{ lastContactedAt: { $exists: false } }, { lastContactedAt: null }];
-  }
-  const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 30);
-  const leads = (await col.find(filter).sort({ "scores.overall": -1 }).limit(limit).toArray()) as unknown as Lead[];
-  if (!leads.length) {
-    return { speak: "I couldn't find any matching leads to send outreach to." };
+  const uncontactedOnly = args.onlyUncontacted !== false;
+
+  // Only target leads we can ACTUALLY email (a valid address on file). This is
+  // what previously made bulk sends do nothing — the top-scored leads often had
+  // no email, so every one got skipped.
+  const buildFilter = () => {
+    const f: any = { email: { $regex: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$" } };
+    if (prio) f["scores.priority"] = prio;
+    if (uncontactedOnly) f.$or = [{ lastContactedAt: { $exists: false } }, { lastContactedAt: null }];
+    return f;
+  };
+
+  const emailable = await col.countDocuments(buildFilter());
+  if (!emailable) {
+    const anyUncontacted = await col.countDocuments(
+      uncontactedOnly ? { $or: [{ lastContactedAt: { $exists: false } }, { lastContactedAt: null }] } : {}
+    );
+    return {
+      speak: anyUncontacted
+        ? "None of those leads have an email address on file yet, so there's nothing I can send to. Research leads that have a website first and I'll find their emails, or add addresses manually."
+        : "There are no matching leads to email right now.",
+    };
   }
 
+  const limit = Math.min(Math.max(Number(args.limit) || 30, 1), 40);
+  const leads = (await col
+    .find(buildFilter())
+    .sort({ "scores.overall": -1 })
+    .limit(limit)
+    .toArray()) as unknown as Lead[];
+
   let sent = 0;
-  let noEmail = 0;
   let failed = 0;
   const sentNames: string[] = [];
-  for (const lead of leads) {
+  // Draft (audit + outreach) and send several at once with the fast model so a
+  // big batch finishes well within the request limit instead of timing out.
+  await mapWithConcurrency(leads, 5, async (lead) => {
     try {
-      const r = await sendOutreachToLead(lead);
+      const r = await sendOutreachToLead(lead, { model: FAST_MODEL });
       if (r.ok) {
         sent++;
         sentNames.push(lead.businessName);
-      } else if (r.error === "no-email") {
-        noEmail++;
       } else {
         failed++;
       }
     } catch {
       failed++;
     }
-  }
+  });
 
-  const parts = [`Sent outreach to ${sent} lead${sent === 1 ? "" : "s"}`];
-  if (sentNames.length) parts[0] += ` — ${sentNames.slice(0, 3).join(", ")}${sentNames.length > 3 ? ` and ${sentNames.length - 3} more` : ""}`;
-  parts[0] += ".";
-  if (noEmail) parts.push(`${noEmail} had no email on file, so I skipped them.`);
-  if (failed) parts.push(`${failed} failed to send.`);
-  if (!sent && (noEmail || failed)) {
-    parts.length = 0;
-    parts.push(
-      noEmail
-        ? `None of those ${leads.length} leads had an email address on file, so nothing was sent. Try connecting Hunter or adding emails first.`
-        : `Couldn't send to any of them — ${failed} failed.`
-    );
+  const remaining = await col.countDocuments(buildFilter());
+  if (!sent) {
+    return { data: { sent, failed }, speak: `I couldn't send any of them — ${failed} failed. Check the Resend setup.` };
   }
-  return { data: { sent, noEmail, failed }, speak: parts.join(" ") };
+  let speak = `Sent outreach to ${sent} lead${sent === 1 ? "" : "s"}`;
+  if (sentNames.length) speak += ` — ${sentNames.slice(0, 3).join(", ")}${sentNames.length > 3 ? ` and ${sentNames.length - 3} more` : ""}`;
+  speak += ".";
+  if (failed) speak += ` ${failed} failed.`;
+  if (remaining) speak += ` ${remaining} more have an email waiting — say “continue” to send the next batch.`;
+  return { data: { sent, failed, remaining }, speak };
 }
 
 async function execSchedule(args: any) {
@@ -418,23 +444,38 @@ const NAV_PATHS: Record<string, { path: string; label: string }> = {
 };
 
 async function execPortalOverview() {
-  const db = await getDb();
-  const leads = await leadsCollection();
-  const [clientsCount, invoices, activeEmployees, blogsCount, jobsCount, applicationsCount, leadsCount, hotLeads] =
-    await Promise.all([
-      db.collection("clients").countDocuments({}),
-      db.collection("invoices").find({}, { projection: { amount: 1, status: 1 } }).toArray(),
-      db.collection("employees").countDocuments({ status: { $ne: "inactive" } }),
-      db.collection("blogs").countDocuments({}),
-      db.collection("jobs").countDocuments({}),
-      db.collection("applications").countDocuments({}),
-      leads.countDocuments({}),
-      leads.countDocuments({ "scores.priority": "hot" }),
-    ]);
-  const revenue = invoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-  const paid = invoices
-    .filter((i) => i.status === "paid")
-    .reduce((s, i) => s + Number(i.amount || 0), 0);
+  // Cache the whole-company snapshot briefly (busted on any lead write); it runs
+  // 8 count queries, so back-to-back "how's my business" asks stay instant.
+  const data = await cached(CacheNS.portal, "overview", 20_000, async () => {
+    const db = await getDb();
+    const leads = await leadsCollection();
+    const [clientsCount, invoices, activeEmployees, blogsCount, jobsCount, applicationsCount, leadsCount, hotLeads] =
+      await Promise.all([
+        db.collection("clients").countDocuments({}),
+        db.collection("invoices").find({}, { projection: { amount: 1, status: 1 } }).toArray(),
+        db.collection("employees").countDocuments({ status: { $ne: "inactive" } }),
+        db.collection("blogs").countDocuments({}),
+        db.collection("jobs").countDocuments({}),
+        db.collection("applications").countDocuments({}),
+        leads.countDocuments({}),
+        leads.countDocuments({ "scores.priority": "hot" }),
+      ]);
+    const revenue = invoices.reduce((s, i) => s + Number(i.amount || 0), 0);
+    const paid = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + Number(i.amount || 0), 0);
+    return {
+      clients: clientsCount,
+      invoicesRaised: revenue,
+      invoicesPaid: paid,
+      activeTeam: activeEmployees,
+      blogs: blogsCount,
+      jobs: jobsCount,
+      applications: applicationsCount,
+      leads: leadsCount,
+      hotLeads,
+    };
+  });
+
+  const { clients: clientsCount, invoicesRaised: revenue, invoicesPaid: paid, activeTeam: activeEmployees, blogs: blogsCount, jobs: jobsCount, applications: applicationsCount, leads: leadsCount, hotLeads } = data;
   return {
     data: {
       clients: clientsCount,
@@ -465,33 +506,52 @@ function execNavigate(args: any) {
   return { data: { navigateTo: dest.path }, speak: `Opening ${dest.label}.` };
 }
 
+// Tools that write to lead data — after these run, bust the lead + portal caches
+// so the dashboard and future overview calls reflect the change immediately.
+const LEAD_MUTATING = new Set([
+  "search_leads",
+  "research_leads",
+  "audit_lead",
+  "draft_outreach",
+  "send_email",
+  "send_outreach_batch",
+]);
+
 async function execute(name: string, args: any): Promise<{ speak: string; data?: any }> {
-  switch (name) {
-    case "search_leads":
-      return execSearch(args);
-    case "find_leads":
-      return execFind(args);
-    case "research_leads":
-      return execResearch(args);
-    case "audit_lead":
-      return execAudit(args);
-    case "draft_outreach":
-      return execDraft(args);
-    case "send_email":
-      return execSend(args);
-    case "send_outreach_batch":
-      return execSendBatch(args);
-    case "get_stats":
-      return execStats();
-    case "get_portal_overview":
-      return execPortalOverview();
-    case "navigate":
-      return execNavigate(args);
-    case "schedule_meeting":
-      return execSchedule(args);
-    default:
-      return { speak: "I'm not sure how to do that yet." };
+  const run = async () => {
+    switch (name) {
+      case "search_leads":
+        return execSearch(args);
+      case "find_leads":
+        return execFind(args);
+      case "research_leads":
+        return execResearch(args);
+      case "audit_lead":
+        return execAudit(args);
+      case "draft_outreach":
+        return execDraft(args);
+      case "send_email":
+        return execSend(args);
+      case "send_outreach_batch":
+        return execSendBatch(args);
+      case "get_stats":
+        return execStats();
+      case "get_portal_overview":
+        return execPortalOverview();
+      case "navigate":
+        return execNavigate(args);
+      case "schedule_meeting":
+        return execSchedule(args);
+      default:
+        return { speak: "I'm not sure how to do that yet." };
+    }
+  };
+  const out = await run();
+  if (LEAD_MUTATING.has(name)) {
+    invalidate(CacheNS.leads);
+    invalidate(CacheNS.portal);
   }
+  return out;
 }
 
 const nowISO = () => new Date().toISOString();

@@ -11,7 +11,9 @@ import {
   setStage,
   upsertLeads,
 } from "@/lib/leados/db";
-import { enrichLead } from "@/lib/leados/enrich";
+import { enrichLead, mapWithConcurrency } from "@/lib/leados/enrich";
+import { CacheNS, cached, invalidate } from "@/lib/cache";
+import { FAST_MODEL } from "@/lib/groq";
 import { generateAudit } from "@/lib/leados/audit";
 import { generateOutreach } from "@/lib/leados/outreach";
 import { emailShell, sendOutreachEmail } from "@/lib/resend";
@@ -73,19 +75,51 @@ export async function GET(req: Request) {
   if (sp.get("noChat") === "1") filter["analysis.chatWidget"] = false;
   if (sp.get("unanalyzed") === "1") filter.lastAnalyzedAt = null;
 
-  const limit = Math.min(Number(sp.get("limit") || 50), 200);
+  const limit = Math.min(Number(sp.get("limit") || 50), 2000);
   const sortKey = sp.get("sort") || "score";
   const sort: Record<string, 1 | -1> =
     sortKey === "recent" ? { createdAt: -1 } : { "scores.overall": -1 };
 
-  const [leads, total] = await Promise.all([
+  // True counts across the WHOLE matching set (not just the returned page) so the
+  // dashboard KPIs reflect every lead in the database — matching what Shadow
+  // reports. One $facet aggregation, cached briefly and busted on any lead write.
+  const [leads, facet] = await Promise.all([
     col.find(filter).sort(sort).limit(limit).toArray(),
-    col.countDocuments(filter),
+    cached(CacheNS.leads, `counts:${JSON.stringify(filter)}`, 10_000, () =>
+      col
+        .aggregate([
+          { $match: filter },
+          {
+            $facet: {
+              total: [{ $count: "n" }],
+              analysed: [{ $match: { lastAnalyzedAt: { $ne: null } } }, { $count: "n" }],
+              hot: [{ $match: { "scores.priority": "hot" } }, { $count: "n" }],
+              audited: [{ $match: { audit: { $exists: true } } }, { $count: "n" }],
+              avg: [{ $group: { _id: null, v: { $avg: "$scores.overall" } } }],
+            },
+          },
+        ])
+        .toArray()
+    ),
   ]);
+
+  const f = facet[0] || {};
+  const n = (arr: any[]) => (arr && arr[0] ? Number(arr[0].n) : 0);
+  const total = n(f.total);
+  const analysed = n(f.analysed);
+  const counts = {
+    total,
+    analysed,
+    pending: Math.max(0, total - analysed),
+    hot: n(f.hot),
+    audited: n(f.audited),
+    avgScore: f.avg && f.avg[0] ? Math.round(f.avg[0].v || 0) : 0,
+  };
 
   return NextResponse.json({
     ok: true,
     total,
+    counts,
     leads: leads.map(serialize),
   });
 }
@@ -103,6 +137,11 @@ export async function POST(req: Request) {
   }
 
   const action = String(body?.action || "");
+
+  // Every POST action mutates lead data — bust the lead + portal caches so the
+  // next dashboard / Shadow read recomputes fresh counts.
+  invalidate(CacheNS.leads);
+  invalidate(CacheNS.portal);
 
   try {
     // --- Module 1/2: live Google Places search → import as leads -------------
@@ -205,7 +244,7 @@ export async function POST(req: Request) {
 
     // --- Analyze a batch of not-yet-analyzed leads ---------------------------
     if (action === "analyze-batch") {
-      const size = Math.min(Number(body.size || 5), 15);
+      const size = Math.min(Number(body.size || 10), 20);
       const col = await leadsCollection();
       const pending = await col
         .find({ lastAnalyzedAt: null })
@@ -213,9 +252,13 @@ export async function POST(req: Request) {
         .toArray();
 
       let done = 0;
-      for (const lead of pending) {
+      // Enrich a few at a time (website fetch + LLM per lead) instead of strictly
+      // one-by-one, so a batch finishes in seconds rather than minutes.
+      await mapWithConcurrency(pending, 8, async (lead) => {
         try {
-          const { analysis, intel, scores, opportunities, email } = await enrichLead(lead);
+          const { analysis, intel, scores, opportunities, email } = await enrichLead(lead, {
+            intelModel: FAST_MODEL,
+          });
           const now = new Date().toISOString();
           await col.updateOne(
             { leadKey: lead.leadKey },
@@ -239,7 +282,7 @@ export async function POST(req: Request) {
             { $set: { lastAnalyzedAt: new Date().toISOString() } }
           );
         }
-      }
+      });
 
       const remaining = await col.countDocuments({ lastAnalyzedAt: null });
       return NextResponse.json({ ok: true, analyzed: done, remaining });

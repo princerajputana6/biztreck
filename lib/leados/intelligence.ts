@@ -143,7 +143,7 @@ function coerceIntel(raw: any, base: BusinessIntel): BusinessIntel {
  * Best-available intelligence for a lead. Heuristic baseline, refined by the LLM
  * when available. Never throws — falls back to the heuristic on any AI failure.
  */
-export async function deriveIntel(lead: Lead): Promise<BusinessIntel> {
+export async function deriveIntel(lead: Lead, model?: string): Promise<BusinessIntel> {
   const base = deriveIntelHeuristic(lead);
   if (!hasLLM()) return base;
 
@@ -177,7 +177,7 @@ export async function deriveIntel(lead: Lead): Promise<BusinessIntel> {
     `"businessComplexity": "low"|"medium"|"high"|"unknown"}`;
 
   try {
-    const raw = await complete(system, JSON.stringify(facts), true, 0.3);
+    const raw = await complete(system, JSON.stringify(facts), true, 0.3, model);
     return coerceIntel(JSON.parse(raw), base);
   } catch {
     return base;

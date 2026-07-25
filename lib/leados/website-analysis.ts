@@ -207,12 +207,14 @@ export async function analyzeWebsite(
   let res: Response;
   const started = Date.now();
   try {
-    res = await fetchWithTimeout(url, 12_000);
+    // Cap the tail: most sites answer in 1–3s; a dead/slow host shouldn't hold up
+    // a whole batch. 8s is enough for genuinely slow-but-alive sites.
+    res = await fetchWithTimeout(url, 8_000);
   } catch (err: any) {
     // Retry once over http:// — plenty of small businesses still have no TLS.
     try {
       const httpUrl = url.replace(/^https:/, "http:");
-      res = await fetchWithTimeout(httpUrl, 10_000);
+      res = await fetchWithTimeout(httpUrl, 6_000);
     } catch {
       return {
         ...base,
