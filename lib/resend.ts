@@ -62,6 +62,28 @@ async function resendSend(args: ResendArgs): Promise<SendResult> {
  * callers can see which transport delivered it.
  */
 async function sendWithFallback(args: ResendArgs): Promise<SendResult> {
+  // Prefer SMTP (e.g. Gmail) when configured so sent mail lands in the account's
+  // own "Sent" folder — Gmail auto-saves messages sent via smtp.gmail.com. Set
+  // PREFER_SMTP=false to go back to Resend-first.
+  const preferSmtp =
+    smtpConfigured() && String(process.env.PREFER_SMTP ?? "true").toLowerCase() !== "false";
+
+  if (preferSmtp) {
+    const s = await sendViaSmtp(args);
+    if (s.ok) return { ok: true, id: s.id, via: "smtp" };
+    // SMTP failed (rate limit / auth) — fall back to Resend if it's usable.
+    if (resendUsable()) {
+      const r = await resendSend(args);
+      if (r.ok) return r;
+      return {
+        ok: false,
+        error: `SMTP failed (${s.error}); Resend fallback also failed (${r.error})`,
+        code: "other",
+      };
+    }
+    return { ok: false, error: s.error, code: "other" };
+  }
+
   if (resendUsable()) {
     const r = await resendSend(args);
     if (r.ok) return r;
@@ -69,8 +91,6 @@ async function sendWithFallback(args: ResendArgs): Promise<SendResult> {
     if (smtpConfigured()) {
       const s = await sendViaSmtp(args);
       if (s.ok) return { ok: true, id: s.id, via: "smtp" };
-      // Both transports failed — that's a real config problem, not just a quota,
-      // so don't report it as a quota-only issue.
       return {
         ok: false,
         error: `Resend failed (${r.error}); SMTP fallback also failed (${s.error})`,

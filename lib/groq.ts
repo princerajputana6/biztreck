@@ -13,8 +13,68 @@ const MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct
 export const FAST_MODEL =
   process.env.OPENROUTER_FAST_MODEL || "openai/gpt-4o-mini";
 
+// A strong reasoning model for the Shadow agent's autonomous think→act→observe
+// loop, where reasoning quality matters more than latency. Override with
+// OPENROUTER_SMART_MODEL / SHADOW_MODEL (e.g. "anthropic/claude-opus-4.1").
+export const SMART_MODEL =
+  process.env.OPENROUTER_SMART_MODEL ||
+  process.env.SHADOW_MODEL ||
+  "anthropic/claude-sonnet-4";
+
 /** The active model id, for provenance labels on generated content. */
 export const LLM_MODEL = MODEL;
+
+export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+/**
+ * Multi-turn chat completion (for the agent loop). Tries the given model, then
+ * falls back through OPENROUTER_MODEL and FAST_MODEL so a mis-set / unavailable
+ * SMART_MODEL degrades gracefully instead of breaking Shadow.
+ */
+export async function chat(
+  messages: ChatMessage[],
+  opts: { json?: boolean; temperature?: number; model?: string } = {}
+): Promise<string> {
+  if (!apiKey) throw new Error("OPEN_ROUTE_API_KEY missing");
+  const chain = Array.from(
+    new Set([opts.model || SMART_MODEL, MODEL, FAST_MODEL].filter(Boolean))
+  );
+  let lastErr: unknown;
+  for (const model of chain) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 90_000);
+    try {
+      const res = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://www.biztreck.world",
+          "X-Title": "Biztreck LeadOS",
+        },
+        body: JSON.stringify({
+          model,
+          temperature: opts.temperature ?? 0.4,
+          messages,
+          ...(opts.json ? { response_format: { type: "json_object" as const } } : {}),
+        }),
+      });
+      if (!res.ok) {
+        lastErr = new Error(`OpenRouter ${res.status}: ${(await res.text().catch(() => "")).slice(0, 200)}`);
+        continue; // try the next model in the chain
+      }
+      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+      return opts.json ? extractJson(content) : content;
+    } catch (e) {
+      lastErr = e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("All chat models failed");
+}
 
 /** True when an OpenRouter key is configured — callers can pick a fallback. */
 export function hasLLM(): boolean {

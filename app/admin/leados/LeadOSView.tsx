@@ -153,13 +153,26 @@ export default function LeadOSView() {
   const [country, setCountry] = useState("");
   const [flags, setFlags] = useState<Record<string, boolean>>({});
 
-  const [view, setView] = useState<"list" | "board">("list");
+  const [view, setView] = useState<"list" | "board" | "sent">("list");
+  const [sentEmails, setSentEmails] = useState<AnyDoc[] | null>(null);
+  const [sentLoading, setSentLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchMax, setSearchMax] = useState(20);
   // Optimistic pipeline-stage moves for the kanban, keyed by leadKey.
   const [stageOverrides, setStageOverrides] = useState<Record<string, string>>({});
+
+  // Load the verifiable sent-email log whenever the Sent tab is opened.
+  useEffect(() => {
+    if (view !== "sent") return;
+    setSentLoading(true);
+    fetch("/api/admin/leados/sent")
+      .then((r) => r.json())
+      .then((d) => setSentEmails(d.ok ? d.sent || [] : []))
+      .catch(() => setSentEmails([]))
+      .finally(() => setSentLoading(false));
+  }, [view]);
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -516,11 +529,69 @@ export default function LeadOSView() {
           >
             <Columns3 size={15} /> Board
           </button>
+          <button
+            type="button"
+            onClick={() => setView("sent")}
+            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
+              view === "sent" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Mail size={15} /> Sent
+          </button>
         </div>
       </div>
 
       {/* Lead list */}
-      {loading ? (
+      {view === "sent" ? (
+        sentLoading ? (
+          <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+            <Loader2 size={16} className="animate-spin" /> Loading sent emails…
+          </div>
+        ) : !sentEmails || sentEmails.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-10 text-center text-sm text-slate-500">
+            No outreach emails have been sent yet. When they are, every send is logged here —
+            recipient, subject, time and transport.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-navy-700/40 bg-navy-900/30 p-3 text-xs text-slate-400">
+              These went out via Resend / SMTP — <span className="text-slate-300">not your Gmail</span>,
+              so they won&apos;t appear in Gmail&apos;s Sent folder. Check your Resend dashboard for
+              delivery status.
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-navy-700/40">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-navy-900/50 text-xs uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-4 py-2.5">Business</th>
+                    <th className="px-4 py-2.5">Recipient</th>
+                    <th className="px-4 py-2.5">Subject</th>
+                    <th className="px-4 py-2.5">Sent</th>
+                    <th className="px-4 py-2.5">Via</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sentEmails.map((e, i) => (
+                    <tr key={i} className="border-t border-navy-700/30">
+                      <td className="px-4 py-2.5 text-white">{e.businessName || "—"}</td>
+                      <td className="px-4 py-2.5 text-slate-300">{e.to}</td>
+                      <td className="px-4 py-2.5 text-slate-400">{e.subject}</td>
+                      <td className="px-4 py-2.5 text-slate-400">
+                        {e.at ? new Date(e.at).toLocaleString() : "—"}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] uppercase text-slate-400">
+                          {e.transport || "resend"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      ) : loading ? (
         <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
           <Loader2 size={16} className="animate-spin" /> Loading leads…
         </div>

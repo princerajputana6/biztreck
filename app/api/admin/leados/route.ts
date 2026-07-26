@@ -17,6 +17,7 @@ import { FAST_MODEL } from "@/lib/groq";
 import { generateAudit } from "@/lib/leados/audit";
 import { generateOutreach } from "@/lib/leados/outreach";
 import { emailShell, sendOutreachEmail } from "@/lib/resend";
+import { recordSentEmail } from "@/lib/leados/sent-log";
 import { normalizePlaces, runApifyScraper } from "@/lib/scraper";
 import { marked } from "marked";
 import type { Lead, PipelineStage } from "@/lib/leados/types";
@@ -475,6 +476,16 @@ export async function POST(req: Request) {
           { status: 502 }
         );
       }
+      await recordSentEmail({
+        to,
+        from: "",
+        subject,
+        leadKey,
+        businessName: lead.businessName,
+        messageId: result.id,
+        transport: result.via,
+        sentBy: "admin-ui",
+      });
 
       const now = new Date().toISOString();
       const followUpAt = new Date(
