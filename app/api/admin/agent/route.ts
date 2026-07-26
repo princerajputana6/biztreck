@@ -266,20 +266,20 @@ async function execDraft(args: any) {
 async function sendOutreachToLead(
   lead: Lead,
   opts?: { to?: string; model?: string }
-): Promise<{ ok: boolean; to?: string; subject?: string; error?: string }> {
+): Promise<{ ok: boolean; to?: string; subject?: string; error?: string; code?: string }> {
   const to = String(opts?.to || lead.email || "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return { ok: false, error: "no-email" };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return { ok: false, error: "no-email", code: "no-email" };
   const col = await leadsCollection();
   let outreach = lead.outreach;
   if (!outreach) {
     const drafted = await draftOutreachForLead(lead, opts?.model);
     outreach = drafted.outreach;
-    if (!outreach) return { ok: false, error: "draft-failed" };
+    if (!outreach) return { ok: false, error: "draft-failed", code: "draft-failed" };
   }
   const email = outreach.coldEmail;
   const html = emailShell("New business outreach", marked.parse(email.body, { async: false }) as string);
   const result = await sendOutreachEmail({ to, subject: email.subject, html });
-  if (!result.ok) return { ok: false, error: result.error || "send-failed" };
+  if (!result.ok) return { ok: false, error: result.error || "send-failed", code: (result as any).code || "other" };
   const now = new Date().toISOString();
   await col.updateOne(
     { leadKey: lead.leadKey },
@@ -296,8 +296,14 @@ async function execSend(args: any) {
   if (!lead) return { speak: `I couldn't find a lead called "${args.business}".` };
   const r = await sendOutreachToLead(lead, { to: args.to });
   if (!r.ok) {
-    if (r.error === "no-email") {
+    if (r.code === "no-email") {
       return { speak: `I don't have a valid email for ${lead.businessName}. What address should I use?` };
+    }
+    if (r.code === "quota") {
+      return { speak: "That didn't send — your Resend account has hit its daily email limit (the free plan allows 100 a day). It resets at midnight UTC, or upgrade the Resend plan to send more." };
+    }
+    if (r.code === "auth") {
+      return { speak: "The email was rejected by Resend — the sender domain or API key looks misconfigured. Check the Resend setup in your environment." };
     }
     return { speak: `The email failed to send: ${r.error}.` };
   }
@@ -343,15 +349,20 @@ async function execSendBatch(args: any) {
 
   let sent = 0;
   let failed = 0;
+  let stopCode: "quota" | "auth" | null = null; // provider-level stop → abort the rest
   const sentNames: string[] = [];
-  // Draft (audit + outreach) and send several at once with the fast model so a
-  // big batch finishes well within the request limit instead of timing out.
-  await mapWithConcurrency(leads, 5, async (lead) => {
+  // Draft (audit + outreach) and send with LOW concurrency — Resend's free tier
+  // rate-limits to a couple of sends per second, so blasting many at once just
+  // gets everything 429'd. Fast model keeps the per-lead drafting quick.
+  await mapWithConcurrency(leads, 2, async (lead) => {
+    if (stopCode) return; // provider quota/auth already failed — don't keep hammering
     try {
       const r = await sendOutreachToLead(lead, { model: FAST_MODEL });
       if (r.ok) {
         sent++;
         sentNames.push(lead.businessName);
+      } else if (r.code === "quota" || r.code === "auth") {
+        stopCode = r.code;
       } else {
         failed++;
       }
@@ -361,8 +372,25 @@ async function execSendBatch(args: any) {
   });
 
   const remaining = await col.countDocuments(buildFilter());
+
+  // Provider blocked us (daily quota / bad sender) — say exactly why.
+  if (stopCode === "quota") {
+    return {
+      data: { sent, failed, remaining, stopped: "quota" },
+      speak:
+        (sent ? `I sent ${sent} before your Resend account hit its daily email limit. ` : "I couldn't send — your Resend account has hit its daily email limit (the free plan allows 100 a day). ") +
+        `It resets at midnight UTC, or upgrade your Resend plan to send more. ${remaining} still waiting.`,
+    };
+  }
+  if (stopCode === "auth") {
+    return {
+      data: { sent, failed, remaining, stopped: "auth" },
+      speak: "Resend rejected the send — the sender domain or API key looks misconfigured. Check the Resend setup in your environment.",
+    };
+  }
+
   if (!sent) {
-    return { data: { sent, failed }, speak: `I couldn't send any of them — ${failed} failed. Check the Resend setup.` };
+    return { data: { sent, failed }, speak: `I couldn't send any of them — ${failed} failed. It may be a temporary Resend or drafting error; try again shortly.` };
   }
   let speak = `Sent outreach to ${sent} lead${sent === 1 ? "" : "s"}`;
   if (sentNames.length) speak += ` — ${sentNames.slice(0, 3).join(", ")}${sentNames.length > 3 ? ` and ${sentNames.length - 3} more` : ""}`;

@@ -35,6 +35,10 @@ const PREFS = { mic: "shadow_mic_enabled", convo: "shadow_convo_mode" };
 const SILENCE_MS = 1300;
 const MIN_SEND_CHARS = 2;
 const ECHO_WINDOW_MS = 4000;
+// While Shadow is speaking (and briefly after) we ignore everything the mic
+// hears, so it can never transcribe and act on its own voice. The cooldown
+// covers the recogniser's latency finalising Shadow's last words.
+const SPEECH_COOLDOWN_MS = 600;
 
 function words(s: string): string[] {
   return s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
@@ -82,6 +86,8 @@ export default function ShadowWidget() {
   const busyRef = useRef(false);
   const pendingRef = useRef<Pending>(null);
   const speakingRef = useRef(false);
+  const speechMuteRef = useRef(false); // ignore mic input while/just after Shadow speaks
+  const speechCooldownTimerRef = useRef<any>(null);
   const bufferRef = useRef("");
   const silenceTimerRef = useRef<any>(null);
   const restartTimerRef = useRef<any>(null);
@@ -141,6 +147,10 @@ export default function ShadowWidget() {
     } catch {}
     speakingRef.current = false;
     setSpeaking(false);
+    // User is taking over — unmute the mic right away and drop any captured echo.
+    if (speechCooldownTimerRef.current) clearTimeout(speechCooldownTimerRef.current);
+    speechMuteRef.current = false;
+    bufferRef.current = "";
   }, []);
 
   const speak = useCallback(
@@ -160,10 +170,21 @@ export default function ShadowWidget() {
       lastSpokeAtRef.current = Date.now();
       speakingRef.current = true;
       setSpeaking(true);
+      // Mute the mic for the whole utterance so Shadow never hears itself.
+      if (speechCooldownTimerRef.current) clearTimeout(speechCooldownTimerRef.current);
+      speechMuteRef.current = true;
+      bufferRef.current = "";
       u.onend = u.onerror = () => {
         speakingRef.current = false;
         lastSpokeAtRef.current = Date.now();
         setSpeaking(false);
+        // Keep ignoring the mic briefly to swallow the recogniser's trailing echo.
+        if (speechCooldownTimerRef.current) clearTimeout(speechCooldownTimerRef.current);
+        speechCooldownTimerRef.current = setTimeout(() => {
+          speechMuteRef.current = false;
+          bufferRef.current = "";
+          setInterim("");
+        }, SPEECH_COOLDOWN_MS);
       };
       window.speechSynthesis.speak(u);
     },
@@ -291,8 +312,9 @@ export default function ShadowWidget() {
     const text = bufferRef.current.trim();
     bufferRef.current = "";
     setInterim("");
+    if (speechMuteRef.current) return; // Shadow is speaking — never send captured audio
     if (!text || text.length < MIN_SEND_CHARS) return;
-    if (isEcho(text)) return; // dropped Shadow's own voice
+    if (isEcho(text)) return; // backstop: drop anything matching Shadow's recent words
     if (busyRef.current) return; // still answering — ignore stray audio
 
     if (convoModeRef.current) {
@@ -325,6 +347,12 @@ export default function ShadowWidget() {
       runningRef.current = true;
     };
     rec.onresult = (e: any) => {
+      // While Shadow is speaking (or in the cooldown after), ignore the mic
+      // entirely so it never transcribes its own voice.
+      if (speechMuteRef.current) {
+        bufferRef.current = "";
+        return;
+      }
       let interimText = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
@@ -333,8 +361,6 @@ export default function ShadowWidget() {
       }
       const live = (bufferRef.current + " " + interimText).trim();
       setInterim(live);
-      // Barge-in: user speaking over Shadow → stop talking and listen.
-      if (speakingRef.current && live && !isEcho(live)) stopSpeaking();
       scheduleFlush();
     };
     rec.onerror = (ev: any) => {
@@ -367,7 +393,7 @@ export default function ShadowWidget() {
     } catch {
       runningRef.current = false;
     }
-  }, [isEcho, scheduleFlush, stopSpeaking]);
+  }, [scheduleFlush]);
 
   const stopEngine = useCallback(() => {
     stoppingRef.current = true;
@@ -447,7 +473,7 @@ export default function ShadowWidget() {
   const status = !micEnabled
     ? "Mic off"
     : speaking
-      ? "Speaking… (just talk to interrupt)"
+      ? "Speaking…"
       : interim
         ? "Listening…"
         : convoMode
