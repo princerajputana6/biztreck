@@ -1,8 +1,11 @@
 import { Resend } from "resend";
 import { sendViaSmtp, smtpConfigured } from "@/lib/smtp";
+import { safeFrom } from "@/lib/mail-from";
 
 const apiKey = process.env.RESEND_API_KEY;
-const fromAddress = process.env.RESEND_FROM || "Biztreck <onboarding@resend.dev>";
+// Locked to a @biztreck.world sender (defaults to connect@biztreck.world) so a
+// misconfigured env can never make this app send "from" anything else.
+const fromAddress = safeFrom(process.env.RESEND_FROM);
 const adminEmail = process.env.ADMIN_EMAIL || "connect@biztreck.world";
 
 let _resend: Resend | null = null;

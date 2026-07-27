@@ -76,6 +76,12 @@ export async function GET(req: Request) {
   if (sp.get("noChat") === "1") filter["analysis.chatWidget"] = false;
   if (sp.get("unanalyzed") === "1") filter.lastAnalyzedAt = null;
 
+  // Contacted = we've sent this lead a cold email (lastContactedAt is set on
+  // every send). `{ $ne: null }` matches only real timestamps; `null` also
+  // matches leads where the field was never set (never contacted).
+  if (sp.get("contacted") === "1") filter.lastContactedAt = { $ne: null };
+  if (sp.get("uncontacted") === "1") filter.lastContactedAt = null;
+
   const limit = Math.min(Number(sp.get("limit") || 50), 2000);
   const sortKey = sp.get("sort") || "score";
   const sort: Record<string, 1 | -1> =
@@ -94,6 +100,7 @@ export async function GET(req: Request) {
             $facet: {
               total: [{ $count: "n" }],
               analysed: [{ $match: { lastAnalyzedAt: { $ne: null } } }, { $count: "n" }],
+              contacted: [{ $match: { lastContactedAt: { $ne: null } } }, { $count: "n" }],
               hot: [{ $match: { "scores.priority": "hot" } }, { $count: "n" }],
               audited: [{ $match: { audit: { $exists: true } } }, { $count: "n" }],
               avg: [{ $group: { _id: null, v: { $avg: "$scores.overall" } } }],
@@ -112,6 +119,7 @@ export async function GET(req: Request) {
     total,
     analysed,
     pending: Math.max(0, total - analysed),
+    contacted: n(f.contacted),
     hot: n(f.hot),
     audited: n(f.audited),
     avgScore: f.avg && f.avg[0] ? Math.round(f.avg[0].v || 0) : 0,
@@ -497,6 +505,7 @@ export async function POST(req: Request) {
         {
           $set: {
             lastContactedAt: now,
+            lastEmailedAt: now,
             nextFollowUpAt: followUpAt,
             email: lead.email || to,
             updatedAt: now,
@@ -526,6 +535,37 @@ export async function POST(req: Request) {
         );
       }
       await setStage(leadKey, stage);
+      return NextResponse.json({ ok: true });
+    }
+
+    // --- CRM: log a phone call (counts as "contacted" alongside email) -------
+    if (action === "log-call") {
+      const leadKey = String(body.leadKey || "");
+      if (!leadKey) {
+        return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
+      }
+      const col = await leadsCollection();
+      const lead = await col.findOne({ leadKey });
+      if (!lead) {
+        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
+      }
+      const note = String(body.note || "").trim();
+      const now = new Date().toISOString();
+      await col.updateOne(
+        { leadKey },
+        {
+          // lastContactedAt = generic "last contacted" (drives the Contacted
+          // count/filter); lastCalledAt records the phone channel specifically.
+          $set: { lastCalledAt: now, lastContactedAt: now, updatedAt: now },
+          $push: {
+            timeline: {
+              at: now,
+              type: "call",
+              summary: note ? `Logged a call — ${note}` : "Logged a phone call",
+            },
+          },
+        } as never
+      );
       return NextResponse.json({ ok: true });
     }
 

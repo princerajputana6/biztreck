@@ -290,6 +290,10 @@ export type Lead = {
   notes?: string;
   timeline: TimelineEvent[];
   lastContactedAt?: string | null;
+  // Channel-specific contact timestamps. `lastContactedAt` is set on any contact
+  // (email OR phone); these two record which channel(s) were used.
+  lastEmailedAt?: string | null;
+  lastCalledAt?: string | null;
   nextFollowUpAt?: string | null;
 
   // ---- Bookkeeping

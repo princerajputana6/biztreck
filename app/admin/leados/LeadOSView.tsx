@@ -134,7 +134,57 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-type Counts = { total: number; analysed: number; pending: number; hot: number; audited: number; avgScore: number };
+type Counts = { total: number; analysed: number; pending: number; contacted: number; hot: number; audited: number; avgScore: number };
+
+// Contacted = we've reached out to this lead by email OR phone. Driven by real
+// data: lastContactedAt is stamped on every email send and every logged call.
+function isContacted(l: AnyDoc): boolean {
+  return Boolean(l.lastContactedAt || l.lastEmailedAt || l.lastCalledAt);
+}
+// Emailed if there's an explicit email timestamp, or (legacy) a contact
+// timestamp that isn't a call — before call-logging existed, any contact = email.
+function wasEmailed(l: AnyDoc): boolean {
+  return Boolean(l.lastEmailedAt) || (Boolean(l.lastContactedAt) && !l.lastCalledAt);
+}
+function wasCalled(l: AnyDoc): boolean {
+  return Boolean(l.lastCalledAt);
+}
+function fmtDay(v: unknown): string {
+  try {
+    return new Date(v as string).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch {
+    return "";
+  }
+}
+
+// Channel pills ("Cold email sent" / "Called") for leads we've contacted.
+function ContactedBadge({ lead, className = "" }: { lead: AnyDoc; className?: string }) {
+  const emailed = wasEmailed(lead);
+  const called = wasCalled(lead);
+  if (!emailed && !called) return null;
+  const emailDay = fmtDay(lead.lastEmailedAt || lead.lastContactedAt);
+  const callDay = fmtDay(lead.lastCalledAt);
+  return (
+    <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
+      {emailed && (
+        <span
+          title={`Cold email sent${emailDay ? ` on ${emailDay}` : ""}`}
+          className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200"
+        >
+          <Mail size={10} /> Cold email sent{emailDay ? ` · ${emailDay}` : ""}
+        </span>
+      )}
+      {called && (
+        <span
+          title={`Call logged${callDay ? ` on ${callDay}` : ""}`}
+          className="inline-flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 text-[10px] font-medium text-sky-200"
+        >
+          <Phone size={10} /> Called{callDay ? ` · ${callDay}` : ""}
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function LeadOSView() {
   const [leads, setLeads] = useState<AnyDoc[]>([]);
@@ -247,18 +297,28 @@ export default function LeadOSView() {
         audited: counts.audited,
         avg: counts.avgScore,
         pending: counts.pending,
+        contacted: counts.contacted,
       };
     }
     const hot = leads.filter((l) => l.scores?.priority === "hot").length;
     const analyzed = leads.filter((l) => l.lastAnalyzedAt).length;
     const audited = leads.filter((l) => l.audit).length;
+    const contacted = leads.filter(isContacted).length;
     const avg = leads.length
       ? Math.round(leads.reduce((s, l) => s + (l.scores?.overall || 0), 0) / leads.length)
       : 0;
-    return { hot, analyzed, audited, avg, pending: Math.max(0, total - analyzed) };
+    return { hot, analyzed, audited, avg, pending: Math.max(0, total - analyzed), contacted };
   }, [counts, leads, total]);
 
   const toggle = (k: string) => setFlags((f) => ({ ...f, [k]: !f[k] }));
+
+  // "Contacted" and "Not contacted" are mutually exclusive — turning one on
+  // clears the other. Shared by the Contacted KPI card and the filter chips.
+  const toggleContacted = (k: string) =>
+    setFlags((f) => {
+      const other = k === "contacted" ? "uncontacted" : "contacted";
+      return { ...f, [k]: !f[k], [other]: false };
+    });
 
   // Generate (or regenerate) an audit, then open the report modal on success.
   const runAudit = async (lead: AnyDoc) => {
@@ -278,6 +338,13 @@ export default function LeadOSView() {
       "Outreach kit generated"
     );
     if (data?.outreach) setOutreachLead({ ...lead, outreach: data.outreach });
+  };
+
+  // Log a phone call — counts the lead as "contacted" (by phone) and timelines it.
+  const logCall = async (lead: AnyDoc) => {
+    const note = window.prompt(`Log a call with ${lead.businessName}. Add a note (optional):`, "");
+    if (note === null) return; // user cancelled
+    await act(`call-${lead.leadKey}`, { action: "log-call", leadKey: lead.leadKey, note }, "Call logged");
   };
 
   // Live Google Places search → import into the lead database.
@@ -341,24 +408,45 @@ export default function LeadOSView() {
       )}
 
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {[
           { icon: Target, label: "Total leads", value: total, hint: `${leads.length} shown` },
           { icon: Flame, label: "Hot leads", value: stats.hot, hint: "priority = hot" },
+          {
+            icon: Mail,
+            label: "Contacted",
+            value: stats.contacted,
+            hint: "emailed or called — click to filter",
+            filterKey: "contacted" as const,
+          },
           { icon: TrendingUp, label: "Avg score", value: stats.avg, hint: "weighted 0–100" },
           { icon: Check, label: "Analysed", value: stats.analyzed, hint: `${stats.pending} pending` },
           { icon: FileText, label: "Audited", value: stats.audited, hint: "AI reports ready" },
         ].map((s) => {
           const Icon = s.icon;
+          const active = s.filterKey ? Boolean(flags[s.filterKey]) : false;
+          const clickable = Boolean(s.filterKey);
           return (
-            <div key={s.label} className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
+            <button
+              key={s.label}
+              type="button"
+              onClick={clickable ? () => toggleContacted(s.filterKey as string) : undefined}
+              aria-pressed={clickable ? active : undefined}
+              className={`rounded-xl border p-4 text-left transition ${
+                active
+                  ? "border-emerald-400/50 bg-emerald-400/10"
+                  : "border-navy-700/40 bg-navy-900/40"
+              } ${clickable ? "cursor-pointer hover:border-accent-cyan/50" : "cursor-default"}`}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-slate-500">{s.label}</span>
-                <Icon size={16} className="text-accent-cyan" />
+                <Icon size={16} className={active ? "text-emerald-300" : "text-accent-cyan"} />
               </div>
               <div className="mt-3 font-display text-2xl font-bold text-white">{s.value}</div>
-              <div className="mt-1 text-xs text-slate-500">{s.hint}</div>
-            </div>
+              <div className={`mt-1 text-xs ${active ? "text-emerald-300" : "text-slate-500"}`}>
+                {active ? "showing contacted only" : s.hint}
+              </div>
+            </button>
           );
         })}
       </div>
@@ -482,6 +570,23 @@ export default function LeadOSView() {
           </select>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            ["contacted", "Contacted"],
+            ["uncontacted", "Not contacted"],
+          ].map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => toggleContacted(k)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                flags[k]
+                  ? "border-emerald-400/40 bg-emerald-400/15 text-white"
+                  : "border-navy-700/60 bg-navy-900/60 text-slate-300 hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
           {[
             ["noWebsite", "No website"],
             ["noSsl", "No SSL"],
@@ -629,6 +734,7 @@ export default function LeadOSView() {
                         No website
                       </span>
                     )}
+                    <ContactedBadge lead={l} className="mt-2" />
                   </div>
                   <div className="shrink-0 text-right">
                     <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize ${PRIORITY_TONE[s?.priority] || PRIORITY_TONE.ignore}`}>
@@ -697,6 +803,15 @@ export default function LeadOSView() {
                   >
                     {busy === `outreach-${l.leadKey}` ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
                     {l.outreach ? "Outreach" : "Generate outreach"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => logCall(l)}
+                    disabled={busy === `call-${l.leadKey}`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1.5 text-xs text-sky-200 disabled:opacity-60"
+                  >
+                    {busy === `call-${l.leadKey}` ? <Loader2 size={12} className="animate-spin" /> : <Phone size={12} />}
+                    Log call
                   </button>
                   <select
                     value={l.stage}
@@ -1165,6 +1280,22 @@ function LeadKanban({
                       >
                         {l.scores?.priority || "unscored"}
                       </span>
+                      {wasEmailed(l) && (
+                        <span
+                          title="Cold email sent"
+                          className="inline-flex items-center gap-0.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-medium text-emerald-200"
+                        >
+                          <Mail size={10} /> Emailed
+                        </span>
+                      )}
+                      {wasCalled(l) && (
+                        <span
+                          title="Call logged"
+                          className="inline-flex items-center gap-0.5 rounded-full border border-sky-400/30 bg-sky-400/10 px-1.5 py-0.5 text-[9px] font-medium text-sky-200"
+                        >
+                          <Phone size={10} /> Called
+                        </span>
+                      )}
                       {l.audit && <FileText size={11} className="text-violet-300" />}
                       {l.outreach && <Send size={11} className="text-emerald-300" />}
                     </div>

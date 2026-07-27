@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { chat, FAST_MODEL, SMART_MODEL, hasLLM, type ChatMessage } from "@/lib/groq";
+import { hasAnthropic } from "@/lib/anthropic";
 import { safeDbQuery } from "@/lib/leados/db-query";
 import { runApifyScraper, normalizePlaces } from "@/lib/scraper";
 import {
@@ -51,7 +52,7 @@ const TOOLS = `
 - list_sent_emails { limit?: number (default 15) } — the actual log of outreach emails that were SENT: recipient, business, subject, time, and transport (Resend/SMTP). Use this whenever the user asks "did you send…", "what emails did you send", "who did you email", "show/verify sent emails", or where to find them.
 - get_portal_overview {} — company-wide snapshot across the WHOLE admin: number of clients, total & paid invoicing (revenue), active team size, blog & job-post counts, job applications received, and lead totals. Use for ANY "how many / how much / what's my …" question about the business (clients, revenue, team, content, applications, leads).
 - navigate { to: "dashboard"|"leados"|"clients"|"content"|"team"|"integrations"|"users" } — open/switch the admin to that section for the user (e.g. "open clients", "go to team", "take me to integrations").
-- db_query { collection: string, filter?: object, count?: boolean, limit?: number, sort?: object, fields?: string[] } — READ-ONLY database access to answer ANY data question the fixed tools don't cover. Collections: leados_leads (fields: businessName, email, phone, city, country, website, stage, scores.overall, scores.priority, lastContactedAt, lastAnalyzedAt, source, createdAt), clients, invoices (amount, status), employees (status), applications, blogs, jobs, sent_emails (to, subject, transport, at), contacts, expenses, scraped_places. Use count:true for "how many", or return rows to inspect. Build a normal MongoDB filter (e.g. {"scores.priority":"hot","city":"London"}). Use this to investigate before answering, exactly like you'd query a database yourself.`;
+- db_query { collection: string, filter?: object, count?: boolean, limit?: number, sort?: object, fields?: string[] } — READ-ONLY database access to answer ANY data question the fixed tools don't cover. Collections: leados_leads (fields: businessName, email, phone, city, country, website, stage, scores.overall, scores.priority, lastContactedAt, lastEmailedAt, lastCalledAt, lastAnalyzedAt, source, createdAt), clients, invoices (amount, status), employees (status), applications, blogs, jobs, sent_emails (to, subject, transport, at), contacts, expenses, scraped_places. Use count:true for "how many", or return rows to inspect. Build a normal MongoDB filter (e.g. {"scores.priority":"hot","city":"London"}). Use this to investigate before answering, exactly like you'd query a database yourself.`;
 
 // What Shadow knows about how this app works, so it can EXPLAIN things (not just
 // do them) — e.g. why sent email isn't in Gmail — instead of deflecting.
@@ -59,6 +60,7 @@ const KNOWLEDGE = `HOW BIZTRECK WORKS (use this to answer "how/why/where" questi
 - Email sending: outreach is sent through Resend (from ${process.env.RESEND_FROM || "connect@biztreck.world"}), with an SMTP server as fallback. It is NOT sent through the user's Gmail, so sent mail does NOT appear in Gmail's "Sent" folder. It's verifiable in: (a) the "Sent" tab in LeadOS, (b) the sent_emails collection (via db_query or list_sent_emails), and (c) the user's Resend dashboard (delivery status). If a user says emails aren't in Gmail, explain this — they were sent, just not via Gmail.
 - Leads live in the leados_leads collection. Each lead can have: website analysis, an AI audit, a drafted outreach kit, scores (website/software/ai/quality/overall + priority hot/warm/cold), a pipeline stage, and a timeline.
 - Lead flow: search_leads (Google Places via Apify) → research_leads (website analysis + scoring + Hunter email discovery) → audit_lead → draft_outreach → send_email / send_outreach_batch. Meetings: schedule_meeting (needs Google Calendar connected in Integrations).
+- "Contacted" leads = leads we've reached out to by EMAIL or PHONE. lastContactedAt is set on both an email send AND a logged phone call; lastEmailedAt marks email specifically and lastCalledAt marks a phone call. LeadOS has a "Contacted" KPI card + "Contacted"/"Not contacted" filter; contacted leads show a "Cold email sent" and/or "Called" badge in both the list and Kanban, a "Log call" button records a call, and the "Sent" tab lists every email sent. To count contacted leads use db_query on leados_leads with {"lastContactedAt":{"$ne":null}} count:true; for phone-only use {"lastCalledAt":{"$ne":null}}.
 - Clients & billing, Content (blogs/jobs), Team (employees/hiring/applications/expenses), Integrations, and Users are the other admin areas — use get_portal_overview or db_query for their data.`;
 
 type AgentAction = { name: string; args: any };
@@ -357,7 +359,7 @@ async function sendOutreachToLead(
   await col.updateOne(
     { leadKey: lead.leadKey },
     {
-      $set: { lastContactedAt: now, email: lead.email || to, updatedAt: now, ...(["new", "qualified", "audit_generated"].includes(lead.stage) ? { stage: "email_sent" } : {}) },
+      $set: { lastContactedAt: now, lastEmailedAt: now, email: lead.email || to, updatedAt: now, ...(["new", "qualified", "audit_generated"].includes(lead.stage) ? { stage: "email_sent" } : {}) },
       $push: { timeline: { at: now, type: "email", summary: `Sent outreach to ${to} via assistant: ${email.subject}` } },
     } as never
   );
@@ -748,10 +750,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
   const owner = session.email;
-  if (!hasLLM()) {
+  if (!hasLLM() && !hasAnthropic()) {
     return NextResponse.json({
       ok: true,
-      reply: "Shadow needs an OpenRouter key (OPEN_ROUTE_API_KEY) configured to understand commands.",
+      reply: "Shadow needs an AI key configured — set ANTHROPIC_API_KEY (recommended) or OPEN_ROUTE_API_KEY.",
     });
   }
 

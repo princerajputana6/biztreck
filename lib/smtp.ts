@@ -3,6 +3,7 @@
 // SMTP_PASS (+ optional SMTP_SECURE, SMTP_FROM).
 
 import nodemailer, { type Transporter } from "nodemailer";
+import { safeFrom } from "@/lib/mail-from";
 
 type SmtpArgs = {
   to: string | string[];
@@ -53,12 +54,13 @@ function getTransport(): Transporter | null {
   return globalThis._btSmtpTransport;
 }
 
-const smtpFrom =
+// Locked to a @biztreck.world sender (defaults to connect@biztreck.world).
+const smtpFrom = safeFrom(
   process.env.SMTP_FROM ||
-  process.env.FROM_EMAIL ||
-  process.env.RESEND_FROM ||
-  process.env.SMTP_USER ||
-  "connect@biztreck.world";
+    process.env.FROM_EMAIL ||
+    process.env.RESEND_FROM ||
+    process.env.SMTP_USER
+);
 
 export async function sendViaSmtp(
   args: SmtpArgs

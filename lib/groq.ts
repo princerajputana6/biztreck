@@ -2,24 +2,40 @@
 // OpenAI-compatible API. Key: OPEN_ROUTE_API_KEY. Model: override with
 // OPENROUTER_MODEL, otherwise a capable, cost-effective default.
 
+import {
+  hasAnthropic,
+  isClaudeModel,
+  anthropicChat,
+  anthropicComplete,
+  ANTHROPIC_MODEL,
+  ANTHROPIC_FAST_MODEL,
+} from "@/lib/anthropic";
+
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const apiKey = process.env.OPEN_ROUTE_API_KEY;
 const MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct";
 
-// A small, fast model for low-latency interactive work (the Shadow voice
-// assistant's turn-by-turn planning). Speed matters far more than raw power for
-// picking one tool from a short list, so we default to a fast, cheap model.
-// Override with OPENROUTER_FAST_MODEL (e.g. "google/gemini-flash-1.5").
-export const FAST_MODEL =
-  process.env.OPENROUTER_FAST_MODEL || "openai/gpt-4o-mini";
+// When an Anthropic key is present the Shadow agent runs on Claude — the best
+// model for accuracy (Opus 5) with a fast model (Haiku 4.5) for bulk drafting.
+// Native "claude-*" ids are routed to the Anthropic API (see lib/anthropic.ts);
+// everything else stays on OpenRouter. Both are env-overridable.
+const CLAUDE = hasAnthropic();
 
-// A strong reasoning model for the Shadow agent's autonomous think→act→observe
-// loop, where reasoning quality matters more than latency. Override with
-// OPENROUTER_SMART_MODEL / SHADOW_MODEL (e.g. "anthropic/claude-opus-4.1").
+// A fast model for high-volume, latency-sensitive drafting (bulk outreach,
+// lead enrichment). Claude Haiku 4.5 when Anthropic is configured; otherwise a
+// fast OpenRouter model. Override with ANTHROPIC_FAST_MODEL / OPENROUTER_FAST_MODEL.
+export const FAST_MODEL = CLAUDE
+  ? ANTHROPIC_FAST_MODEL
+  : process.env.OPENROUTER_FAST_MODEL || "openai/gpt-4o-mini";
+
+// The strong reasoning model for the Shadow agent's autonomous think→act→observe
+// loop, where quality matters most. Claude Opus 5 when Anthropic is configured.
+// Override with SHADOW_MODEL / ANTHROPIC_MODEL / OPENROUTER_SMART_MODEL.
 export const SMART_MODEL =
-  process.env.OPENROUTER_SMART_MODEL ||
   process.env.SHADOW_MODEL ||
-  "anthropic/claude-sonnet-4";
+  (CLAUDE
+    ? ANTHROPIC_MODEL
+    : process.env.OPENROUTER_SMART_MODEL || "anthropic/claude-sonnet-4");
 
 /** The active model id, for provenance labels on generated content. */
 export const LLM_MODEL = MODEL;
@@ -35,9 +51,27 @@ export async function chat(
   messages: ChatMessage[],
   opts: { json?: boolean; temperature?: number; model?: string } = {}
 ): Promise<string> {
+  const preferred = opts.model || SMART_MODEL;
+  // Native Claude ids run on the Anthropic API. On failure, fall through to the
+  // OpenRouter chain below (dropping any Claude ids, which OpenRouter can't use).
+  if (isClaudeModel(preferred) && hasAnthropic()) {
+    try {
+      return await anthropicChat(messages, {
+        json: opts.json,
+        temperature: opts.temperature,
+        model: preferred,
+      });
+    } catch (e) {
+      if (!apiKey) throw e; // no OpenRouter fallback available
+    }
+  }
   if (!apiKey) throw new Error("OPEN_ROUTE_API_KEY missing");
   const chain = Array.from(
-    new Set([opts.model || SMART_MODEL, MODEL, FAST_MODEL].filter(Boolean))
+    new Set(
+      [opts.model, MODEL, FAST_MODEL].filter(
+        (m): m is string => Boolean(m) && !isClaudeModel(m)
+      )
+    )
   );
   let lastErr: unknown;
   for (const model of chain) {
@@ -102,7 +136,18 @@ export async function complete(
   temperature = 0.75,
   model?: string
 ): Promise<string> {
+  // Native Claude ids run on the Anthropic API; fall through to OpenRouter on
+  // failure (or when no Anthropic key is set and the id isn't a Claude one).
+  if (isClaudeModel(model) && hasAnthropic()) {
+    try {
+      return await anthropicComplete(system, user, { json, temperature, model });
+    } catch (e) {
+      if (!apiKey) throw e;
+    }
+  }
   if (!apiKey) throw new Error("OPEN_ROUTE_API_KEY missing");
+  // OpenRouter can't use native "claude-*" ids — use the default model instead.
+  const effectiveModel = isClaudeModel(model) ? MODEL : model;
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 60_000);
@@ -118,7 +163,7 @@ export async function complete(
         "X-Title": "Biztreck LeadOS",
       },
       body: JSON.stringify({
-        model: model || MODEL,
+        model: effectiveModel || MODEL,
         temperature,
         messages: [
           { role: "system", content: system },
