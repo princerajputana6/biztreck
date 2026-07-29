@@ -100,6 +100,13 @@ export const DEFAULT_INVOICE_TERMS = [
   "Please quote the invoice number in your payment reference.",
 ];
 
+// Printed on every invoice: flags the work as a technical service so the client
+// applies the technical-services TDS rate (1–2%) rather than a higher one.
+// Override the wording with COMPANY_TDS_NOTE in env if needed.
+export const TDS_NOTE =
+  process.env.COMPANY_TDS_NOTE ||
+  "The services rendered under this invoice are in the nature of technical services. Any TDS, where applicable, may be deducted at the applicable rate for technical services (1–2%) under the Income-tax Act, 1961. Please share the TDS certificate for our records.";
+
 const MS_PER_HOUR = 60 * 60 * 1000;
 
 /**
@@ -415,7 +422,9 @@ Total Payable: INR ${invoice.amount.toLocaleString("en-IN")}
 
 Due Date: ${due}
 
-Payment should be made to Biztreck Solutions as per the agreed payment terms.`;
+Payment should be made to Biztreck Solutions as per the agreed payment terms.
+
+Note: ${TDS_NOTE}`;
 }
 
 export function buildProjectInvoiceMarkdown(invoice: {
@@ -490,5 +499,7 @@ Total Payable: ${inr(t.total)}
 
 Due Date: ${due}
 
-Payment should be made to Biztreck Solutions as per the agreed payment terms.`;
+Payment should be made to Biztreck Solutions as per the agreed payment terms.
+
+Note: ${TDS_NOTE}`;
 }

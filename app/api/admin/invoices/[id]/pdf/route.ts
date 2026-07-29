@@ -6,6 +6,7 @@ import { guardPermission } from "@/lib/auth";
 import { getDb, ObjectId } from "@/lib/mongodb";
 import {
   DEFAULT_INVOICE_TERMS,
+  TDS_NOTE,
   companyProfile,
   formatMoney,
 } from "@/lib/admin-operations";
@@ -360,15 +361,31 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
     }
 
     // ================= NOTES =================
-    if (invoice.notes && String(invoice.notes).trim()) {
-      ensureSpace(60);
+    // Always prints the technical-services / TDS note; the client's typed note
+    // (if any) shows above it.
+    {
+      ensureSpace(70);
       sectionTitle("Notes");
+      const customNote = invoice.notes && String(invoice.notes).trim();
+      if (customNote) {
+        doc
+          .font("Helvetica")
+          .fontSize(8.5)
+          .fillColor(INK)
+          .text(String(invoice.notes).trim(), left, doc.y, { width: contentW, lineGap: 1.5 });
+        doc.y += 8;
+      }
+      // TDS note in a soft highlighted box so it stands out to the client.
+      const noteH = doc.heightOfString(TDS_NOTE, { width: contentW - 24, lineGap: 1.5 }) + 16;
+      ensureSpace(noteH + 6);
+      const ny = doc.y;
+      doc.roundedRect(left, ny, contentW, noteH, 4).fillAndStroke(PURPLE_SOFT, LINE);
       doc
-        .font("Helvetica")
+        .font("Helvetica-Bold")
         .fontSize(8.5)
-        .fillColor(INK)
-        .text(String(invoice.notes).trim(), left, doc.y, { width: contentW, lineGap: 1.5 });
-      doc.y += 12;
+        .fillColor(PURPLE)
+        .text(TDS_NOTE, left + 12, ny + 8, { width: contentW - 24, lineGap: 1.5 });
+      doc.y = ny + noteH + 12;
       doc.x = left;
     }
 
