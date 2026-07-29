@@ -1705,6 +1705,7 @@ function CustomInvoiceForm({
   const [clientEmail, setClientEmail] = useState("");
   const [projectName, setProjectName] = useState("");
   const [currency, setCurrency] = useState("INR");
+  const [sac, setSac] = useState("998314");
   const [taxRate, setTaxRate] = useState("18");
   const [gstMode, setGstMode] = useState<"none" | "exclusive" | "inclusive">("exclusive");
   const [invoiceDate, setInvoiceDate] = useState(today);
@@ -1771,6 +1772,7 @@ function CustomInvoiceForm({
       clientEmail: clientEmail.trim(),
       projectName: projectName.trim(),
       currency: currency.trim() || "INR",
+      sacCode: sac.trim(),
       lineItems,
       taxRate: rate,
       gstMode,
@@ -1785,6 +1787,7 @@ function CustomInvoiceForm({
       setBillTo("");
       setClientEmail("");
       setProjectName("");
+      setSac("998314");
       setTaxRate("18");
       setGstMode("exclusive");
       setInvoiceDate(today);
@@ -1873,6 +1876,10 @@ function CustomInvoiceForm({
           <label className="grid gap-1 text-sm text-slate-300">
             Currency
             <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} placeholder="INR" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            SAC code
+            <input value={sac} onChange={(e) => setSac(e.target.value)} placeholder="998314" className={inputCls} />
           </label>
           <label className="grid gap-1 text-sm text-slate-300">
             Tax rate %

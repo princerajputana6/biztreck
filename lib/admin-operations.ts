@@ -74,6 +74,9 @@ export function companyProfile() {
     phone: process.env.COMPANY_PHONE || "+91 87408 63229",
     gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
     pan: process.env.COMPANY_PAN || "HRTPK7815L",
+    // SAC (Services Accounting Code) for GST on the services rendered.
+    // 998314 = IT design & development services (websites/software).
+    sac: process.env.COMPANY_SAC_CODE || "998314",
     bank: {
       name: process.env.COMPANY_BANK_NAME || "Kotak Mahindra Bank",
       holder: process.env.COMPANY_BANK_HOLDER || process.env.COMPANY_NAME || "Biztreck Solutions",
@@ -105,7 +108,7 @@ export const DEFAULT_INVOICE_TERMS = [
 // Override the wording with COMPANY_TDS_NOTE in env if needed.
 export const TDS_NOTE =
   process.env.COMPANY_TDS_NOTE ||
-  "The services rendered under this invoice are in the nature of technical services. Any TDS, where applicable, may be deducted at the applicable rate for technical services (1–2%) under the Income-tax Act, 1961. Please share the TDS certificate for our records.";
+  "The services rendered under this invoice are in the nature of technical services. Any TDS, where applicable, may be deducted at the applicable rate for technical services (1–2%) under the Income-tax Act, 2025. Please share the TDS certificate for our records.";
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 
@@ -441,6 +444,8 @@ export function buildProjectInvoiceMarkdown(invoice: {
   // Custom / back-dated invoices set this so the printed "Invoice Date" reflects
   // the chosen date rather than today. Accepts an ISO or YYYY-MM-DD string.
   invoiceDate?: string;
+  // SAC (Services Accounting Code) for GST; defaults to the company profile.
+  sacCode?: string;
 }) {
   const company = {
     name: process.env.COMPANY_NAME || "Biztreck Solutions",
@@ -450,6 +455,7 @@ export function buildProjectInvoiceMarkdown(invoice: {
     logo: process.env.COMPANY_LOGO_URL || "",
     email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
   };
+  const sac = invoice.sacCode || companyProfile().sac;
   const inr = (v: number) => formatMoney(v, invoice.currency || "INR");
   const dateSource = invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date();
   const today = (Number.isNaN(dateSource.getTime()) ? new Date() : dateSource).toLocaleDateString("en-IN", {
@@ -485,17 +491,18 @@ Project: ${invoice.projectName}${
     invoice.websiteUrl ? `\n\nWebsite: ${invoice.websiteUrl}` : ""
   }
 
+SAC Code: ${sac}
+
 | Description | Amount |
 |---|---:|
 ${rows}
 
-Subtotal: ${inr(t.subtotal)}
-${t.discount > 0 ? `\nDiscount: -${inr(t.discount)}\n` : ""}${
-    t.gstMode === "none"
-      ? ""
-      : `\nGST (${t.taxRate}%${t.gstMode === "inclusive" ? " incl." : ""}): ${inr(t.taxAmount)}\n`
+${t.discount > 0 ? `Subtotal: ${inr(t.subtotal)}\n\nDiscount: -${inr(t.discount)}\n\n` : ""}${
+    t.gstMode === "none" || t.taxAmount <= 0
+      ? `Taxable Value: ${inr(t.taxable)}\n`
+      : `Taxable Value: ${inr(t.taxable)}\n\nGST @ ${t.taxRate}%: ${inr(t.taxAmount)}\n`
   }
-Total Payable: ${inr(t.total)}
+Total Invoice Value: ${inr(t.total)}
 
 Due Date: ${due}
 

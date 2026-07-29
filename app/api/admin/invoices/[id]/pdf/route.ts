@@ -57,6 +57,7 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
     const bank = co.bank;
     const currency = String(invoice.currency || "INR").toUpperCase();
     const money = (v: number) => formatMoney(v, currency);
+    const sacCode = String(invoice.sacCode || co.sac || "").trim();
 
     // ---- Derive line items + totals (backward compatible with old invoices) ----
     const lineItems: LineItem[] =
@@ -90,6 +91,10 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
       invoice.amount != null
         ? Number(invoice.amount)
         : subtotal - discount + taxAmount;
+    // Taxable value = the pre-GST base. Holds for both tax modes:
+    // exclusive → total = taxable + tax; inclusive → total already includes tax.
+    const taxable =
+      invoice.taxable != null ? Number(invoice.taxable) : Math.max(0, total - taxAmount);
 
     // ---- Dates (always give the client >= 48h to pay) ----
     const fmtDate = (d: Date) =>
@@ -195,6 +200,7 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
       ["Invoice Date", fmtDate(invoiceDateObj)],
       ["Due Date", fmtDate(dueDateObj)],
       ["Currency", currency],
+      ...(sacCode ? ([["SAC Code", sacCode]] as [string, string][]) : []),
       ["Payment Terms", paymentTerms],
     ];
     const metaH = 14 + metaRows.length * 14;
@@ -275,12 +281,20 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
     doc.y = y;
     lineItems.forEach((li, i) => {
       const descH = doc.heightOfString(li.description, { width: 250 });
-      const rowH = Math.max(24, descH + 12);
+      const sacH = sacCode ? 11 : 0;
+      const rowH = Math.max(24, descH + 12 + sacH);
       ensureSpace(rowH + 10);
       const ry = doc.y;
       if (i % 2 === 1) doc.rect(left, ry, contentW, rowH).fill(PURPLE_SOFT);
       doc.font("Helvetica").fontSize(9).fillColor(INK);
       doc.text(li.description, left + 12, ry + 7, { width: 250 });
+      if (sacCode)
+        doc
+          .font("Helvetica")
+          .fontSize(7.5)
+          .fillColor(MUTED)
+          .text(`SAC: ${sacCode}`, left + 12, ry + 7 + descH + 2, { width: 250 });
+      doc.font("Helvetica").fontSize(9).fillColor(INK);
       doc.text(String(li.qty), cQty, ry + 7, { width: qtyW, align: "right" });
       doc.text(money(li.rate), cRate, ry + 7, { width: rateW, align: "right" });
       doc.font("Helvetica-Bold").text(money(li.amount), cAmt, ry + 7, { width: amtW - 12, align: "right" });
@@ -307,19 +321,27 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
         .text(value, totalsX + labelW, doc.y - 11, { width: valW, align: "right" });
       doc.y += 5;
     };
-    totalsRow("Subtotal", money(subtotal), true);
-    if (discount > 0) totalsRow("Discount", `- ${money(discount)}`);
-    if (gstMode !== "none" && (taxRate > 0 || taxAmount > 0))
-      totalsRow(`GST/VAT (${taxRate}%${gstMode === "inclusive" ? " incl." : ""})`, money(taxAmount));
+    const hasGst = gstMode !== "none" && (taxRate > 0 || taxAmount > 0);
+    if (discount > 0) {
+      totalsRow("Subtotal", money(subtotal));
+      totalsRow("Discount", `- ${money(discount)}`);
+    }
+    // Clear GST-invoice breakdown: Taxable Value + GST = Total Invoice Value.
+    totalsRow("Taxable Value", money(taxable), true);
+    if (hasGst)
+      totalsRow(
+        `GST @ ${taxRate}%${gstMode === "inclusive" ? " (incl.)" : ""}`,
+        money(taxAmount)
+      );
 
     doc.y += 6;
     const pillY = doc.y;
     doc.roundedRect(totalsX, pillY, labelW + valW, 32, 5).fill(PURPLE);
     doc
       .font("Helvetica-Bold")
-      .fontSize(10)
+      .fontSize(9)
       .fillColor("#FFFFFF")
-      .text("GRAND TOTAL", totalsX + 12, pillY + 11, { width: labelW - 12 })
+      .text("TOTAL INVOICE VALUE", totalsX + 12, pillY + 12, { width: labelW - 6, lineBreak: false })
       .fontSize(12)
       .text(money(total), totalsX + labelW - 12, pillY + 10, { width: valW, align: "right" });
     doc.y = pillY + 46;
