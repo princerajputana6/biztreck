@@ -31,6 +31,8 @@ const ACTION_PERM: Record<string, Permission> = {
   "update-client-discount": "clients",
   "add-client-payment": "clients",
   "generate-client-invoice": "clients",
+  "create-custom-invoice": "clients",
+  "delete-invoice": "clients",
   "update-invoice-status": "clients",
   "add-employee": "team",
   "update-employee": "team",
@@ -472,6 +474,123 @@ export async function POST(req: Request) {
       await db
         .collection("invoices")
         .updateOne({ _id: toObjectId(invoiceId) }, { $set: { status, updatedAt: now } });
+      return NextResponse.json({ ok: true });
+    }
+
+    // --- Create a standalone custom invoice (incl. back-dated / past payments) -
+    if (action === "create-custom-invoice") {
+      const billTo = String(data.billTo || "").trim();
+      const rawItems = Array.isArray(data.lineItems) ? data.lineItems : [];
+      const lineItems = rawItems
+        .map((li: any) => ({
+          description: String(li?.description || "").trim() || "Item",
+          amount: Math.max(0, Number(li?.amount) || 0),
+        }))
+        .filter((li: any) => li.amount > 0);
+
+      if (!billTo) {
+        return NextResponse.json({ ok: false, error: "A bill-to name is required." }, { status: 400 });
+      }
+      if (!lineItems.length) {
+        return NextResponse.json(
+          { ok: false, error: "Add at least one line item with an amount greater than zero." },
+          { status: 400 }
+        );
+      }
+
+      const subtotal = lineItems.reduce((s: number, li: any) => s + li.amount, 0);
+      const discount = Math.min(Math.max(0, Number(data.discount || 0)), subtotal);
+      const taxRate = Math.max(0, Number(data.taxRate || 0));
+      // Tax: "none" | "exclusive" (added on top) | "inclusive" (baked into amounts).
+      const gstMode = normalizeGstMode(data.gstMode);
+      const totals = computeInvoiceTotals({ totalCost: subtotal, discount, taxRate, gstMode });
+
+      const currency = String(data.currency || "INR").toUpperCase();
+      const status = ["draft", "sent", "paid", "overdue"].includes(String(data.status))
+        ? String(data.status)
+        : "draft";
+
+      // Custom invoice date — can be in the PAST (for recording an earlier
+      // payment). Anchor at local noon so a YYYY-MM-DD never slips a day by TZ.
+      const rawDate = String(data.invoiceDate || "").trim();
+      const parsedDate = rawDate ? new Date(`${rawDate}T12:00:00`) : new Date();
+      const invoiceDateObj = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+      const invoiceDate = invoiceDateObj.toISOString();
+      const dueDate = computeDueDate(invoiceDateObj, String(data.dueDate || "").trim() || undefined);
+
+      const docLineItems = lineItems.map((li: any) => ({
+        description: li.description,
+        qty: 1,
+        rate: li.amount,
+        amount: li.amount,
+      }));
+
+      const clientCompany = String(data.clientCompany || "").trim();
+      const projectName = String(data.projectName || "").trim() || "Custom invoice";
+      const currencyUpper = currency;
+      const invoiceNumber = nextInvoiceNumber(await db.collection("invoices").countDocuments());
+      const clientId =
+        data.clientId && String(data.clientId).trim() ? toObjectId(String(data.clientId)) : null;
+
+      const invoiceDoc: any = {
+        invoiceNumber,
+        type: "custom",
+        invoiceDate,
+        clientName: billTo,
+        clientCompany,
+        clientEmail: String(data.clientEmail || "").trim(),
+        clientPhone: String(data.clientPhone || "").trim(),
+        billingAddress: String(data.billingAddress || "").trim(),
+        country: String(data.country || "").trim(),
+        projectName,
+        websiteUrl: "",
+        currency: currencyUpper,
+        paymentTerms: String(data.paymentTerms || "").trim(),
+        notes: String(data.notes || "").trim(),
+        lineItems: docLineItems,
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        taxRate: totals.taxRate,
+        taxAmount: totals.taxAmount,
+        gstMode: totals.gstMode,
+        amount: totals.total,
+        status,
+        dueDate,
+        contentMarkdown: buildProjectInvoiceMarkdown({
+          invoiceNumber,
+          clientName: billTo,
+          clientCompany,
+          clientEmail: String(data.clientEmail || "").trim(),
+          projectName,
+          currency: currencyUpper,
+          lineItems: lineItems.map((li: any) => ({ description: li.description, amount: li.amount })),
+          totals,
+          dueDate,
+          invoiceDate,
+        }),
+        createdAt: now,
+        updatedAt: now,
+      };
+      if (clientId) invoiceDoc.clientId = clientId;
+
+      const inserted = await db.collection("invoices").insertOne(invoiceDoc);
+      return NextResponse.json({ ok: true, invoiceId: String(inserted.insertedId) });
+    }
+
+    // --- Delete an invoice (admin can remove any invoice) --------------------
+    if (action === "delete-invoice") {
+      const invoiceId = String(data.invoiceId || "");
+      if (!invoiceId) {
+        return NextResponse.json({ ok: false, error: "Invoice id is required" }, { status: 400 });
+      }
+      await db.collection("invoices").deleteOne({ _id: toObjectId(invoiceId) });
+      // If this invoice was raised from a client milestone, clear that link so
+      // the milestone can be re-invoiced instead of staying stuck.
+      await db.collection("clients").updateMany(
+        { "milestones.invoiceId": invoiceId },
+        { $set: { "milestones.$[m].invoiceId": "" } },
+        { arrayFilters: [{ "m.invoiceId": invoiceId }] }
+      );
       return NextResponse.json({ ok: true });
     }
 

@@ -478,6 +478,25 @@ export default function AdminShell(props: Stats) {
     );
   };
 
+  // Create a standalone custom invoice (can be back-dated for a past payment,
+  // with optional tax inclusive/exclusive). Returns success so the form resets.
+  const createCustomInvoice = async (payload: AnyDoc) => {
+    return submitOperation(
+      "create-custom-invoice",
+      { action: "create-custom-invoice", ...payload },
+      "Custom invoice created."
+    );
+  };
+
+  const deleteInvoice = async (invoice: AnyDoc) => {
+    if (!confirm(`Delete invoice ${invoice.invoiceNumber}? This cannot be undone.`)) return;
+    await submitOperation(
+      `delete-invoice-${invoice._id}`,
+      { action: "delete-invoice", invoiceId: invoice._id },
+      "Invoice deleted."
+    );
+  };
+
   const cards = [
     { label: "Posts", value: blogs.length, icon: FileText },
     { label: "Clients", value: clients.length, icon: Building2 },
@@ -946,6 +965,8 @@ export default function AdminShell(props: Stats) {
               addClientPayment={addClientPayment}
               generateClientInvoice={generateClientInvoice}
               updateMilestoneStatus={updateMilestoneStatus}
+              createCustomInvoice={createCustomInvoice}
+              deleteInvoice={deleteInvoice}
             />}
           </div>
         )}
@@ -1378,6 +1399,8 @@ function BillingTab({
   addClientPayment,
   generateClientInvoice,
   updateMilestoneStatus,
+  createCustomInvoice,
+  deleteInvoice,
 }: {
   clients: AnyDoc[];
   invoices: AnyDoc[];
@@ -1390,6 +1413,8 @@ function BillingTab({
   addClientPayment: (client: AnyDoc, form: HTMLFormElement) => Promise<void>;
   generateClientInvoice: (client: AnyDoc) => Promise<void>;
   updateMilestoneStatus: (client: AnyDoc, index: number, status: string) => Promise<void>;
+  createCustomInvoice: (payload: AnyDoc) => Promise<boolean>;
+  deleteInvoice: (invoice: AnyDoc) => Promise<void>;
 }) {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
@@ -1569,6 +1594,12 @@ function BillingTab({
             </div>
           )}
         </Panel>
+
+        <CustomInvoiceForm
+          clients={clients}
+          operationBusy={operationBusy}
+          createCustomInvoice={createCustomInvoice}
+        />
       </section>
 
       <aside className="space-y-8">
@@ -1585,19 +1616,39 @@ function BillingTab({
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-white">{invoice.invoiceNumber}</div>
                     <div className="mt-1 text-xs text-slate-400">
-                      {invoice.clientCompany || invoice.clientName} | {invoice.type === "project" ? "Full project invoice" : invoice.milestoneTitle}
+                      {invoice.clientCompany || invoice.clientName} |{" "}
+                      {invoice.type === "project"
+                        ? "Full project invoice"
+                        : invoice.type === "custom"
+                          ? invoice.projectName || "Custom invoice"
+                          : invoice.milestoneTitle}
                     </div>
                     <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
                   </div>
-                  <a
-                    href={`/api/admin/invoices/${invoice._id}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
-                    title="Download invoice PDF"
-                  >
-                    <Download size={14} />
-                  </a>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <a
+                      href={`/api/admin/invoices/${invoice._id}/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
+                      title="Download invoice PDF"
+                    >
+                      <Download size={14} />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => deleteInvoice(invoice)}
+                      disabled={operationBusy === `delete-invoice-${invoice._id}`}
+                      className="rounded-full border border-rose-400/30 bg-rose-400/10 p-2 text-rose-300 hover:border-rose-400/60 disabled:opacity-50"
+                      title="Delete invoice"
+                    >
+                      {operationBusy === `delete-invoice-${invoice._id}` ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={14} />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <select
                   value={invoice.status || "draft"}
@@ -1626,6 +1677,271 @@ function BillingTab({
         </Panel>
       </aside>
     </div>
+  );
+}
+
+// A standalone custom-invoice builder: any bill-to (or a linked client),
+// multiple line items, a tax rate that can be added on top / already included /
+// off, a custom invoice date (which may be in the PAST for recording an earlier
+// payment), and a status you can set straight to "paid". Shows a live total.
+function CustomInvoiceForm({
+  clients,
+  operationBusy,
+  createCustomInvoice,
+}: {
+  clients: AnyDoc[];
+  operationBusy: string | null;
+  createCustomInvoice: (payload: AnyDoc) => Promise<boolean>;
+}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const inputCls =
+    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan";
+
+  const [items, setItems] = useState<{ description: string; amount: string }[]>([
+    { description: "", amount: "" },
+  ]);
+  const [clientId, setClientId] = useState("");
+  const [billTo, setBillTo] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [currency, setCurrency] = useState("INR");
+  const [taxRate, setTaxRate] = useState("18");
+  const [gstMode, setGstMode] = useState<"none" | "exclusive" | "inclusive">("exclusive");
+  const [invoiceDate, setInvoiceDate] = useState(today);
+  const [dueDate, setDueDate] = useState("");
+  const [status, setStatus] = useState("paid");
+  const [notes, setNotes] = useState("");
+
+  const busy = operationBusy === "create-custom-invoice";
+
+  const fmt = (v: number) => {
+    try {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: (currency || "INR").toUpperCase(),
+        maximumFractionDigits: 2,
+      }).format(v);
+    } catch {
+      return `${(currency || "INR").toUpperCase()} ${Math.round(v).toLocaleString()}`;
+    }
+  };
+
+  // Live totals — mirrors the server's computeInvoiceTotals so the preview matches.
+  const subtotal = items.reduce((s, it) => s + Math.max(0, Number(it.amount) || 0), 0);
+  const rate = Math.max(0, Number(taxRate) || 0);
+  let taxAmount = 0;
+  let total = subtotal;
+  if (gstMode !== "none" && rate > 0) {
+    if (gstMode === "inclusive") {
+      taxAmount = subtotal - subtotal / (1 + rate / 100);
+    } else {
+      taxAmount = subtotal * (rate / 100);
+      total = subtotal + taxAmount;
+    }
+  }
+
+  const setItem = (i: number, key: "description" | "amount", val: string) =>
+    setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, [key]: val } : it)));
+  const addItem = () => setItems((arr) => [...arr, { description: "", amount: "" }]);
+  const removeItem = (i: number) =>
+    setItems((arr) => (arr.length > 1 ? arr.filter((_, idx) => idx !== i) : arr));
+
+  const onClientSelect = (id: string) => {
+    setClientId(id);
+    const c = clients.find((cl) => String(cl._id) === id);
+    if (c) {
+      setBillTo(c.company || c.name || "");
+      setClientEmail(c.email || "");
+      setProjectName((p) => p || c.projectName || "");
+      if (c.currency) setCurrency(String(c.currency).toUpperCase());
+    }
+  };
+
+  const canSubmit = Boolean(billTo.trim()) && subtotal > 0 && !busy;
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    const lineItems = items
+      .map((it) => ({ description: it.description.trim(), amount: Math.max(0, Number(it.amount) || 0) }))
+      .filter((it) => it.amount > 0);
+    const ok = await createCustomInvoice({
+      billTo: billTo.trim(),
+      clientId: clientId || undefined,
+      clientEmail: clientEmail.trim(),
+      projectName: projectName.trim(),
+      currency: currency.trim() || "INR",
+      lineItems,
+      taxRate: rate,
+      gstMode,
+      invoiceDate,
+      dueDate: dueDate || undefined,
+      status,
+      notes: notes.trim(),
+    });
+    if (ok) {
+      setItems([{ description: "", amount: "" }]);
+      setClientId("");
+      setBillTo("");
+      setClientEmail("");
+      setProjectName("");
+      setTaxRate("18");
+      setGstMode("exclusive");
+      setInvoiceDate(today);
+      setDueDate("");
+      setStatus("paid");
+      setNotes("");
+    }
+  };
+
+  return (
+    <Panel id="custom-invoice" title="Create custom invoice" icon={ReceiptText}>
+      <form onSubmit={submit} className="space-y-4">
+        <p className="text-xs text-slate-400">
+          Build a one-off invoice for anyone — link a client or type a bill-to, back-date it for a past
+          payment, set its status, and choose whether tax is added on top or already included.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1 text-sm text-slate-300">
+            Link a client (optional)
+            <select value={clientId} onChange={(e) => onClientSelect(e.target.value)} className={inputCls}>
+              <option value="">— None (type bill-to below) —</option>
+              {clients.map((c) => (
+                <option key={String(c._id)} value={String(c._id)}>
+                  {(c.company || c.name) + (c.projectName ? ` — ${c.projectName}` : "")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Bill to <span className="text-rose-300">*</span>
+            <input value={billTo} onChange={(e) => setBillTo(e.target.value)} placeholder="Client or company name" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Email (optional)
+            <input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="billing@theirco.com" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Description / project (optional)
+            <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. March retainer" className={inputCls} />
+          </label>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-white">Line items</span>
+            <button
+              type="button"
+              onClick={addItem}
+              className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan"
+            >
+              <PlusCircle size={14} /> Add item
+            </button>
+          </div>
+          {items.map((it, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                value={it.description}
+                onChange={(e) => setItem(i, "description", e.target.value)}
+                placeholder="Description"
+                className={`${inputCls} min-w-0 flex-1`}
+              />
+              <input
+                value={it.amount}
+                onChange={(e) => setItem(i, "amount", e.target.value)}
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Amount"
+                className={`${inputCls} w-32 shrink-0`}
+              />
+              <button
+                type="button"
+                onClick={() => removeItem(i)}
+                disabled={items.length <= 1}
+                title="Remove line"
+                className="shrink-0 rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-300 hover:border-rose-400/50 hover:text-rose-300 disabled:opacity-40"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="grid gap-1 text-sm text-slate-300">
+            Currency
+            <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} placeholder="INR" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Tax rate %
+            <input value={taxRate} onChange={(e) => setTaxRate(e.target.value)} type="number" min="0" step="0.1" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Tax treatment
+            <select value={gstMode} onChange={(e) => setGstMode(e.target.value as any)} className={inputCls}>
+              <option value="exclusive">Add on top (exclusive)</option>
+              <option value="inclusive">Already included (inclusive)</option>
+              <option value="none">No tax</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="grid gap-1 text-sm text-slate-300">
+            Invoice date
+            <input value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} type="date" className={inputCls} />
+            <span className="text-[11px] text-slate-500">Can be in the past.</span>
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Due date (optional)
+            <input value={dueDate} onChange={(e) => setDueDate(e.target.value)} type="date" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Status
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
+              {["paid", "draft", "sent", "overdue"].map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label className="grid gap-1 text-sm text-slate-300">
+          Notes (optional)
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything to print in the Notes section." className={`${inputCls} resize-y`} />
+        </label>
+
+        <div className="grid grid-cols-3 gap-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-3 text-sm">
+          <div>
+            <div className="text-xs text-slate-500">Subtotal</div>
+            <div className="font-semibold text-white">{fmt(subtotal)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-slate-500">
+              Tax {gstMode === "none" || rate <= 0 ? "" : `(${rate}%${gstMode === "inclusive" ? " incl." : ""})`}
+            </div>
+            <div className="font-semibold text-white">{fmt(taxAmount)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-slate-500">Total</div>
+            <div className="font-bold text-accent-cyan">{fmt(total)}</div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="btn-primary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {busy ? <Loader2 size={16} className="animate-spin" /> : <ReceiptText size={16} />}
+          Create invoice
+        </button>
+      </form>
+    </Panel>
   );
 }
 

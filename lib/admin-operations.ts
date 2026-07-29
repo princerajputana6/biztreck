@@ -429,6 +429,9 @@ export function buildProjectInvoiceMarkdown(invoice: {
   lineItems: InvoiceLineItem[];
   totals: InvoiceTotals;
   dueDate?: string;
+  // Custom / back-dated invoices set this so the printed "Invoice Date" reflects
+  // the chosen date rather than today. Accepts an ISO or YYYY-MM-DD string.
+  invoiceDate?: string;
 }) {
   const company = {
     name: process.env.COMPANY_NAME || "Biztreck Solutions",
@@ -439,7 +442,8 @@ export function buildProjectInvoiceMarkdown(invoice: {
     email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
   };
   const inr = (v: number) => formatMoney(v, invoice.currency || "INR");
-  const today = new Date().toLocaleDateString("en-IN", {
+  const dateSource = invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date();
+  const today = (Number.isNaN(dateSource.getTime()) ? new Date() : dateSource).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
