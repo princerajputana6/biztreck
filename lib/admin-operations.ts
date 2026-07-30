@@ -68,7 +68,9 @@ export function nextInvoiceNumber(count: number) {
 export function companyProfile() {
   return {
     name: process.env.COMPANY_NAME || "Biztreck Solutions",
-    address: process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
+    address:
+      process.env.COMPANY_ADDRESS ||
+      "Khas-502, Devla, Noida 201306, Greater Noida, Uttar Pradesh, India",
     website: process.env.COMPANY_WEBSITE || "https://www.biztreck.world",
     email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
     phone: process.env.COMPANY_PHONE || "+91 87408 63229",

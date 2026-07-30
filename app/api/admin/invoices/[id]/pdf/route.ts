@@ -242,6 +242,7 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
       invoice.clientCompany && invoice.clientName ? invoice.clientName : "",
       invoice.billingAddress || "",
       invoice.country || "",
+      invoice.clientGstin ? `GSTIN: ${invoice.clientGstin}` : "",
       invoice.clientEmail || "",
       invoice.clientPhone || "",
     ].filter(Boolean);

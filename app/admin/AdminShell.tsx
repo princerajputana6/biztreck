@@ -350,6 +350,7 @@ export default function AdminShell(props: Stats) {
         websiteUrl: data.get("websiteUrl"),
         billingAddress: data.get("billingAddress"),
         country: data.get("country"),
+        clientGstin: data.get("clientGstin"),
         reportsTo: data.get("reportsTo"),
         theirContact: data.get("theirContact"),
         contactEmail: data.get("contactEmail"),
@@ -773,6 +774,12 @@ export default function AdminShell(props: Stats) {
                       label="Country (billing)"
                       placeholder="United Kingdom"
                       defaultValue={editingClient?.country || ""}
+                    />
+                    <Field
+                      name="clientGstin"
+                      label="Client GSTIN (optional)"
+                      placeholder="07AAMCT1251B1ZO"
+                      defaultValue={editingClient?.clientGstin || ""}
                     />
                     <Select
                       name="currency"
@@ -1703,6 +1710,10 @@ function CustomInvoiceForm({
   const [clientId, setClientId] = useState("");
   const [billTo, setBillTo] = useState("");
   const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientGstin, setClientGstin] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
+  const [country, setCountry] = useState("");
   const [projectName, setProjectName] = useState("");
   const [currency, setCurrency] = useState("INR");
   const [sac, setSac] = useState("998314");
@@ -1753,6 +1764,10 @@ function CustomInvoiceForm({
     if (c) {
       setBillTo(c.company || c.name || "");
       setClientEmail(c.email || "");
+      setClientPhone(c.contactPhone || c.phone || "");
+      setClientGstin(c.clientGstin || "");
+      setBillingAddress(c.billingAddress || "");
+      setCountry(c.country || "");
       setProjectName((p) => p || c.projectName || "");
       if (c.currency) setCurrency(String(c.currency).toUpperCase());
     }
@@ -1770,6 +1785,10 @@ function CustomInvoiceForm({
       billTo: billTo.trim(),
       clientId: clientId || undefined,
       clientEmail: clientEmail.trim(),
+      clientPhone: clientPhone.trim(),
+      clientGstin: clientGstin.trim(),
+      billingAddress: billingAddress.trim(),
+      country: country.trim(),
       projectName: projectName.trim(),
       currency: currency.trim() || "INR",
       sacCode: sac.trim(),
@@ -1786,6 +1805,10 @@ function CustomInvoiceForm({
       setClientId("");
       setBillTo("");
       setClientEmail("");
+      setClientPhone("");
+      setClientGstin("");
+      setBillingAddress("");
+      setCountry("");
       setProjectName("");
       setSac("998314");
       setTaxRate("18");
@@ -1828,6 +1851,28 @@ function CustomInvoiceForm({
           <label className="grid gap-1 text-sm text-slate-300">
             Description / project (optional)
             <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. March retainer" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Client phone (optional)
+            <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="+91 98xxxxxxx" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Client GSTIN (optional)
+            <input value={clientGstin} onChange={(e) => setClientGstin(e.target.value)} placeholder="07AAMCT1251B1ZO" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300">
+            Country (optional)
+            <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="India" className={inputCls} />
+          </label>
+          <label className="grid gap-1 text-sm text-slate-300 sm:col-span-2">
+            Billing address (appears under Bill To)
+            <textarea
+              value={billingAddress}
+              onChange={(e) => setBillingAddress(e.target.value)}
+              rows={2}
+              placeholder={"Suit D 400-A, 4th Floor, 12 Ajit Singh House\nYusuf Sarai Commercial Complex, Delhi 110016"}
+              className={`${inputCls} resize-y`}
+            />
           </label>
         </div>
 
