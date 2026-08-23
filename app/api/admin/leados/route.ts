@@ -22,6 +22,7 @@ import { normalizePlaces, runApifyScraper } from "@/lib/scraper";
 import { marked } from "marked";
 import type { Lead, PipelineStage } from "@/lib/leados/types";
 import { PIPELINE_STAGES } from "@/lib/leados/types";
+import type { Session } from "@/lib/rbac";
 
 // Stages considered "before contact" — sending an email advances them, but a
 // lead already at replied/meeting/etc. is never dragged backwards.
@@ -35,23 +36,63 @@ export const dynamic = "force-dynamic";
 // A live Apify search plus LLM enrichment can run long; give it room.
 export const maxDuration = 300;
 
-async function guard() {
-  if (!(await guardPermission("leados"))) {
+// Resolve the LeadOS session, or a 403 response. Callers use the session to
+// scope reads/writes to the current user's own leads (owners see everyone's).
+async function requireLeados(): Promise<Session | NextResponse> {
+  const session = await guardPermission("leados");
+  if (!session) {
     return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
-  return null;
+  return session;
 }
+
+/** A member may only touch its own leads; an owner (admin) may touch any. */
+function canAccessLead(lead: any, session: Session): boolean {
+  return session.role === "owner" || (lead?.ownerEmail || "") === session.email;
+}
+
+/**
+ * Load a lead and authorize the session against it. Returns the lead + its
+ * collection, or a 404 response (a member is told "not found" for a lead it
+ * doesn't own, so ownership isn't leaked).
+ */
+async function loadOwnedLead(leadKey: string, session: Session) {
+  const col = await leadsCollection();
+  const lead = await col.findOne({ leadKey });
+  if (!lead || !canAccessLead(lead, session)) {
+    return { res: NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 }) };
+  }
+  return { lead, col };
+}
+
+// Sentinel used by the admin "which user?" filter to select legacy/unowned leads.
+const UNASSIGNED = "__unassigned__";
 
 // ---------------------------------------------------------------- GET: search
 export async function GET(req: Request) {
-  const denied = await guard();
-  if (denied) return denied;
+  const session = await requireLeados();
+  if (session instanceof NextResponse) return session;
+  const isOwner = session.role === "owner";
 
   await ensureLeadIndexes();
   const col = await leadsCollection();
   const sp = new URL(req.url).searchParams;
 
   const filter: Record<string, any> = {};
+
+  // Per-user scoping. Members are locked to their own leads. Owners see all,
+  // and may narrow to one user (or the legacy/unassigned bucket) via ?owner=.
+  if (!isOwner) {
+    filter.ownerEmail = session.email;
+  } else {
+    const owner = sp.get("owner")?.trim();
+    if (owner === UNASSIGNED) {
+      filter.$or = [{ ownerEmail: { $exists: false } }, { ownerEmail: null }, { ownerEmail: "" }];
+    } else if (owner) {
+      filter.ownerEmail = owner;
+    }
+  }
+
   const q = sp.get("q")?.trim();
   if (q) filter.businessName = { $regex: escapeRe(q), $options: "i" };
 
@@ -125,18 +166,45 @@ export async function GET(req: Request) {
     avgScore: f.avg && f.avg[0] ? Math.round(f.avg[0].v || 0) : 0,
   };
 
+  // For admins: how many leads each user has generated — powers the "which user"
+  // filter dropdown and the per-user counts. Computed across ALL leads (ignoring
+  // the current owner filter) so the tally is always the full picture.
+  let owners: { ownerEmail: string; ownerName: string; count: number }[] | undefined;
+  if (isOwner) {
+    const rows = await cached(CacheNS.leads, "owners:breakdown", 10_000, () =>
+      col
+        .aggregate([
+          {
+            $group: {
+              _id: { $ifNull: ["$ownerEmail", ""] },
+              name: { $first: { $ifNull: ["$ownerName", ""] } },
+              count: { $sum: 1 },
+            },
+          },
+          { $sort: { count: -1 } },
+        ])
+        .toArray()
+    );
+    owners = rows.map((r: any) => ({
+      ownerEmail: r._id || "",
+      ownerName: r.name || "",
+      count: Number(r.count) || 0,
+    }));
+  }
+
   return NextResponse.json({
     ok: true,
     total,
     counts,
+    owners,
     leads: leads.map(serialize),
   });
 }
 
 // -------------------------------------------------------------- POST: actions
 export async function POST(req: Request) {
-  const denied = await guard();
-  if (denied) return denied;
+  const session = await requireLeados();
+  if (session instanceof NextResponse) return session;
 
   let body: any;
   try {
@@ -174,7 +242,10 @@ export async function POST(req: Request) {
       const leads = places
         .map((p) => leadFromScrapedPlace(p, "google-places-search"))
         .filter(Boolean) as Lead[];
-      const { inserted, skipped } = await upsertLeads(leads);
+      const { inserted, skipped } = await upsertLeads(leads, {
+        email: session.email,
+        name: session.name,
+      });
       return NextResponse.json({
         ok: true,
         scanned: places.length,
@@ -197,7 +268,10 @@ export async function POST(req: Request) {
         .map((p) => leadFromScrapedPlace(p))
         .filter(Boolean) as Lead[];
 
-      const { inserted, skipped } = await upsertLeads(leads);
+      const { inserted, skipped } = await upsertLeads(leads, {
+        email: session.email,
+        name: session.name,
+      });
       return NextResponse.json({
         ok: true,
         scanned: places.length,
@@ -215,11 +289,9 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      const col = await leadsCollection();
-      const lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { lead, col } = owned;
 
       const { analysis, intel, scores, opportunities, email } = await enrichLead(lead);
       const now = new Date().toISOString();
@@ -255,8 +327,11 @@ export async function POST(req: Request) {
     if (action === "analyze-batch") {
       const size = Math.min(Number(body.size || 10), 20);
       const col = await leadsCollection();
+      // Members only ever analyze their own unprocessed leads; owners, everyone's.
+      const scope: Record<string, any> =
+        session.role === "owner" ? {} : { ownerEmail: session.email };
       const pending = await col
-        .find({ lastAnalyzedAt: null })
+        .find({ lastAnalyzedAt: null, ...scope })
         .limit(size)
         .toArray();
 
@@ -293,7 +368,7 @@ export async function POST(req: Request) {
         }
       });
 
-      const remaining = await col.countDocuments({ lastAnalyzedAt: null });
+      const remaining = await col.countDocuments({ lastAnalyzedAt: null, ...scope });
       return NextResponse.json({ ok: true, analyzed: done, remaining });
     }
 
@@ -306,11 +381,10 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      const col = await leadsCollection();
-      let lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { col } = owned;
+      let lead = owned.lead;
 
       // An audit is only as good as the data behind it — analyze first if needed.
       if (!lead.lastAnalyzedAt) {
@@ -360,11 +434,9 @@ export async function POST(req: Request) {
       if (!leadKey) {
         return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
       }
-      const col = await leadsCollection();
-      const lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { lead, col } = owned;
       if (!lead.audit) {
         return NextResponse.json(
           { ok: false, error: "Generate an audit before sharing it." },
@@ -390,8 +462,9 @@ export async function POST(req: Request) {
       if (!leadKey) {
         return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
       }
-      const col = await leadsCollection();
-      await col.updateOne(
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      await owned.col.updateOne(
         { leadKey },
         { $set: { updatedAt: new Date().toISOString() }, $unset: { shareToken: "", sharedAt: "" } } as never
       );
@@ -404,11 +477,10 @@ export async function POST(req: Request) {
       if (!leadKey) {
         return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
       }
-      const col = await leadsCollection();
-      let lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { col } = owned;
+      let lead = owned.lead;
 
       // Outreach references the audit — ensure analysis + audit exist first.
       if (!lead.lastAnalyzedAt) {
@@ -467,11 +539,9 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      const col = await leadsCollection();
-      const lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { lead, col } = owned;
 
       const html = emailShell(
         "New business outreach",
@@ -492,7 +562,7 @@ export async function POST(req: Request) {
         businessName: lead.businessName,
         messageId: result.id,
         transport: result.via,
-        sentBy: "admin-ui",
+        sentBy: session.email,
       });
 
       const now = new Date().toISOString();
@@ -534,6 +604,8 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
       await setStage(leadKey, stage);
       return NextResponse.json({ ok: true });
     }
@@ -544,11 +616,9 @@ export async function POST(req: Request) {
       if (!leadKey) {
         return NextResponse.json({ ok: false, error: "leadKey is required" }, { status: 400 });
       }
-      const col = await leadsCollection();
-      const lead = await col.findOne({ leadKey });
-      if (!lead) {
-        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
-      }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
+      const { col } = owned;
       const note = String(body.note || "").trim();
       const now = new Date().toISOString();
       await col.updateOne(
@@ -578,6 +648,8 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+      const owned = await loadOwnedLead(leadKey, session);
+      if ("res" in owned) return owned.res;
       await addTimelineEvent(leadKey, {
         at: new Date().toISOString(),
         type: "note",

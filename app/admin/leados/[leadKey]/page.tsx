@@ -11,10 +11,12 @@ export default async function LeadProfilePage({
 }: {
   params: Promise<{ leadKey: string }>;
 }) {
-  await requireView("leados");
+  const session = await requireView("leados");
   const { leadKey } = await params;
   const lead = await getLeadByKey(decodeURIComponent(leadKey));
   if (!lead) notFound();
+  // Members can only open their own leads; owners (admins) can open any.
+  if (session.role !== "owner" && (lead.ownerEmail || "") !== session.email) notFound();
   // Strip the ObjectId / any BSON so the payload is plain JSON for the client.
   const serialized = JSON.parse(
     JSON.stringify({ ...lead, _id: String((lead as { _id?: unknown })._id ?? "") })

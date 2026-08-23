@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, Boxes } from "lucide-react";
 import {
-  PROJECTS,
   projectCategories,
   projectsByCategory,
   type Project,
@@ -106,11 +105,16 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
   );
 }
 
-export default function Projects() {
-  const categories = useMemo(() => projectCategories(), []);
+export default function Projects({ projects }: { projects: Project[] }) {
+  const categories = useMemo(() => projectCategories(projects), [projects]);
   const [active, setActive] = useState<string>("all");
 
-  const filtered = projectsByCategory(active);
+  const filtered = projectsByCategory(projects, active);
+
+  // Nothing to show yet (e.g. no clients seeded, or the DB is unreachable) —
+  // hide the whole section rather than render an empty grid.
+  if (!projects.length) return null;
+
   const visible = filtered.slice(0, MAX_VISIBLE);
   const hasMore = filtered.length > MAX_VISIBLE;
 
@@ -119,7 +123,7 @@ export default function Projects() {
     active === "all" ? "/portfolio" : `/portfolio?category=${active}`;
 
   const tabs = [
-    { slug: "all", label: "All", count: PROJECTS.length },
+    { slug: "all", label: "All", count: projects.length },
     ...categories,
   ];
 

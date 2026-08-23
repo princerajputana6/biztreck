@@ -20,12 +20,13 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ leadKey: string }> }
 ) {
-  if (!(await guardPermission("leados"))) {
+  const session = await guardPermission("leados");
+  if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const { leadKey } = await params;
   const lead = await getLeadByKey(decodeURIComponent(leadKey));
-  if (!lead) {
+  if (!lead || (session.role !== "owner" && (lead.ownerEmail || "") !== session.email)) {
     return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
   }
   if (!lead.audit) {

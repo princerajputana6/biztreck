@@ -33,6 +33,9 @@ export function ensureLeadIndexes(): Promise<void> {
         col.createIndex({ stage: 1, updatedAt: -1 }),
         col.createIndex({ country: 1, businessCategory: 1 }),
         col.createIndex({ createdAt: -1 }),
+        // Per-user lead scoping: members list/sort only their own leads.
+        col.createIndex({ ownerEmail: 1, createdAt: -1 }),
+        col.createIndex({ ownerEmail: 1, "scores.overall": -1 }),
         col.createIndex({ lastAnalyzedAt: 1 }),
         col.createIndex({ domain: 1 }),
         // Sparse: only shared leads have a token, and it must be unique.
@@ -131,14 +134,28 @@ export function countryFromCode(code: string): string {
   return COUNTRY_BY_CODE[code.toUpperCase()] || code;
 }
 
-/** Insert leads that don't exist yet; never overwrite enrichment on re-import. */
-export async function upsertLeads(leads: Lead[]) {
+export type LeadOwner = { email: string; name?: string };
+
+/**
+ * Insert leads that don't exist yet; never overwrite enrichment on re-import.
+ *
+ * When an `owner` is given, new leads are tagged with it, and any pre-existing
+ * lead among this batch that has no owner yet is CLAIMED for the importer — so
+ * legacy leads (imported before ownership existed) become the importer's the
+ * next time they're searched. A lead already owned by someone else is left
+ * untouched (first importer keeps it).
+ */
+export async function upsertLeads(leads: Lead[], owner?: LeadOwner) {
   if (!leads.length) return { inserted: 0, skipped: 0 };
   await ensureLeadIndexes();
   const col = await leadsCollection();
 
+  const tagged = owner
+    ? leads.map((l) => ({ ...l, ownerEmail: owner.email, ownerName: owner.name || owner.email }))
+    : leads;
+
   const now = new Date().toISOString();
-  const ops = leads.map((lead) => {
+  const ops = tagged.map((lead) => {
     // `updatedAt` is driven by $set on every import, so it must not also appear
     // in $setOnInsert — Mongo rejects the same path in two operators.
     const { updatedAt: _ignored, ...onInsert } = lead;
@@ -156,6 +173,19 @@ export async function upsertLeads(leads: Lead[]) {
 
   const res = await col.bulkWrite(ops, { ordered: false });
   const inserted = res.upsertedCount || 0;
+
+  if (owner) {
+    // Claim any leads in this batch that existed but had no owner. Leads just
+    // inserted already carry the owner, so they're excluded by the $or.
+    await col.updateMany(
+      {
+        leadKey: { $in: tagged.map((l) => l.leadKey) },
+        $or: [{ ownerEmail: { $exists: false } }, { ownerEmail: null }, { ownerEmail: "" }],
+      } as never,
+      { $set: { ownerEmail: owner.email, ownerName: owner.name || owner.email } }
+    );
+  }
+
   return { inserted, skipped: leads.length - inserted };
 }
 

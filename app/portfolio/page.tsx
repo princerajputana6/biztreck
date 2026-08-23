@@ -7,6 +7,10 @@ import Footer from "@/components/Footer";
 import BackgroundFX from "@/components/BackgroundFX";
 import ProjectsGallery from "@/components/ProjectsGallery";
 import { SITE } from "@/lib/site";
+import { getShowcaseProjects } from "@/lib/showcase";
+
+// Companies come from the admin `clients` collection (see lib/showcase.ts).
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Our Work — Products & Platforms We've Built",
@@ -28,7 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const projects = await getShowcaseProjects();
   return (
     <main className="relative min-h-screen overflow-hidden bg-navy-950">
       <BackgroundFX />
@@ -49,7 +54,7 @@ export default function PortfolioPage() {
         </div>
 
         <Suspense fallback={<div className="mt-10 h-12" />}>
-          <ProjectsGallery />
+          <ProjectsGallery projects={projects} />
         </Suspense>
 
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">

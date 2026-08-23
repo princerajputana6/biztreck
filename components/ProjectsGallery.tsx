@@ -6,10 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { ArrowUpRight, Boxes } from "lucide-react";
 import {
-  PROJECTS,
   PROJECT_CATEGORY_LABELS,
   projectCategories,
   projectsByCategory,
+  type Project,
 } from "@/lib/projects";
 
 const card = {
@@ -21,13 +21,13 @@ const card = {
   }),
 };
 
-export default function ProjectsGallery() {
+export default function ProjectsGallery({ projects }: { projects: Project[] }) {
   const router = useRouter();
   const params = useSearchParams();
   const active = params.get("category") || "all";
 
-  const categories = useMemo(() => projectCategories(), []);
-  const filtered = projectsByCategory(active);
+  const categories = useMemo(() => projectCategories(projects), [projects]);
+  const filtered = projectsByCategory(projects, active);
   const activeLabel =
     active === "all" ? "All work" : PROJECT_CATEGORY_LABELS[active] || active;
 
@@ -38,7 +38,7 @@ export default function ProjectsGallery() {
   };
 
   const tabs = [
-    { slug: "all", label: "All", count: PROJECTS.length },
+    { slug: "all", label: "All", count: projects.length },
     ...categories,
   ];
 

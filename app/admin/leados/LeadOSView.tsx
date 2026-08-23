@@ -32,6 +32,11 @@ import {
   resolveChannel,
   type ChannelKey,
 } from "@/lib/leados/channel";
+import type { Session } from "@/lib/rbac";
+
+// Per-user lead tally the API returns to admins for the "which user" filter.
+type OwnerStat = { ownerEmail: string; ownerName: string; count: number };
+const UNASSIGNED_OWNER = "__unassigned__";
 
 const CHANNEL_ICON: Record<ChannelKey, typeof Mail> = {
   email: Mail,
@@ -186,7 +191,8 @@ function ContactedBadge({ lead, className = "" }: { lead: AnyDoc; className?: st
   );
 }
 
-export default function LeadOSView() {
+export default function LeadOSView({ session }: { session: Session }) {
+  const isOwner = session.role === "owner";
   const [leads, setLeads] = useState<AnyDoc[]>([]);
   const [total, setTotal] = useState(0);
   const [counts, setCounts] = useState<Counts | null>(null);
@@ -202,6 +208,9 @@ export default function LeadOSView() {
   const [stage, setStage] = useState("");
   const [country, setCountry] = useState("");
   const [flags, setFlags] = useState<Record<string, boolean>>({});
+  // Admin-only "which user generated these leads" filter + per-user tally.
+  const [owner, setOwner] = useState("");
+  const [owners, setOwners] = useState<OwnerStat[]>([]);
 
   const [view, setView] = useState<"list" | "board" | "sent">("list");
   const [sentEmails, setSentEmails] = useState<AnyDoc[] | null>(null);
@@ -230,11 +239,12 @@ export default function LeadOSView() {
     if (priority) p.set("priority", priority);
     if (stage) p.set("stage", stage);
     if (country) p.set("country", country);
+    if (owner) p.set("owner", owner);
     Object.entries(flags).forEach(([k, v]) => v && p.set(k, "1"));
     // Show every lead in the database (the header still notes the count).
     p.set("limit", "2000");
     return p.toString();
-  }, [q, priority, stage, country, flags]);
+  }, [q, priority, stage, country, owner, flags]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -245,6 +255,7 @@ export default function LeadOSView() {
         setLeads(data.leads);
         setTotal(data.total);
         if (data.counts) setCounts(data.counts);
+        if (Array.isArray(data.owners)) setOwners(data.owners);
       }
     } finally {
       setLoading(false);
@@ -568,6 +579,22 @@ export default function LeadOSView() {
             <option value="">All countries</option>
             {["United States", "Canada", "United Kingdom", "Australia", "New Zealand", "Singapore", "United Arab Emirates", "India"].map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
+          {/* Admin-only: filter leads by the user who generated them, with counts. */}
+          {isOwner && (
+            <select
+              value={owner}
+              onChange={(e) => setOwner(e.target.value)}
+              className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white md:col-span-4"
+              title="Filter by the user who generated the leads"
+            >
+              <option value="">All users ({owners.reduce((s, o) => s + o.count, 0)})</option>
+              {owners.map((o) => (
+                <option key={o.ownerEmail || "unassigned"} value={o.ownerEmail || UNASSIGNED_OWNER}>
+                  {(o.ownerName || o.ownerEmail || "Unassigned (legacy)")} — {o.count}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {[

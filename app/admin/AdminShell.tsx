@@ -978,7 +978,7 @@ export default function AdminShell(props: Stats) {
           </div>
         )}
 
-        {view === "leados" && <LeadOSView />}
+        {view === "leados" && <LeadOSView session={session} />}
 
         {view === "integrations" && (
           <IntegrationsView initialStatus={integrationsStatus} />

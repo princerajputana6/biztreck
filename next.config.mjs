@@ -7,6 +7,11 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
+    // Some brand logos (e.g. KuddlKin) are SVGs. next/image blocks SVG by
+    // default; allow it but sandbox the response so an SVG can't execute script.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: "https", hostname: "image.pollinations.ai" },
       { protocol: "https", hostname: "images.unsplash.com" },

@@ -13,8 +13,14 @@ import FinalCTA from "@/components/FinalCTA";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import BackgroundFX from "@/components/BackgroundFX";
+import { getShowcaseProjects } from "@/lib/showcase";
 
-export default function Home() {
+// Companies come from the admin `clients` collection. Regenerate periodically so
+// clients added in admin appear on the site without a redeploy.
+export const revalidate = 300;
+
+export default async function Home() {
+  const projects = await getShowcaseProjects();
   return (
     <main className="relative min-h-screen overflow-hidden bg-navy-950">
       <BackgroundFX />
@@ -25,7 +31,7 @@ export default function Home() {
       <Solutions />
       <IndustriesGrid />
       <Stats />
-      <Projects />
+      <Projects projects={projects} />
       <Process />
       <WhyUs />
       <Testimonials />

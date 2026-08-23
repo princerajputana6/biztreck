@@ -41,16 +41,18 @@ export async function recordSentEmail(rec: SentEmailRecord): Promise<void> {
   }
 }
 
-export async function listSentEmails(limit = 50) {
+/** Optional `sentBy` scopes the log to one user's sends (for non-admin members). */
+export async function listSentEmails(limit = 50, sentBy?: string) {
   const c = await col();
+  const filter = sentBy ? { sentBy } : {};
   return c
-    .find({}, { projection: { _id: 0 } })
+    .find(filter, { projection: { _id: 0 } })
     .sort({ at: -1 })
     .limit(Math.min(Math.max(limit, 1), 200))
     .toArray();
 }
 
-export async function countSentEmails(): Promise<number> {
+export async function countSentEmails(sentBy?: string): Promise<number> {
   const c = await col();
-  return c.countDocuments({});
+  return c.countDocuments(sentBy ? { sentBy } : {});
 }

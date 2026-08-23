@@ -234,6 +234,57 @@ export type TimelineEvent = {
   meta?: Record<string, unknown>;
 };
 
+// ---- Calling & compliance (AI voice agent) -----------------------------------
+
+/** Where our right to call this lead comes from, and whether they've opted out. */
+export type ConsentStatus = "unknown" | "opted_in" | "opted_out";
+
+export type LeadConsent = {
+  status: ConsentStatus;
+  /** Human-readable lawful basis, e.g. "web form 2026-08-10", "existing customer",
+   *  "inbound demo request". Required before an AI call to a US number. */
+  basis?: string;
+  /** When consent (or opt-out) was captured. */
+  capturedAt?: string;
+  /** Where it came from — form id, import batch, call, email reply, etc. */
+  source?: string;
+};
+
+/** Outcome of a single AI voice call, mirrored from the Retell webhook. */
+export type CallOutcome =
+  | "meeting_booked"
+  | "interested"
+  | "callback"
+  | "not_interested"
+  | "no_answer"
+  | "voicemail"
+  | "do_not_call"
+  | "failed";
+
+export type CallRecord = {
+  /** Retell call_id — the join key back to the provider. */
+  callId: string;
+  at: string;
+  /** registered | ongoing | ended | error | not_connected */
+  status: string;
+  direction: "outbound" | "inbound";
+  durationSec?: number;
+  outcome?: CallOutcome;
+  /** AI-written recap from call_analysis.call_summary. */
+  summary?: string;
+  /** positive | neutral | negative | unknown */
+  sentiment?: string;
+  /** Whether the agent achieved the call goal (call_analysis.call_successful). */
+  successful?: boolean;
+  /** Structured fields the agent extracted (custom_analysis_data). */
+  data?: Record<string, unknown>;
+  disconnectionReason?: string;
+  /** Retell recording (short-lived) — store only if data opt-out enabled. */
+  recordingUrl?: string;
+  /** Who/what initiated it. */
+  initiatedBy?: string;
+};
+
 export type Lead = {
   _id?: unknown;
   /** Stable dedupe key — Google placeId, or `domain:<host>` when absent. */
@@ -295,6 +346,20 @@ export type Lead = {
   lastEmailedAt?: string | null;
   lastCalledAt?: string | null;
   nextFollowUpAt?: string | null;
+
+  // ---- Calling & compliance
+  /** Lawful basis to contact. Absent === "unknown". Gate for AI voice calls. */
+  consent?: LeadConsent;
+  /** Internal do-not-call flag. Set on opt-out; blocks all further calls. */
+  doNotCall?: boolean;
+  /** Full history of AI voice calls to this lead. */
+  calls?: CallRecord[];
+
+  // ---- Ownership — the admin user who generated/imported this lead. Members
+  // only see and act on their own leads; owners (admins) see everyone's. Leads
+  // imported before this feature have no owner and are visible to owners only.
+  ownerEmail?: string;
+  ownerName?: string;
 
   // ---- Bookkeeping
   source: string;
