@@ -171,7 +171,7 @@ export function emailShell(title: string, body: string) {
     </div>
     <div style="margin-top:18px;font-size:11px;color:#94a3b8;text-align:center;">
       Biztreck Solutions · Greater Noida, Delhi NCR (201306)<br/>
-      connect@biztreck.world · +91 87408 63229
+      connect@biztreck.world · +91 81307 38333
     </div>
   </div>
 </body></html>`;

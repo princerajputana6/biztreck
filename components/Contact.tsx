@@ -93,8 +93,8 @@ export default function Contact() {
                 {
                   icon: Phone,
                   label: "Phone",
-                  value: "+91 87408 63229",
-                  href: "tel:+918740863229",
+                  value: "+91 81307 38333",
+                  href: "tel:+918130738333",
                 },
                 {
                   icon: MapPin,

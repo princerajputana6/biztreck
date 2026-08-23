@@ -73,7 +73,7 @@ export function companyProfile() {
       "Khas-502, Devla, Noida 201306, Greater Noida, Uttar Pradesh, India",
     website: process.env.COMPANY_WEBSITE || "https://www.biztreck.world",
     email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
-    phone: process.env.COMPANY_PHONE || "+91 87408 63229",
+    phone: process.env.COMPANY_PHONE || "+91 81307 38333",
     gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
     pan: process.env.COMPANY_PAN || "HRTPK7815L",
     // SAC (Services Accounting Code) for GST on the services rendered.
