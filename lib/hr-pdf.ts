@@ -33,7 +33,6 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
     const pdf = new PDFDocument({
       size: "A4",
       margins: { top: 60, bottom: 70, left: 50, right: 50 },
-      bufferPages: true,
     });
     const chunks: Buffer[] = [];
     pdf.on("data", (c) => chunks.push(Buffer.from(c)));
@@ -48,13 +47,16 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
     const bottom = pageH - pdf.page.margins.bottom;
 
     const drawFooter = () => {
+      // Writing text below the bottom margin makes pdfkit auto-add a page —
+      // drop the bottom margin so the footer stays on the current page.
+      pdf.page.margins.bottom = 0;
       pdf.save();
       pdf.rect(0, pageH - 28, pageW, 28).fill(PURPLE);
       pdf
         .fillColor("#E9E3FB")
         .font("Helvetica")
         .fontSize(8)
-        .text(`${co.name} · ${co.address} · ${co.email} · ${co.phone}`, left, pageH - 19, {
+        .text(`${co.name} · ${co.website.replace(/^https?:\/\//, "")} · ${co.email} · ${co.phone}`, left, pageH - 19, {
           width: contentW,
           align: "center",
           lineBreak: false,
@@ -62,38 +64,63 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
       pdf.restore();
     };
 
-    const bandH = 108;
+    // Reference no. from the document title, e.g. OFFER LETTER -> BT/OL/2026.
+    const refInitials = doc.docTitle.split(/\s+/).map((w) => w[0] || "").join("").toUpperCase().slice(0, 4);
+    const refNo = `BT/${refInitials}/${new Date().getFullYear()}`;
+
+    // ---- Header band ----
+    const bandH = 100;
     pdf.rect(0, 0, pageW, bandH).fill(PURPLE);
     pdf.rect(0, bandH, pageW, 5).fill(PURPLE_DEEP);
+    pdf.rect(0, bandH + 5, pageW, 1.5).fill(GOLD);
     const logo = getLogo();
     if (logo) {
       try {
-        pdf.image(logo, left, 26, { width: 150 });
+        pdf.image(logo, left, 24, { width: 150 });
       } catch {
-        pdf.fillColor("#FFFFFF").font("Helvetica-Bold").fontSize(22).text(co.name, left, 32);
+        pdf.fillColor("#FFFFFF").font("Times-Bold").fontSize(22).text(co.name, left, 30);
       }
     } else {
-      pdf.fillColor("#FFFFFF").font("Helvetica-Bold").fontSize(22).text(co.name, left, 32);
+      pdf.fillColor("#FFFFFF").font("Times-Bold").fontSize(22).text(co.name, left, 30);
     }
     pdf
-      .font("Helvetica-Bold")
-      .fontSize(18)
+      .font("Times-Bold")
+      .fontSize(19)
       .fillColor("#FFFFFF")
-      .text(doc.docTitle, right - 300, 40, { width: 300, align: "right", lineBreak: false });
+      .text(doc.docTitle, right - 320, 38, { width: 320, align: "right", lineBreak: false });
     pdf
       .font("Helvetica")
       .fontSize(9)
       .fillColor("#E9E3FB")
-      .text(`Date: ${doc.dateLabel}`, right - 300, 70, { width: 300, align: "right" })
-      .text(`GSTIN: ${co.gst}`, right - 300, 84, { width: 300, align: "right" });
+      .text(`Date: ${doc.dateLabel}`, right - 320, 68, { width: 320, align: "right" })
+      .text(`GSTIN: ${co.gst}`, right - 320, 82, { width: 320, align: "right" });
+
+    // ---- Letterhead contact strip ----
+    const sy = bandH + 13;
+    pdf.font("Helvetica-Bold").fontSize(9.5).fillColor(PURPLE).text(co.name.toUpperCase(), left, sy, { width: contentW * 0.6, characterSpacing: 0.4 });
+    pdf.font("Helvetica").fontSize(7.5).fillColor(MUTED).text(co.address, left, sy + 12, { width: contentW * 0.6 });
+    pdf
+      .font("Helvetica")
+      .fontSize(7.5)
+      .fillColor(MUTED)
+      .text(co.email, right - 210, sy, { width: 210, align: "right" })
+      .text(co.phone, right - 210, sy + 11, { width: 210, align: "right" })
+      .text(co.website.replace(/^https?:\/\//, ""), right - 210, sy + 22, { width: 210, align: "right" });
+    const stripBottom = sy + 32;
+    pdf.strokeColor(LINE).lineWidth(0.8).moveTo(left, stripBottom).lineTo(right, stripBottom).stroke();
 
     pdf.x = left;
-    pdf.y = bandH + 26;
+    pdf.y = stripBottom + 13;
 
     const ensureSpace = (needed: number) => {
       if (pdf.y + needed > bottom) pdf.addPage();
     };
 
+    // Ref
+    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`Ref: ${refNo}`, left, pdf.y, { width: contentW });
+    pdf.moveDown(0.8);
+
+    // Addressee
     doc.toBlock.forEach((l, i) => {
       pdf
         .font(i === 0 ? "Helvetica-Bold" : "Helvetica")
@@ -101,53 +128,52 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
         .fillColor(i === 0 ? INK : MUTED)
         .text(l, left, pdf.y, { width: contentW });
     });
-    pdf.moveDown(0.8);
+    pdf.moveDown(0.7);
 
+    // Subject + gold underline
     if (doc.subject) {
-      pdf.font("Helvetica-Bold").fontSize(10).fillColor(PURPLE).text(`Subject: ${doc.subject}`, { width: contentW });
-      pdf.moveDown(0.7);
-    }
-    if (doc.salutation) {
-      pdf.font("Helvetica").fontSize(10).fillColor(INK).text(doc.salutation, { width: contentW });
-      pdf.moveDown(0.5);
+      pdf.font("Helvetica-Bold").fontSize(10.5).fillColor(PURPLE_DEEP).text(`Subject: ${doc.subject}`, left, pdf.y, { width: contentW });
+      const uy = pdf.y + 2;
+      pdf.strokeColor(GOLD).lineWidth(1).moveTo(left, uy).lineTo(left + Math.min(contentW, 250), uy).stroke();
+      pdf.moveDown(0.9);
     }
 
+    // Salutation
+    if (doc.salutation) {
+      pdf.font("Times-Roman").fontSize(10.5).fillColor(INK).text(doc.salutation, left, pdf.y, { width: contentW });
+      pdf.moveDown(0.4);
+    }
+
+    // Body (serif, justified)
     const para = (text: string) => {
-      ensureSpace(48);
-      pdf.font("Helvetica").fontSize(10).fillColor(INK).text(text, { width: contentW, align: "justify", lineGap: 3 });
-      pdf.moveDown(0.7);
+      ensureSpace(44);
+      pdf.font("Times-Roman").fontSize(10.5).fillColor(INK).text(text, left, pdf.y, { width: contentW, align: "justify", lineGap: 2.5 });
+      pdf.moveDown(0.5);
     };
     doc.body.forEach(para);
     doc.closing.forEach(para);
 
-    ensureSpace(120);
+    // ---- Signature (company left; acceptance right on the same line) ----
+    ensureSpace(92);
     pdf.moveDown(0.5);
-    pdf.font("Helvetica").fontSize(10).fillColor(INK).text("For " + doc.signatory.company + ",", { width: contentW });
-    pdf.moveDown(1.6);
-    pdf.font("Helvetica-Bold").fontSize(10.5).fillColor(INK).text(doc.signatory.name, { width: contentW });
-    pdf.font("Helvetica").fontSize(9).fillColor(MUTED).text(doc.signatory.title, { width: contentW });
+    pdf.font("Times-Roman").fontSize(10.5).fillColor(INK).text(`For ${doc.signatory.company},`, left, pdf.y, { width: contentW });
+    const sigLineY = pdf.y + 30;
+    pdf.strokeColor(INK).lineWidth(0.8).moveTo(left, sigLineY).lineTo(left + 200, sigLineY).stroke();
+    pdf.font("Helvetica-Bold").fontSize(10.5).fillColor(INK).text(doc.signatory.name, left, sigLineY + 5, { width: 260 });
+    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title} · Authorized Signatory`, left, sigLineY + 19, { width: 260 });
 
     if (doc.acceptance) {
-      ensureSpace(90);
-      pdf.moveDown(1.8);
-      const y = pdf.y;
-      const colW = (contentW - 40) / 2;
-      pdf.strokeColor(INK).lineWidth(0.8).moveTo(right - colW, y).lineTo(right, y).stroke();
-      pdf.font("Helvetica-Bold").fontSize(9.5).fillColor(INK).text("Accepted by", right - colW, y + 6, { width: colW });
+      const colW = 200;
+      pdf.strokeColor(INK).lineWidth(0.8).moveTo(right - colW, sigLineY).lineTo(right, sigLineY).stroke();
+      pdf.font("Helvetica-Bold").fontSize(9.5).fillColor(INK).text("Accepted by", right - colW, sigLineY + 5, { width: colW });
       pdf
         .font("Helvetica")
         .fontSize(8.5)
         .fillColor(MUTED)
-        .text(`${doc.toBlock[0] || "Candidate"} · Signature & Date`, right - colW, y + 20, { width: colW });
-      pdf.x = left;
+        .text(`${doc.toBlock[0] || "Candidate"} · Signature & Date`, right - colW, sigLineY + 19, { width: colW });
     }
 
-    const range = pdf.bufferedPageRange();
-    for (let i = range.start; i < range.start + range.count; i++) {
-      pdf.switchToPage(i);
-      drawFooter();
-    }
-    pdf.flushPages();
+    drawFooter();
     pdf.end();
   });
 }
