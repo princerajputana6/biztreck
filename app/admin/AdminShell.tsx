@@ -4,10 +4,12 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
+  Award,
   Banknote,
   Briefcase,
   Building2,
   CalendarClock,
+  Check,
   Download,
   ExternalLink,
   FileSignature,
@@ -312,6 +314,16 @@ export default function AdminShell(props: Stats) {
       `delete-employee-${employee._id}`,
       { action: "delete-employee", employeeId: employee._id },
       "Employee removed."
+    );
+  };
+
+  // Save the full HR details for one employee (department, dates, comp, etc.) so
+  // their offer letters / certificates generate with complete, correct data.
+  const updateEmployeeDetails = async (employee: AnyDoc, fields: AnyDoc) => {
+    return submitOperation(
+      `employee-edit-${employee._id}`,
+      { action: "update-employee", employeeId: employee._id, ...fields },
+      "Employee details saved."
     );
   };
 
@@ -1046,7 +1058,7 @@ export default function AdminShell(props: Stats) {
                       const form = event.currentTarget;
                       const data = new FormData(form);
                       if (teamTab === "employees") {
-                        submitTeam("employee", { action: "add-employee", name: data.get("name"), role: data.get("role"), email: data.get("email"), salaryMonthly: data.get("salaryMonthly"), status: data.get("status"), joiningDate: data.get("joiningDate") }, "Employee added.", form);
+                        submitTeam("employee", { action: "add-employee", name: data.get("name"), role: data.get("role"), email: data.get("email"), department: data.get("department"), employmentType: data.get("employmentType"), salaryMonthly: data.get("salaryMonthly"), status: data.get("status"), joiningDate: data.get("joiningDate"), endDate: data.get("endDate"), location: data.get("location"), employeeCode: data.get("employeeCode") }, "Employee added.", form);
                       } else if (teamTab === "hiring") {
                         submitTeam("hiring", { action: "add-hiring", title: data.get("title"), department: data.get("department"), stage: data.get("stage"), candidateName: data.get("candidateName"), notes: data.get("notes") }, "Hiring item added.", form);
                       } else if (teamTab === "social") {
@@ -1060,10 +1072,15 @@ export default function AdminShell(props: Stats) {
                     {teamTab === "employees" && (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <Field name="name" label="Name" required />
-                        <Field name="role" label="Role" />
+                        <Field name="role" label="Role / designation" />
+                        <Field name="department" label="Department" placeholder="Engineering" />
                         <Field name="email" label="Email" type="email" />
-                        <Field name="salaryMonthly" label="Monthly salary" type="number" />
-                        <Field name="joiningDate" label="Joining date" type="date" />
+                        <Select name="employmentType" label="Employment type" options={[{ value: "full-time", label: "Full-time" }, { value: "intern", label: "Intern" }, { value: "contract", label: "Contract" }]} />
+                        <Field name="salaryMonthly" label="Monthly salary / stipend (INR)" type="number" />
+                        <Field name="joiningDate" label="Start date" type="date" />
+                        <Field name="endDate" label="End / last day (optional)" type="date" />
+                        <Field name="location" label="Work location" placeholder="Greater Noida (Hybrid)" />
+                        <Field name="employeeCode" label="Employee code (optional)" placeholder="BT-EMP-001" />
                         <Select name="status" label="Status" options={["active", "contract", "intern", "inactive"]} />
                       </div>
                     )}
@@ -1146,35 +1163,14 @@ export default function AdminShell(props: Stats) {
                     <ListEmpty show={employees.length === 0} label="No employees yet. Add your first team member." />
                     <div className="grid gap-3 md:grid-cols-2">
                       {employees.map((emp) => (
-                        <div key={emp._id} className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-white">{initials(emp.name)}</div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate font-semibold text-white">{emp.name}</div>
-                              <div className="mt-0.5 truncate text-xs text-slate-400">{emp.role || "Team"}{emp.email ? ` · ${emp.email}` : ""}</div>
-                            </div>
-                            <div className="shrink-0 text-sm font-semibold text-white">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
-                          </div>
-                          <div className="mt-3 flex items-center gap-2">
-                            <select
-                              value={emp.status || "active"}
-                              onChange={(e) => updateEmployeeStatus(emp, e.target.value)}
-                              className="flex-1 rounded-lg border border-navy-700/70 bg-navy-950/70 px-2 py-1.5 text-xs text-white"
-                            >
-                              {["active", "contract", "intern", "inactive"].map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                              ))}
-                            </select>
-                            <button
-                              type="button"
-                              onClick={() => deleteEmployee(emp)}
-                              disabled={operationBusy === `delete-employee-${emp._id}`}
-                              className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs text-rose-300 disabled:opacity-60"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
+                        <EmployeeCard
+                          key={emp._id}
+                          emp={emp}
+                          operationBusy={operationBusy}
+                          updateEmployeeStatus={updateEmployeeStatus}
+                          updateEmployeeDetails={updateEmployeeDetails}
+                          deleteEmployee={deleteEmployee}
+                        />
                       ))}
                     </div>
                   </>
@@ -1994,6 +1990,150 @@ function CustomInvoiceForm({
         </button>
       </form>
     </Panel>
+  );
+}
+
+// HR documents (kept in sync with lib/hr-docs.ts). Hardcoded here so the client
+// bundle doesn't import the server-only hr-docs module.
+const HR_DOC_BUTTONS: { type: string; label: string; cert?: boolean; intern?: boolean }[] = [
+  { type: "offer_letter", label: "Offer letter" },
+  { type: "appointment_letter", label: "Appointment letter" },
+  { type: "internship_offer", label: "Internship offer", intern: true },
+  { type: "internship_certificate", label: "Internship certificate", cert: true, intern: true },
+  { type: "experience_certificate", label: "Experience certificate" },
+  { type: "relieving_letter", label: "Relieving letter" },
+];
+
+// One team member: status + remove, plus an expandable panel to complete their
+// HR details and generate/download offer letters, certificates, etc.
+function EmployeeCard({
+  emp,
+  operationBusy,
+  updateEmployeeStatus,
+  updateEmployeeDetails,
+  deleteEmployee,
+}: {
+  emp: AnyDoc;
+  operationBusy: string | null;
+  updateEmployeeStatus: (employee: AnyDoc, status: string) => Promise<void>;
+  updateEmployeeDetails: (employee: AnyDoc, fields: AnyDoc) => Promise<boolean>;
+  deleteEmployee: (employee: AnyDoc) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const isIntern = (emp.employmentType || emp.status) === "intern";
+  const inputCls =
+    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-2.5 py-1.5 text-xs text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan";
+  const [f, setF] = useState({
+    role: emp.role || "",
+    department: emp.department || "",
+    employmentType: emp.employmentType || (emp.status === "intern" ? "intern" : "full-time"),
+    salaryMonthly: String(emp.salaryMonthly ?? ""),
+    joiningDate: emp.joiningDate || "",
+    endDate: emp.endDate || "",
+    location: emp.location || "",
+    employeeCode: emp.employeeCode || "",
+    email: emp.email || "",
+  });
+  const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
+  const busy = operationBusy === `employee-edit-${emp._id}`;
+  const save = () => updateEmployeeDetails(emp, { ...f, salaryMonthly: Number(f.salaryMonthly || 0) });
+  // Show intern docs first for interns, employee docs first otherwise.
+  const docs = [...HR_DOC_BUTTONS].sort((a, b) => Number(Boolean(b.intern) === isIntern) - Number(Boolean(a.intern) === isIntern));
+
+  return (
+    <div className="rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
+      <div className="flex items-center gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-white">{initials(emp.name)}</div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-semibold text-white">{emp.name}</div>
+          <div className="mt-0.5 truncate text-xs text-slate-400">
+            {emp.role || "Team"}{emp.department ? ` · ${emp.department}` : ""}{isIntern ? " · Intern" : ""}
+          </div>
+        </div>
+        <div className="shrink-0 text-sm font-semibold text-white">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <select
+          value={emp.status || "active"}
+          onChange={(e) => updateEmployeeStatus(emp, e.target.value)}
+          className="flex-1 rounded-lg border border-navy-700/70 bg-navy-950/70 px-2 py-1.5 text-xs text-white"
+        >
+          {["active", "contract", "intern", "inactive"].map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1.5 text-xs text-violet-200"
+        >
+          <FileText size={12} /> Documents
+        </button>
+        <button
+          type="button"
+          onClick={() => deleteEmployee(emp)}
+          disabled={operationBusy === `delete-employee-${emp._id}`}
+          className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs text-rose-300 disabled:opacity-60"
+        >
+          Remove
+        </button>
+      </div>
+
+      {open && (
+        <div className="mt-3 space-y-3 rounded-lg border border-navy-700/40 bg-navy-900/40 p-3">
+          <div className="text-xs font-semibold text-slate-300">HR details (used to fill the documents)</div>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={f.role} onChange={(e) => set("role", e.target.value)} placeholder="Role / designation" className={inputCls} />
+            <input value={f.department} onChange={(e) => set("department", e.target.value)} placeholder="Department" className={inputCls} />
+            <select value={f.employmentType} onChange={(e) => set("employmentType", e.target.value)} className={inputCls}>
+              <option value="full-time">Full-time</option>
+              <option value="intern">Intern</option>
+              <option value="contract">Contract</option>
+            </select>
+            <input value={f.salaryMonthly} onChange={(e) => set("salaryMonthly", e.target.value)} type="number" placeholder="Monthly salary / stipend" className={inputCls} />
+            <label className="grid gap-0.5 text-[10px] text-slate-500">Start date
+              <input value={f.joiningDate} onChange={(e) => set("joiningDate", e.target.value)} type="date" className={inputCls} />
+            </label>
+            <label className="grid gap-0.5 text-[10px] text-slate-500">End / last day
+              <input value={f.endDate} onChange={(e) => set("endDate", e.target.value)} type="date" className={inputCls} />
+            </label>
+            <input value={f.location} onChange={(e) => set("location", e.target.value)} placeholder="Work location" className={inputCls} />
+            <input value={f.employeeCode} onChange={(e) => set("employeeCode", e.target.value)} placeholder="Employee code" className={inputCls} />
+            <input value={f.email} onChange={(e) => set("email", e.target.value)} placeholder="Email" className={`${inputCls} col-span-2`} />
+          </div>
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:opacity-60"
+          >
+            {busy ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Save details
+          </button>
+
+          <div className="border-t border-navy-700/40 pt-3">
+            <div className="mb-2 text-xs font-semibold text-slate-300">Generate &amp; download</div>
+            <div className="flex flex-wrap gap-2">
+              {docs.map((d) => (
+                <a
+                  key={d.type}
+                  href={`/api/admin/hr-docs/${emp._id}?type=${d.type}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${
+                    d.cert
+                      ? "border-amber-400/30 bg-amber-400/10 text-amber-200 hover:border-amber-400/60"
+                      : "border-navy-700/70 bg-navy-800/50 text-slate-200 hover:border-accent-cyan"
+                  }`}
+                >
+                  {d.cert ? <Award size={12} /> : <Download size={12} />} {d.label}
+                </a>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">Opens a branded PDF. Fill the details above (especially dates) for complete documents.</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

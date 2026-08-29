@@ -101,6 +101,7 @@ export async function GET(req: Request) {
     if (v) filter[field] = v;
   };
   eq("country");
+  eq("state");
   eq("stage");
   eq("priority", "scores.priority");
 
@@ -233,9 +234,19 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+      // Build the Places location from the most specific parts available:
+      // "<city/area>, <state>, <country>". Any of them may be blank.
+      const locationQuery =
+        [
+          String(body.location || "").trim(),
+          String(body.state || "").trim(),
+          String(body.country || "").trim(),
+        ]
+          .filter(Boolean)
+          .join(", ") || undefined;
       const rawItems = await runApifyScraper({
         searchStringsArray,
-        locationQuery: String(body.location || "").trim() || undefined,
+        locationQuery,
         maxCrawledPlacesPerSearch: Math.min(Number(body.maxResults) || 20, 100),
       });
       const places = normalizePlaces(rawItems);

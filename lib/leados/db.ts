@@ -32,6 +32,7 @@ export function ensureLeadIndexes(): Promise<void> {
         col.createIndex({ "scores.priority": 1, "scores.overall": -1 }),
         col.createIndex({ stage: 1, updatedAt: -1 }),
         col.createIndex({ country: 1, businessCategory: 1 }),
+        col.createIndex({ country: 1, state: 1 }),
         col.createIndex({ createdAt: -1 }),
         // Per-user lead scoping: members list/sort only their own leads.
         col.createIndex({ ownerEmail: 1, createdAt: -1 }),

@@ -32,6 +32,7 @@ import {
   resolveChannel,
   type ChannelKey,
 } from "@/lib/leados/channel";
+import { COUNTRIES, statesFor } from "@/lib/geo";
 import type { Session } from "@/lib/rbac";
 
 // Per-user lead tally the API returns to admins for the "which user" filter.
@@ -207,6 +208,7 @@ export default function LeadOSView({ session }: { session: Session }) {
   const [priority, setPriority] = useState("");
   const [stage, setStage] = useState("");
   const [country, setCountry] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
   const [flags, setFlags] = useState<Record<string, boolean>>({});
   // Admin-only "which user generated these leads" filter + per-user tally.
   const [owner, setOwner] = useState("");
@@ -218,6 +220,8 @@ export default function LeadOSView({ session }: { session: Session }) {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
+  const [searchCountry, setSearchCountry] = useState("");
+  const [searchState, setSearchState] = useState("");
   const [searchMax, setSearchMax] = useState(20);
   // Optimistic pipeline-stage moves for the kanban, keyed by leadKey.
   const [stageOverrides, setStageOverrides] = useState<Record<string, string>>({});
@@ -239,12 +243,13 @@ export default function LeadOSView({ session }: { session: Session }) {
     if (priority) p.set("priority", priority);
     if (stage) p.set("stage", stage);
     if (country) p.set("country", country);
+    if (stateFilter) p.set("state", stateFilter);
     if (owner) p.set("owner", owner);
     Object.entries(flags).forEach(([k, v]) => v && p.set(k, "1"));
     // Show every lead in the database (the header still notes the count).
     p.set("limit", "2000");
     return p.toString();
-  }, [q, priority, stage, country, owner, flags]);
+  }, [q, priority, stage, country, stateFilter, owner, flags]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -370,6 +375,8 @@ export default function LeadOSView({ session }: { session: Session }) {
         action: "search-places",
         query: searchQuery,
         location: searchLocation,
+        state: searchState,
+        country: searchCountry,
         maxResults: searchMax,
       },
       "Search complete"
@@ -519,11 +526,38 @@ export default function LeadOSView({ session }: { session: Session }) {
               />
             </label>
             <label className="grid gap-1 text-sm text-slate-300">
-              Location
+              Country
+              <select
+                value={searchCountry}
+                onChange={(e) => {
+                  setSearchCountry(e.target.value);
+                  setSearchState("");
+                }}
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+              >
+                <option value="">Any country</option>
+                {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm text-slate-300">
+              State / region
+              <select
+                value={searchState}
+                onChange={(e) => setSearchState(e.target.value)}
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+              >
+                <option value="">
+                  {searchCountry ? `Whole ${searchCountry}` : "Any state"}
+                </option>
+                {statesFor(searchCountry).map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm text-slate-300">
+              City / area <span className="text-slate-500">(optional)</span>
               <input
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
-                placeholder="Manchester, United Kingdom"
+                placeholder="e.g. Bengaluru"
                 className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
               />
             </label>
@@ -575,9 +609,27 @@ export default function LeadOSView({ session }: { session: Session }) {
             <option value="">All stages</option>
             {PIPELINE_STAGES.map((s) => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
           </select>
-          <select value={country} onChange={(e) => setCountry(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white">
+          <select
+            value={country}
+            onChange={(e) => {
+              setCountry(e.target.value);
+              // The state list is country-specific, so an old state selection
+              // may not belong to the new country — clear it.
+              setStateFilter("");
+            }}
+            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white"
+          >
             <option value="">All countries</option>
-            {["United States", "Canada", "United Kingdom", "Australia", "New Zealand", "Singapore", "United Arab Emirates", "India"].map((c) => <option key={c} value={c}>{c}</option>)}
+            {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white"
+            title={country ? `States in ${country}` : "States (all countries)"}
+          >
+            <option value="">{country ? `All states in ${country}` : "All states"}</option>
+            {statesFor(country).map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           {/* Admin-only: filter leads by the user who generated them, with counts. */}
           {isOwner && (

@@ -613,9 +613,14 @@ export async function POST(req: Request) {
         name,
         role: String(data.role || "").trim(),
         email: String(data.email || "").trim(),
+        department: String(data.department || "").trim(),
+        employmentType: String(data.employmentType || "full-time").trim(),
         salaryMonthly: Number(data.salaryMonthly || 0),
         status: String(data.status || "active"),
         joiningDate: String(data.joiningDate || ""),
+        endDate: String(data.endDate || ""),
+        location: String(data.location || "").trim(),
+        employeeCode: String(data.employeeCode || "").trim(),
         createdAt: now,
         updatedAt: now,
       });
@@ -623,9 +628,22 @@ export async function POST(req: Request) {
     }
 
     if (action === "update-employee") {
+      // Only update the HR fields actually provided, so the status-only toggle
+      // (from the list) and the full HR-details edit both work without wiping data.
+      const set: Record<string, unknown> = { updatedAt: now };
+      const strFields = [
+        "name", "role", "email", "department", "employmentType",
+        "status", "joiningDate", "endDate", "location", "employeeCode",
+      ];
+      for (const f of strFields) {
+        if (data[f] !== undefined && data[f] !== null) set[f] = String(data[f]).trim();
+      }
+      if (data.salaryMonthly !== undefined && data.salaryMonthly !== null) {
+        set.salaryMonthly = Number(data.salaryMonthly || 0);
+      }
       await db.collection("employees").updateOne(
         { _id: toObjectId(data.employeeId) },
-        { $set: { status: String(data.status || "active"), updatedAt: now } }
+        { $set: set }
       );
       return NextResponse.json({ ok: true });
     }
