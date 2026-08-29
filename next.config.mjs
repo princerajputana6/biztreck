@@ -45,6 +45,7 @@ const nextConfig = {
     "/api/admin/hr-docs/[employeeId]": [
       "./node_modules/pdfkit/js/data/**/*",
       "./public/logo.png",
+      "./public/logo-dark.png",
     ],
   },
   // Map the dot-prefixed /.well-known/* paths (which the App Router cannot host
