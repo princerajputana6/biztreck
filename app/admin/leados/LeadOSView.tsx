@@ -124,6 +124,12 @@ const PRIORITY_TONE: Record<string, string> = {
   ignore: "text-slate-400 bg-slate-400/10 border-slate-500/25",
 };
 
+const PREMIUM_TONE: Record<string, string> = {
+  PREMIUM: "text-amber-200 bg-amber-400/10 border-amber-400/30",
+  STANDARD: "text-cyan-200 bg-cyan-400/10 border-cyan-400/25",
+  LOW_VALUE: "text-slate-400 bg-slate-500/10 border-slate-500/25",
+};
+
 export function ScoreBar({ label, value }: { label: string; value: number }) {
   const tone =
     value >= 70 ? "bg-rose-400" : value >= 45 ? "bg-amber-400" : "bg-cyan-400";
@@ -829,6 +835,20 @@ export default function LeadOSView({ session }: { session: Session }) {
                     <ScoreBar label="Software opp." value={s.software} />
                     <ScoreBar label="AI opp." value={s.ai} />
                     <ScoreBar label="Website opp." value={s.website} />
+                  </div>
+                )}
+
+                {l.prospect && (
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className={`rounded-full border px-2 py-0.5 font-medium ${PREMIUM_TONE[l.prospect.premiumTier] || PREMIUM_TONE.LOW_VALUE}`}>
+                      {String(l.prospect.premiumTier || "").replace("_", " ").toLowerCase()}
+                    </span>
+                    <span className="rounded-full border border-violet-400/25 bg-violet-400/10 px-2 py-0.5 text-violet-200">
+                      intent {l.prospect.buyingIntentScore}
+                    </span>
+                    <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-emerald-200">
+                      reach {l.prospect.contactabilityScore}
+                    </span>
                   </div>
                 )}
 

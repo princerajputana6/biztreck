@@ -170,6 +170,60 @@ export type LeadScores = {
   signals: string[];
 };
 
+// ---- Prospecting engine (buying intent, premium, opportunity class) ----------
+
+/** Canonical opportunity categories (plan §6). */
+export const OPPORTUNITY_CATEGORIES = [
+  "WEBSITE",
+  "WEBSITE_REDESIGN",
+  "SEO",
+  "CMS",
+  "ECOMMERCE",
+  "CRM",
+  "ERP",
+  "HRMS",
+  "CUSTOM_SOFTWARE",
+  "AUTOMATION",
+  "MOBILE_APP",
+  "SAAS_MVP",
+  "CONVERSION_OPTIMIZATION",
+  "AI_CHATBOT",
+  "MULTIPLE_SERVICES",
+  "NO_CLEAR_OPPORTUNITY",
+] as const;
+export type OpportunityCategory = (typeof OPPORTUNITY_CATEGORIES)[number];
+
+export type PremiumTier = "PREMIUM" | "STANDARD" | "LOW_VALUE";
+export type BudgetCategory = "high" | "medium" | "low" | "unknown";
+
+/** One prospect source that produced (or re-produced) this company. */
+export type LeadSourceRef = {
+  source: string; // "google-maps" | "product-hunt" | "crunchbase-csv" | ...
+  sourceUrl?: string;
+  collectedAt: string;
+};
+
+/**
+ * Prospecting scores computed on top of the base LeadScores. Kept separate so
+ * "they have a bad website" (technology need) is never confused with "they are
+ * likely to buy" (buying intent).
+ */
+export type ProspectScores = {
+  /** 0–100 — evidence the business is likely to buy NOW. Low when unknown. */
+  buyingIntentScore: number;
+  buyingIntentSignals: string[];
+  /** 0–100 — how valuable a client they'd be. */
+  premiumScore: number;
+  premiumTier: PremiumTier;
+  premiumSignals: string[];
+  /** 0–100 — how reachable a decision maker is. */
+  contactabilityScore: number;
+  contactabilitySignals: string[];
+  primaryOpportunity: OpportunityCategory;
+  secondaryOpportunities: OpportunityCategory[];
+  estimatedBudgetCategory: BudgetCategory;
+};
+
 /** Module 7 — a single section of the generated business audit. */
 export type AuditSection = {
   /** e.g. "Website Analysis", "SEO Analysis", "AI Opportunities". */
@@ -326,7 +380,31 @@ export type Lead = {
   intel?: BusinessIntel;
   opportunities?: Opportunity[];
   scores?: LeadScores;
+  /** Buying-intent / premium / contactability + opportunity classification. */
+  prospect?: ProspectScores;
   contacts?: LeadContact[];
+
+  // ---- Prospecting signals (populated by richer sources; nullable when unknown,
+  // never fabricated). Google Maps leaves most of these empty by design.
+  employeeCount?: number | null;
+  foundedYear?: number | null;
+  fundingStage?: string;
+  fundingAmount?: number | null;
+  lastFundingDate?: string | null;
+  growthSignals?: string[];
+  hiringSignals?: string[];
+  launchSignals?: string[];
+  founderName?: string;
+  decisionMakerTitle?: string;
+  whatsappAvailable?: boolean;
+  /** Persisted best channel (channel.ts computes the live ladder for the UI). */
+  bestContactChannel?: string;
+  bestContactConfidence?: number | null;
+  bestContactReason?: string;
+  /** Concrete, observed facts a message can reference (never fabricated). */
+  personalizationData?: string[];
+  /** Every source that produced this company (for future cross-source dedup). */
+  sources?: LeadSourceRef[];
   audit?: LeadAudit;
   lastAuditAt?: string | null;
   /** Unguessable token for the public audit report; presence == shared. */

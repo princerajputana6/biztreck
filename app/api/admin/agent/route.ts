@@ -311,7 +311,7 @@ async function draftOutreachForLead(lead: Lead, model?: string): Promise<Lead> {
     const now = new Date().toISOString();
     await col.updateOne(
       { leadKey: lead.leadKey },
-      { $set: { analysis: full.analysis, intel: full.intel, scores: full.scores, opportunities: full.opportunities, audit, lastAnalyzedAt: now, lastAuditAt: now, updatedAt: now } }
+      { $set: { analysis: full.analysis, intel: full.intel, scores: full.scores, opportunities: full.opportunities, prospect: full.prospect, audit, lastAnalyzedAt: now, lastAuditAt: now, updatedAt: now } }
     );
   }
   const outreach = await generateOutreach(full, model);

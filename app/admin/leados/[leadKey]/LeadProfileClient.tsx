@@ -30,6 +30,12 @@ const PRIORITY_TONE: Record<string, string> = {
   ignore: "text-slate-400 bg-slate-400/10 border-slate-500/25",
 };
 
+const PREMIUM_TONE: Record<string, string> = {
+  PREMIUM: "text-amber-200 bg-amber-400/10 border-amber-400/30",
+  STANDARD: "text-cyan-200 bg-cyan-400/10 border-cyan-400/25",
+  LOW_VALUE: "text-slate-400 bg-slate-500/10 border-slate-500/25",
+};
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-5">
@@ -70,6 +76,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
   const s = lead.scores;
   const a = lead.analysis;
   const intel = lead.intel;
+  const p = lead.prospect;
   const audit = fresh.audit || lead.audit;
   const outreach = fresh.outreach || lead.outreach;
 
@@ -240,6 +247,40 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
             <ul className="mt-4 grid gap-1 text-xs text-slate-400 sm:grid-cols-2">
               {s.signals.map((sig: string) => (
                 <li key={sig}>· {sig}</li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      )}
+
+      {/* Prospecting — buying intent / premium / reachability */}
+      {p && (
+        <Section title="Prospecting scores">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <ScoreBar label="Buying intent" value={p.buyingIntentScore} />
+            <ScoreBar label="Premium value" value={p.premiumScore} />
+            <ScoreBar label="Contactability" value={p.contactabilityScore} />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
+            <span className={`rounded-full border px-2.5 py-0.5 font-medium ${PREMIUM_TONE[p.premiumTier] || PREMIUM_TONE.LOW_VALUE}`}>
+              {p.premiumTier?.replace("_", " ").toLowerCase()}
+            </span>
+            <span className="rounded-full border border-slate-500/30 bg-slate-500/10 px-2.5 py-0.5 text-slate-300">
+              budget: {p.estimatedBudgetCategory}
+            </span>
+            <span className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-0.5 text-accent-cyan">
+              {String(p.primaryOpportunity || "—").replace(/_/g, " ").toLowerCase()}
+            </span>
+            {p.secondaryOpportunities?.map((o: string) => (
+              <span key={o} className="rounded-full border border-slate-600/40 bg-slate-700/20 px-2.5 py-0.5 text-slate-400">
+                {o.replace(/_/g, " ").toLowerCase()}
+              </span>
+            ))}
+          </div>
+          {(p.buyingIntentSignals?.length > 0 || p.premiumSignals?.length > 0) && (
+            <ul className="mt-4 grid gap-1 text-xs text-slate-400 sm:grid-cols-2">
+              {[...(p.buyingIntentSignals || []), ...(p.premiumSignals || [])].map((sig: string, i: number) => (
+                <li key={`${sig}-${i}`}>· {sig}</li>
               ))}
             </ul>
           )}

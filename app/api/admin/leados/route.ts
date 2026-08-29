@@ -304,7 +304,7 @@ export async function POST(req: Request) {
       if ("res" in owned) return owned.res;
       const { lead, col } = owned;
 
-      const { analysis, intel, scores, opportunities, email } = await enrichLead(lead);
+      const { analysis, intel, scores, opportunities, prospect, email } = await enrichLead(lead);
       const now = new Date().toISOString();
 
       await col.updateOne(
@@ -315,6 +315,7 @@ export async function POST(req: Request) {
             intel,
             scores,
             opportunities,
+            prospect,
             ...(email ? { email } : {}),
             lastAnalyzedAt: now,
             updatedAt: now,
@@ -331,7 +332,7 @@ export async function POST(req: Request) {
         } as never
       );
 
-      return NextResponse.json({ ok: true, analysis, intel, scores, opportunities });
+      return NextResponse.json({ ok: true, analysis, intel, scores, opportunities, prospect });
     }
 
     // --- Analyze a batch of not-yet-analyzed leads ---------------------------
@@ -351,7 +352,7 @@ export async function POST(req: Request) {
       // one-by-one, so a batch finishes in seconds rather than minutes.
       await mapWithConcurrency(pending, 8, async (lead) => {
         try {
-          const { analysis, intel, scores, opportunities, email } = await enrichLead(lead, {
+          const { analysis, intel, scores, opportunities, prospect, email } = await enrichLead(lead, {
             intelModel: FAST_MODEL,
           });
           const now = new Date().toISOString();
@@ -363,6 +364,7 @@ export async function POST(req: Request) {
                 intel,
                 scores,
                 opportunities,
+                prospect,
                 ...(email ? { email } : {}),
                 lastAnalyzedAt: now,
                 updatedAt: now,
@@ -409,6 +411,7 @@ export async function POST(req: Request) {
               intel: enrich.intel,
               scores: enrich.scores,
               opportunities: enrich.opportunities,
+              prospect: enrich.prospect,
               lastAnalyzedAt: now,
               updatedAt: now,
             },
