@@ -191,23 +191,35 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     const cx = pageW / 2;
     const CREAM = "#FCFBF7";
 
-    // Background + cream panel
+    // Background
     pdf.rect(0, 0, pageW, pageH).fill("#FFFFFF");
-    pdf.rect(20, 20, pageW - 40, pageH - 40).fill(CREAM);
 
-    // Ornate double frame
-    pdf.save();
-    pdf.roundedRect(22, 22, pageW - 44, pageH - 44, 6).lineWidth(4).stroke(PURPLE);
-    pdf.roundedRect(33, 33, pageW - 66, pageH - 66, 4).lineWidth(1).stroke(GOLD);
-    pdf.restore();
+    // Offset drop-shadow — gives the frame a lifted / offset look (bottom-right).
+    pdf.save().fillOpacity(0.16);
+    pdf.roundedRect(31, 31, pageW - 44, pageH - 44, 10).fill("#2A1758");
+    pdf.fillOpacity(1).restore();
 
-    // Corner diamonds
+    // Glossy purple frame — a vertical gradient (light sheen on top → deep at the
+    // bottom) reads as a glossy border rather than a flat fill.
+    const gloss = (pdf as any).linearGradient(0, 22, 0, pageH - 22);
+    gloss.stop(0, "#8B5CF6").stop(0.13, "#A78BFA").stop(0.42, "#6D28D9").stop(1, "#43179A");
+    pdf.roundedRect(22, 22, pageW - 44, pageH - 44, 10).fill(gloss);
+    // A thin bright keyline just inside the frame edge for extra gloss.
+    pdf.roundedRect(25.5, 25.5, pageW - 51, pageH - 51, 8).lineWidth(0.8).stroke("#C4B5FD");
+
+    // Inner cream panel (content sits here)
+    pdf.roundedRect(37, 37, pageW - 74, pageH - 74, 6).fill(CREAM);
+
+    // Thin gold inner keyline
+    pdf.roundedRect(42, 42, pageW - 84, pageH - 84, 4).lineWidth(1).stroke(GOLD);
+
+    // Corner diamonds on the gold keyline
     const diamond = (x: number, y: number, r: number) => {
       pdf.save().fillColor(GOLD);
       pdf.moveTo(x, y - r).lineTo(x + r, y).lineTo(x, y + r).lineTo(x - r, y).fill();
       pdf.restore();
     };
-    [[46, 46], [pageW - 46, 46], [46, pageH - 46], [pageW - 46, pageH - 46]].forEach(([x, y]) => diamond(x, y, 5));
+    [[56, 56], [pageW - 56, 56], [56, pageH - 56], [pageW - 56, pageH - 56]].forEach(([x, y]) => diamond(x, y, 5));
 
     // Brand chip — the logo is a light wordmark, so place it on a purple chip
     // where it stays visible on the cream certificate.
