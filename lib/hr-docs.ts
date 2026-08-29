@@ -26,7 +26,7 @@ export const HR_DOCS: Record<HrDocType, HrDocMeta> = {
   offer_letter: { label: "Offer letter", layout: "letter", audience: "employee" },
   appointment_letter: { label: "Appointment letter", layout: "letter", audience: "employee" },
   internship_offer: { label: "Internship offer", layout: "letter", audience: "intern" },
-  internship_certificate: { label: "Internship certificate", layout: "letter", audience: "intern" },
+  internship_certificate: { label: "Internship certificate", layout: "certificate", audience: "intern" },
   experience_certificate: { label: "Experience certificate", layout: "letter", audience: "employee" },
   relieving_letter: { label: "Relieving letter", layout: "letter", audience: "employee" },
 };
@@ -250,10 +250,10 @@ export function buildHrDoc(type: HrDocType, emp: HrEmployee): HrDoc {
       };
 
     case "internship_certificate": {
-      const studentClause = course && institution
-        ? `, a student of ${course} at ${institution},`
+      const studentText = course && institution
+        ? `a student of ${course} at ${institution}, `
         : institution
-          ? `, a student at ${institution},`
+          ? `a student at ${institution}, `
           : "";
       const mentorClause = mentor ? ` under the guidance of ${mentor}` : "";
       const respPara =
@@ -261,22 +261,20 @@ export function buildHrDoc(type: HrDocType, emp: HrEmployee): HrDoc {
           `${cap(P.pos)} responsibilities included assisting in ${role.toLowerCase()} tasks, contributing to live projects, and gaining practical exposure to the tools and technologies used at ${company}.`) +
         ` During the internship period, ${P.sub} demonstrated good analytical skills, problem-solving ability, and dedication towards the assigned tasks.`;
       return {
-        layout: "letter",
-        docTitle: "INTERNSHIP CERTIFICATE",
+        layout: "certificate",
+        docTitle: "CERTIFICATE OF INTERNSHIP",
         fileLabel: "internship-certificate",
-        dateLabel: todayLabel(),
-        toBlock: ["TO WHOMSOEVER IT MAY CONCERN"],
-        subject: "",
-        salutation: "",
+        eyebrow: "This is to certify that",
+        name: titled,
+        // Body continues from the prominently-displayed name.
         body: [
-          `This is to certify that ${titled}${studentClause} has successfully completed ${P.pos} internship at ${company} from ${startLabel}${endLabel ? ` to ${endLabel}` : ""}${durClause}. During the internship tenure, ${P.sub} worked as ${article(role)} ${role} Intern${mentorClause}.`,
+          `${studentText}has successfully completed ${P.pos} internship at ${company} from ${startLabel}${endLabel ? ` to ${endLabel}` : ""}${durClause}. During the internship tenure, ${P.sub} worked as ${article(role)} ${role} Intern${mentorClause}.`,
           respPara,
           `We found ${P.obj} to be punctual, sincere, and eager to learn. ${cap(P.pos)} performance during the internship was satisfactory, and ${P.sub} showed professionalism and enthusiasm in completing the assigned responsibilities.`,
           `We wish ${titled} all the best for ${P.pos} future academic and professional endeavours.`,
         ],
-        closing: [],
+        dateLabel: todayLabel(),
         signatory,
-        acceptance: false,
       };
     }
 

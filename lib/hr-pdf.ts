@@ -160,72 +160,110 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     pdf.on("end", () => resolve(Buffer.concat(chunks)));
 
     const co = companyProfile();
-    const pageW = pdf.page.width;
-    const pageH = pdf.page.height;
-
-    pdf.rect(0, 0, pageW, pageH).fill("#FFFFFF");
-    pdf.save();
-    pdf.rect(24, 24, pageW - 48, pageH - 48).lineWidth(3).stroke(PURPLE);
-    pdf.rect(32, 32, pageW - 64, pageH - 64).lineWidth(1).stroke(GOLD);
-    pdf.restore();
-    pdf.save().fillColor(PURPLE_SOFT);
-    pdf.rect(24, 24, 90, 8).fill();
-    pdf.rect(24, 24, 8, 90).fill();
-    pdf.rect(pageW - 114, pageH - 32, 90, 8).fill();
-    pdf.rect(pageW - 32, pageH - 114, 8, 90).fill();
-    pdf.restore();
-
+    const pageW = pdf.page.width; // 842
+    const pageH = pdf.page.height; // 595
     const cx = pageW / 2;
-    let y = 62;
+    const CREAM = "#FCFBF7";
 
+    // Background + cream panel
+    pdf.rect(0, 0, pageW, pageH).fill("#FFFFFF");
+    pdf.rect(20, 20, pageW - 40, pageH - 40).fill(CREAM);
+
+    // Ornate double frame
+    pdf.save();
+    pdf.roundedRect(22, 22, pageW - 44, pageH - 44, 6).lineWidth(4).stroke(PURPLE);
+    pdf.roundedRect(33, 33, pageW - 66, pageH - 66, 4).lineWidth(1).stroke(GOLD);
+    pdf.restore();
+
+    // Corner diamonds
+    const diamond = (x: number, y: number, r: number) => {
+      pdf.save().fillColor(GOLD);
+      pdf.moveTo(x, y - r).lineTo(x + r, y).lineTo(x, y + r).lineTo(x - r, y).fill();
+      pdf.restore();
+    };
+    [[46, 46], [pageW - 46, 46], [46, pageH - 46], [pageW - 46, pageH - 46]].forEach(([x, y]) => diamond(x, y, 5));
+
+    let y = 46;
     const logo = getLogo();
     if (logo) {
       try {
-        pdf.image(logo, cx - 80, y, { width: 160 });
-        y += 54;
+        pdf.image(logo, cx - 70, y, { width: 140 });
+        y += 46;
       } catch {
         /* fall through */
       }
     }
-    pdf.font("Helvetica-Bold").fontSize(13).fillColor(INK).text(co.name, 0, y, { width: pageW, align: "center" });
-    y += 18;
-    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${co.address} · ${co.email}`, 0, y, { width: pageW, align: "center" });
-    y += 30;
+    pdf.font("Times-Bold").fontSize(13).fillColor(INK).text(co.name, 0, y, { width: pageW, align: "center" });
+    y += 16;
+    pdf.font("Times-Roman").fontSize(8).fillColor(MUTED).text(`${co.address} · ${co.email} · ${co.phone}`, 0, y, { width: pageW, align: "center" });
+    y += 26;
 
-    pdf.font("Helvetica-Bold").fontSize(26).fillColor(PURPLE).text(doc.docTitle, 0, y, { width: pageW, align: "center", characterSpacing: 1 });
-    y += 40;
-    pdf.moveTo(cx - 70, y).lineTo(cx + 70, y).lineWidth(1.5).stroke(GOLD);
-    y += 18;
-
-    pdf.font("Helvetica-Oblique").fontSize(12).fillColor(MUTED).text(doc.eyebrow, 0, y, { width: pageW, align: "center" });
-    y += 24;
-
-    pdf.font("Helvetica-Bold").fontSize(28).fillColor(INK).text(doc.name, 0, y, { width: pageW, align: "center" });
-    y += 36;
-    pdf.moveTo(cx - 150, y).lineTo(cx + 150, y).lineWidth(0.8).stroke(LINE);
+    // Title
+    pdf.font("Times-Bold").fontSize(30).fillColor(PURPLE).text(doc.docTitle, 0, y, { width: pageW, align: "center", characterSpacing: 2 });
+    y += 42;
+    // Gold flourish with centre diamond
+    pdf.save().strokeColor(GOLD).lineWidth(1.2);
+    pdf.moveTo(cx - 110, y).lineTo(cx - 12, y).stroke();
+    pdf.moveTo(cx + 12, y).lineTo(cx + 110, y).stroke();
+    pdf.restore();
+    diamond(cx, y, 4);
     y += 16;
 
-    pdf.font("Helvetica").fontSize(11.5).fillColor(INK);
-    const bodyW = pageW - 200;
-    doc.body.forEach((p) => {
-      pdf.text(p, 100, y, { width: bodyW, align: "center", lineGap: 3 });
-      y = pdf.y + 8;
+    // Eyebrow
+    pdf.font("Times-Italic").fontSize(12.5).fillColor(MUTED).text(doc.eyebrow, 0, y, { width: pageW, align: "center" });
+    y += 20;
+
+    // Name (prominent) + gold underline
+    pdf.font("Times-Bold").fontSize(26).fillColor(PURPLE_DEEP).text(doc.name, 0, y, { width: pageW, align: "center" });
+    const nameW = Math.min(360, pdf.widthOfString(doc.name) + 40);
+    y += 34;
+    pdf.save().strokeColor(GOLD).lineWidth(1).moveTo(cx - nameW / 2, y).lineTo(cx + nameW / 2, y).stroke();
+    pdf.restore();
+    y += 14;
+
+    // Body — fit the font so the whole certificate stays on one page.
+    const bodyX = 118;
+    const bodyW = pageW - 236;
+    const bottomRowY = pageH - 92;
+    const avail = bottomRowY - y - 14;
+    const measure = (fs: number) => {
+      pdf.font("Times-Roman").fontSize(fs);
+      let h = 0;
+      for (const p of doc.body) h += pdf.heightOfString(p, { width: bodyW, align: "justify", lineGap: 3.5 }) + 9;
+      return h;
+    };
+    let fs = 12;
+    while (fs > 9 && measure(fs) > avail) fs -= 0.5;
+
+    pdf.font("Times-Roman").fontSize(fs).fillColor(INK);
+    doc.body.forEach((p, i) => {
+      const align = i === doc.body.length - 1 ? "center" : "justify";
+      pdf.text(p, bodyX, y, { width: bodyW, align, lineGap: 3.5 });
+      y = pdf.y + 9;
     });
 
-    const baseY = pageH - 120;
-    pdf.font("Helvetica").fontSize(9).fillColor(MUTED).text("Date", 90, baseY + 18, { width: 160 });
-    pdf.font("Helvetica-Bold").fontSize(10).fillColor(INK).text(doc.dateLabel, 90, baseY + 4, { width: 160 });
-    pdf.moveTo(90, baseY).lineTo(230, baseY).lineWidth(0.8).stroke(INK);
+    // ---- Bottom row: Date · Seal · Signature ----
+    const rowY = bottomRowY;
+    // Date (left)
+    pdf.save().strokeColor(INK).lineWidth(0.8).moveTo(90, rowY).lineTo(240, rowY).stroke();
+    pdf.restore();
+    pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.dateLabel, 90, rowY - 15, { width: 150 });
+    pdf.font("Times-Roman").fontSize(8.5).fillColor(MUTED).text("Date", 90, rowY + 4, { width: 150 });
 
-    const sigX = pageW - 250;
-    pdf.moveTo(sigX, baseY).lineTo(sigX + 160, baseY).lineWidth(0.8).stroke(INK);
-    pdf.font("Helvetica-Bold").fontSize(10).fillColor(INK).text(doc.signatory.name, sigX, baseY + 6, { width: 160 });
-    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title}, ${doc.signatory.company}`, sigX, baseY + 20, { width: 160 });
+    // Signature (right)
+    const sigX = pageW - 240;
+    pdf.save().strokeColor(INK).lineWidth(0.8).moveTo(sigX, rowY).lineTo(sigX + 150, rowY).stroke();
+    pdf.restore();
+    pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.signatory.name, sigX, rowY - 15, { width: 150 });
+    pdf.font("Times-Roman").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title}, ${doc.signatory.company}`, sigX, rowY + 4, { width: 150 });
 
+    // Seal (centre)
+    const sy = rowY - 8;
     pdf.save();
-    pdf.circle(cx, baseY + 6, 26).lineWidth(1.2).stroke(GOLD);
-    pdf.circle(cx, baseY + 6, 20).lineWidth(0.6).stroke(GOLD);
-    pdf.font("Helvetica-Bold").fontSize(6).fillColor(GOLD).text("OFFICIAL SEAL", cx - 26, baseY + 3, { width: 52, align: "center" });
+    pdf.circle(cx, sy, 30).lineWidth(1.4).stroke(GOLD);
+    pdf.circle(cx, sy, 23).lineWidth(0.6).stroke(GOLD);
+    pdf.font("Times-Bold").fontSize(14).fillColor(GOLD).text("B", cx - 10, sy - 9, { width: 20, align: "center" });
+    pdf.font("Times-Bold").fontSize(5.5).fillColor(GOLD).text("OFFICIAL SEAL", cx - 30, sy + 15, { width: 60, align: "center", characterSpacing: 0.5 });
     pdf.restore();
 
     pdf.end();
