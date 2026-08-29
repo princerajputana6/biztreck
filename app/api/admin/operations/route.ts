@@ -621,6 +621,12 @@ export async function POST(req: Request) {
         endDate: String(data.endDate || ""),
         location: String(data.location || "").trim(),
         employeeCode: String(data.employeeCode || "").trim(),
+        title: String(data.title || "").trim(),
+        pronoun: String(data.pronoun || "").trim(),
+        institution: String(data.institution || "").trim(),
+        course: String(data.course || "").trim(),
+        mentor: String(data.mentor || "").trim(),
+        responsibilities: String(data.responsibilities || "").trim(),
         createdAt: now,
         updatedAt: now,
       });
@@ -634,6 +640,7 @@ export async function POST(req: Request) {
       const strFields = [
         "name", "role", "email", "department", "employmentType",
         "status", "joiningDate", "endDate", "location", "employeeCode",
+        "title", "pronoun", "institution", "course", "mentor", "responsibilities",
       ];
       for (const f of strFields) {
         if (data[f] !== undefined && data[f] !== null) set[f] = String(data[f]).trim();

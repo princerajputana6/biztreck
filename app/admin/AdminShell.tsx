@@ -2033,6 +2033,12 @@ function EmployeeCard({
     location: emp.location || "",
     employeeCode: emp.employeeCode || "",
     email: emp.email || "",
+    title: emp.title || "",
+    pronoun: emp.pronoun || "",
+    institution: emp.institution || "",
+    course: emp.course || "",
+    mentor: emp.mentor || "",
+    responsibilities: emp.responsibilities || "",
   });
   const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
   const busy = operationBusy === `employee-edit-${emp._id}`;
@@ -2099,7 +2105,21 @@ function EmployeeCard({
             </label>
             <input value={f.location} onChange={(e) => set("location", e.target.value)} placeholder="Work location" className={inputCls} />
             <input value={f.employeeCode} onChange={(e) => set("employeeCode", e.target.value)} placeholder="Employee code" className={inputCls} />
+            <select value={f.title} onChange={(e) => set("title", e.target.value)} className={inputCls}>
+              <option value="">Title (none)</option>
+              {["Mr.", "Ms.", "Mrs.", "Mx.", "Dr."].map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select value={f.pronoun} onChange={(e) => set("pronoun", e.target.value)} className={inputCls}>
+              <option value="">Pronoun (they/them)</option>
+              <option value="he/him">he / him</option>
+              <option value="she/her">she / her</option>
+              <option value="they/them">they / them</option>
+            </select>
             <input value={f.email} onChange={(e) => set("email", e.target.value)} placeholder="Email" className={`${inputCls} col-span-2`} />
+            <input value={f.institution} onChange={(e) => set("institution", e.target.value)} placeholder="College / university (interns)" className={`${inputCls} col-span-2`} />
+            <input value={f.course} onChange={(e) => set("course", e.target.value)} placeholder="Course / degree (e.g. B.Tech CSE)" className={`${inputCls} col-span-2`} />
+            <input value={f.mentor} onChange={(e) => set("mentor", e.target.value)} placeholder="Mentor / guide name" className={`${inputCls} col-span-2`} />
+            <textarea value={f.responsibilities} onChange={(e) => set("responsibilities", e.target.value)} rows={3} placeholder="Responsibilities / work summary (used in the certificate)" className={`${inputCls} col-span-2 resize-y`} />
           </div>
           <button
             type="button"

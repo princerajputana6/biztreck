@@ -26,7 +26,7 @@ export const HR_DOCS: Record<HrDocType, HrDocMeta> = {
   offer_letter: { label: "Offer letter", layout: "letter", audience: "employee" },
   appointment_letter: { label: "Appointment letter", layout: "letter", audience: "employee" },
   internship_offer: { label: "Internship offer", layout: "letter", audience: "intern" },
-  internship_certificate: { label: "Internship certificate", layout: "certificate", audience: "intern" },
+  internship_certificate: { label: "Internship certificate", layout: "letter", audience: "intern" },
   experience_certificate: { label: "Experience certificate", layout: "letter", audience: "employee" },
   relieving_letter: { label: "Relieving letter", layout: "letter", audience: "employee" },
 };
@@ -63,7 +63,24 @@ export type HrEmployee = {
   location?: string;
   employeeCode?: string;
   status?: string;
+  // Optional details that make certificates richer (esp. for interns/students).
+  title?: string; // honorific: "Mr." | "Ms." | "Mx." | "Dr." | ""
+  pronoun?: string; // "he/him" | "she/her" | "they/them" (you set this, never inferred)
+  institution?: string; // college / university
+  course?: string; // degree / course
+  mentor?: string; // mentor / guide name
+  responsibilities?: string; // free-text description of the work done
 };
+
+// Pronoun set for a person — YOU choose it on the record; it is never inferred.
+function pronounSet(p?: string) {
+  const v = String(p || "").toLowerCase();
+  if (v.startsWith("she")) return { sub: "she", obj: "her", pos: "her" };
+  if (v.startsWith("he")) return { sub: "he", obj: "him", pos: "his" };
+  return { sub: "they", obj: "them", pos: "their" };
+}
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const article = (word: string) => (/^[aeiou]/i.test(String(word).trim()) ? "an" : "a");
 
 export type LetterDoc = {
   layout: "letter";
@@ -143,6 +160,13 @@ export function buildHrDoc(type: HrDocType, emp: HrEmployee): HrDoc {
   const signatory = { name: cfg.signatoryName, title: cfg.signatoryTitle, company };
   const dur = durationText(start, end);
   const durClause = dur ? ` (a duration of ${dur})` : "";
+  const titleWord = String(emp.title || "").trim();
+  const titled = titleWord ? `${titleWord} ${name}` : name;
+  const P = pronounSet(emp.pronoun);
+  const institution = String(emp.institution || "").trim();
+  const course = String(emp.course || "").trim();
+  const mentor = String(emp.mentor || "").trim();
+  const responsibilities = String(emp.responsibilities || "").trim();
 
   const compLine = (label: string) =>
     monthly > 0
@@ -225,23 +249,36 @@ export function buildHrDoc(type: HrDocType, emp: HrEmployee): HrDoc {
         acceptance: true,
       };
 
-    case "internship_certificate":
+    case "internship_certificate": {
+      const studentClause = course && institution
+        ? `, a student of ${course} at ${institution},`
+        : institution
+          ? `, a student at ${institution},`
+          : "";
+      const mentorClause = mentor ? ` under the guidance of ${mentor}` : "";
+      const respPara =
+        (responsibilities ||
+          `${cap(P.pos)} responsibilities included assisting in ${role.toLowerCase()} tasks, contributing to live projects, and gaining practical exposure to the tools and technologies used at ${company}.`) +
+        ` During the internship period, ${P.sub} demonstrated good analytical skills, problem-solving ability, and dedication towards the assigned tasks.`;
       return {
-        layout: "certificate",
-        docTitle: "CERTIFICATE OF INTERNSHIP",
+        layout: "letter",
+        docTitle: "INTERNSHIP CERTIFICATE",
         fileLabel: "internship-certificate",
-        eyebrow: "This is to certify that",
-        name,
-        body: [
-          endLabel
-            ? `has successfully completed an internship as a ${role} Intern at ${company} from ${startLabel} to ${endLabel}${durClause}.`
-            : `has successfully completed an internship as a ${role} Intern at ${company}.`,
-          `During the internship, ${first} worked on live projects, showed strong commitment and a willingness to learn, and contributed with sincerity, discipline and professionalism.`,
-          `We appreciate ${first}'s efforts and wish ${first} the very best for a bright and successful future.`,
-        ],
         dateLabel: todayLabel(),
+        toBlock: ["TO WHOMSOEVER IT MAY CONCERN"],
+        subject: "",
+        salutation: "",
+        body: [
+          `This is to certify that ${titled}${studentClause} has successfully completed ${P.pos} internship at ${company} from ${startLabel}${endLabel ? ` to ${endLabel}` : ""}${durClause}. During the internship tenure, ${P.sub} worked as ${article(role)} ${role} Intern${mentorClause}.`,
+          respPara,
+          `We found ${P.obj} to be punctual, sincere, and eager to learn. ${cap(P.pos)} performance during the internship was satisfactory, and ${P.sub} showed professionalism and enthusiasm in completing the assigned responsibilities.`,
+          `We wish ${titled} all the best for ${P.pos} future academic and professional endeavours.`,
+        ],
+        closing: [],
         signatory,
+        acceptance: false,
       };
+    }
 
     case "experience_certificate":
       return {
@@ -253,7 +290,7 @@ export function buildHrDoc(type: HrDocType, emp: HrEmployee): HrDoc {
         subject: "",
         salutation: "",
         body: [
-          `This is to certify that ${name}${code ? ` (Employee Code: ${code})` : ""} was employed with ${company} as ${role}${deptClause} from ${startLabel}${endLabel ? ` to ${endLabel}` : ""}.`,
+          `This is to certify that ${titled}${code ? ` (Employee Code: ${code})` : ""} was employed with ${company} as ${role}${deptClause} from ${startLabel}${endLabel ? ` to ${endLabel}` : ""}.`,
           `During this tenure, ${first} was diligent, professional and committed, handled the assigned responsibilities competently, and maintained good conduct throughout the association.`,
           `We wish ${first} success in all future endeavours.`,
           `This certificate is issued upon request for whatever purpose it may serve.`,
