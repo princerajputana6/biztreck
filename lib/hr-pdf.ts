@@ -221,26 +221,58 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     };
     [[56, 56], [pageW - 56, 56], [56, pageH - 56], [pageW - 56, pageH - 56]].forEach(([x, y]) => diamond(x, y, 5));
 
-    // Brand chip — the logo is a light wordmark, so place it on a purple chip
-    // where it stays visible on the cream certificate.
-    let y = 40;
+    // Brand banner — a glossy blue, wavy-edged banner holding the (light) logo,
+    // with a soft offset halo so it blends into the background instead of a hard chip.
+    const bw = 240;
+    const bh = 72;
+    const bx = cx - bw / 2;
+    const by = 42;
+    const amp = 7;
+    // Trace a banner with wavy top & bottom edges (reused for halo + fill).
+    const traceBanner = (ox: number, oy: number, w: number, h: number, a: number) => {
+      const t = oy;
+      const b = oy + h;
+      pdf.moveTo(ox, t + a);
+      pdf.bezierCurveTo(ox + w * 0.20, t - a * 1.4, ox + w * 0.30, t + a * 1.4, ox + w * 0.5, t + a * 0.2);
+      pdf.bezierCurveTo(ox + w * 0.70, t - a * 1.4, ox + w * 0.80, t + a * 1.4, ox + w, t + a);
+      pdf.lineTo(ox + w, b - a);
+      pdf.bezierCurveTo(ox + w * 0.80, b + a * 1.4, ox + w * 0.70, b - a * 1.4, ox + w * 0.5, b - a * 0.2);
+      pdf.bezierCurveTo(ox + w * 0.30, b + a * 1.4, ox + w * 0.20, b - a * 1.4, ox, b - a);
+      pdf.closePath();
+    };
+    // Soft offset halo (pdfkit has no blur, so fake a glow with low-opacity copies).
+    pdf.save().fillOpacity(0.09);
+    traceBanner(bx - 3, by + 6, bw + 6, bh + 6, amp);
+    pdf.fill("#1E3A8A");
+    pdf.fillOpacity(0.06);
+    traceBanner(bx - 6, by + 3, bw + 12, bh + 10, amp);
+    pdf.fill("#1E3A8A");
+    pdf.fillOpacity(1).restore();
+    // Glossy blue gradient body
+    const bluegloss = (pdf as any).linearGradient(0, by, 0, by + bh);
+    bluegloss.stop(0, "#3B82F6").stop(0.12, "#60A5FA").stop(0.5, "#2563EB").stop(1, "#1D4ED8");
+    traceBanner(bx, by, bw, bh, amp);
+    pdf.fill(bluegloss);
+    // Top sheen for gloss
+    pdf.save().fillOpacity(0.22);
+    traceBanner(bx + 12, by + 3, bw - 24, bh * 0.4, amp * 0.7);
+    pdf.fill("#DBEAFE");
+    pdf.fillOpacity(1).restore();
+    // Logo (or wordmark fallback) on top
     const logo = getLogo();
-    const chipW = 214;
-    const chipH = 60;
-    pdf.roundedRect(cx - chipW / 2, y, chipW, chipH, 8).fill(PURPLE);
     let logoDrawn = false;
     if (logo) {
       try {
-        pdf.image(logo, cx - 66, y + 14, { width: 132 });
+        pdf.image(logo, cx - 64, by + 19, { width: 128 });
         logoDrawn = true;
       } catch {
         logoDrawn = false;
       }
     }
     if (!logoDrawn) {
-      pdf.font("Times-Bold").fontSize(20).fillColor("#FFFFFF").text(co.name, cx - chipW / 2, y + 20, { width: chipW, align: "center" });
+      pdf.font("Times-Bold").fontSize(20).fillColor("#FFFFFF").text(co.name, bx, by + 26, { width: bw, align: "center" });
     }
-    y += chipH + 10;
+    let y = by + bh + 8;
     pdf.font("Times-Roman").fontSize(8).fillColor(MUTED).text(`${co.address} · ${co.email} · ${co.phone}`, 0, y, { width: pageW, align: "center" });
     y += 24;
 
