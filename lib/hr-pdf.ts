@@ -209,20 +209,28 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     };
     [[46, 46], [pageW - 46, 46], [46, pageH - 46], [pageW - 46, pageH - 46]].forEach(([x, y]) => diamond(x, y, 5));
 
-    let y = 46;
+    // Brand chip — the logo is a light wordmark, so place it on a purple chip
+    // where it stays visible on the cream certificate.
+    let y = 40;
     const logo = getLogo();
+    const chipW = 214;
+    const chipH = 60;
+    pdf.roundedRect(cx - chipW / 2, y, chipW, chipH, 8).fill(PURPLE);
+    let logoDrawn = false;
     if (logo) {
       try {
-        pdf.image(logo, cx - 70, y, { width: 140 });
-        y += 46;
+        pdf.image(logo, cx - 66, y + 14, { width: 132 });
+        logoDrawn = true;
       } catch {
-        /* fall through */
+        logoDrawn = false;
       }
     }
-    pdf.font("Times-Bold").fontSize(13).fillColor(INK).text(co.name, 0, y, { width: pageW, align: "center" });
-    y += 16;
+    if (!logoDrawn) {
+      pdf.font("Times-Bold").fontSize(20).fillColor("#FFFFFF").text(co.name, cx - chipW / 2, y + 20, { width: chipW, align: "center" });
+    }
+    y += chipH + 10;
     pdf.font("Times-Roman").fontSize(8).fillColor(MUTED).text(`${co.address} · ${co.email} · ${co.phone}`, 0, y, { width: pageW, align: "center" });
-    y += 26;
+    y += 24;
 
     // Title
     pdf.font("Times-Bold").fontSize(30).fillColor(PURPLE).text(doc.docTitle, 0, y, { width: pageW, align: "center", characterSpacing: 2 });
@@ -283,14 +291,31 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.signatory.name, sigX, rowY - 15, { width: 150 });
     pdf.font("Times-Roman").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title}, ${doc.signatory.company}`, sigX, rowY + 4, { width: 150 });
 
-    // Seal (centre)
-    const sy = rowY - 8;
+    // Seal (centre) — a clean gold rosette with a star, label beneath the ring.
+    const sy = rowY - 6;
+    const sr = 28;
     pdf.save();
-    pdf.circle(cx, sy, 30).lineWidth(1.4).stroke(GOLD);
-    pdf.circle(cx, sy, 23).lineWidth(0.6).stroke(GOLD);
-    pdf.font("Times-Bold").fontSize(14).fillColor(GOLD).text("B", cx - 10, sy - 9, { width: 20, align: "center" });
-    pdf.font("Times-Bold").fontSize(5.5).fillColor(GOLD).text("OFFICIAL SEAL", cx - 30, sy + 15, { width: 60, align: "center", characterSpacing: 0.5 });
+    pdf.circle(cx, sy, sr).fillOpacity(0.07).fill(GOLD);
+    pdf.fillOpacity(1);
+    pdf.circle(cx, sy, sr).lineWidth(1.4).stroke(GOLD);
+    pdf.circle(cx, sy, sr - 5).lineWidth(0.6).stroke(GOLD);
+    // 5-point star in the centre
+    pdf.fillColor(GOLD);
+    const spikes = 5;
+    const outerR = 10;
+    const innerR = 4.2;
+    const step = Math.PI / spikes;
+    let rot = -Math.PI / 2;
+    pdf.moveTo(cx + Math.cos(rot) * outerR, sy + Math.sin(rot) * outerR);
+    for (let i = 0; i < spikes; i++) {
+      rot += step;
+      pdf.lineTo(cx + Math.cos(rot) * innerR, sy + Math.sin(rot) * innerR);
+      rot += step;
+      pdf.lineTo(cx + Math.cos(rot) * outerR, sy + Math.sin(rot) * outerR);
+    }
+    pdf.closePath().fill();
     pdf.restore();
+    pdf.font("Helvetica-Bold").fontSize(6).fillColor(MUTED).text("OFFICIAL SEAL", cx - 50, sy + sr + 5, { width: 100, align: "center", characterSpacing: 1 });
 
     pdf.end();
   });
