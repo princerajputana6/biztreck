@@ -18,7 +18,8 @@ import { generateAudit } from "@/lib/leados/audit";
 import { generateOutreach } from "@/lib/leados/outreach";
 import { emailShell, sendOutreachEmail } from "@/lib/resend";
 import { recordSentEmail } from "@/lib/leados/sent-log";
-import { normalizePlaces, runApifyScraper } from "@/lib/scraper";
+import { getSourceAdapter, listSources } from "@/lib/leados/sources";
+import { GOOGLE_MAPS_SOURCE } from "@/lib/leados/sources/google-maps";
 import { marked } from "marked";
 import type { Lead, PipelineStage } from "@/lib/leados/types";
 import { PIPELINE_STAGES } from "@/lib/leados/types";
@@ -198,6 +199,7 @@ export async function GET(req: Request) {
     total,
     counts,
     owners,
+    sources: listSources(),
     leads: leads.map(serialize),
   });
 }
@@ -224,45 +226,46 @@ export async function POST(req: Request) {
   try {
     // --- Module 1/2: live Google Places search → import as leads -------------
     if (action === "search-places") {
-      const searchStringsArray = String(body.query || "")
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (!searchStringsArray.length) {
-        return NextResponse.json(
-          { ok: false, error: "Enter at least one search term (one per line)." },
-          { status: 400 }
-        );
-      }
-      // Build the Places location from the most specific parts available:
-      // "<city/area>, <state>, <country>". Any of them may be blank.
-      const locationQuery =
-        [
-          String(body.location || "").trim(),
-          String(body.state || "").trim(),
-          String(body.country || "").trim(),
-        ]
-          .filter(Boolean)
-          .join(", ") || undefined;
-      const rawItems = await runApifyScraper({
-        searchStringsArray,
-        locationQuery,
-        maxCrawledPlacesPerSearch: Math.min(Number(body.maxResults) || 20, 100),
+      const adapter = getSourceAdapter(GOOGLE_MAPS_SOURCE)!;
+      const { leads, scanned } = await adapter.run({
+        query: String(body.query || ""),
+        location: String(body.location || ""),
+        state: String(body.state || ""),
+        country: String(body.country || ""),
+        limit: Math.min(Number(body.maxResults) || 20, 100),
       });
-      const places = normalizePlaces(rawItems);
-      const leads = places
-        .map((p) => leadFromScrapedPlace(p, "google-places-search"))
-        .filter(Boolean) as Lead[];
       const { inserted, skipped } = await upsertLeads(leads, {
         email: session.email,
         name: session.name,
       });
-      return NextResponse.json({
-        ok: true,
-        scanned: places.length,
-        inserted,
-        skipped,
+      return NextResponse.json({ ok: true, scanned, inserted, skipped });
+    }
+
+    // --- Generic source import (Product Hunt, and future adapters) -----------
+    if (action === "run-source") {
+      const adapter = getSourceAdapter(String(body.source || ""));
+      if (!adapter) {
+        return NextResponse.json({ ok: false, error: "Unknown source." }, { status: 400 });
+      }
+      if (!adapter.isConfigured()) {
+        return NextResponse.json(
+          { ok: false, error: `${adapter.label} is not configured on this server.` },
+          { status: 400 }
+        );
+      }
+      const { leads, scanned, source } = await adapter.run({
+        limit: Math.min(Number(body.limit) || 40, 200),
+        daysBack: Number(body.daysBack) || 7,
+        query: String(body.query || ""),
+        location: String(body.location || ""),
+        state: String(body.state || ""),
+        country: String(body.country || ""),
       });
+      const { inserted, skipped } = await upsertLeads(leads, {
+        email: session.email,
+        name: session.name,
+      });
+      return NextResponse.json({ ok: true, source, scanned, inserted, skipped });
     }
 
     // --- Import from the existing scraper output -----------------------------

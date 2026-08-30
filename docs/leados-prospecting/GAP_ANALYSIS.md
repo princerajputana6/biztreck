@@ -76,4 +76,9 @@ _Plan section numbers reference the brief. Verdicts: ✅ exists (reuse) · 🟡 
 - **Scope**: this is 8 phases; recommend shipping Phase 2–3 + one new source (Phase 4 slice) first to prove value before the long tail.
 
 ---
-_Awaiting approval before any Phase 2+ implementation._
+## Progress
+- **Phase 2 (data model)** ✅ shipped — `prospect` block + intent/premium/funding/launch/hiring/founder/`sources[]` fields on `Lead`.
+- **Phase 3 (scoring v2)** ✅ shipped — `computeProspectScores` (buying-intent / premium+tier / contactability) + `classifyOpportunities`; configurable weights in `scoring-config.ts`. Backfilled onto all existing leads.
+- **Phase 4 (source adapters)** 🟡 in progress — adapter interface (`lib/leados/sources/`), Google Maps refactored into an adapter, **Product Hunt** adapter added (first real intent source; needs `PRODUCT_HUNT_TOKEN`). `run-source` API action + UI import buttons. Next: Reddit/YC + CSV-import adapter.
+
+_Later phases (5–9: decision-maker/social enrichment, best-channel persistence, message variants, CRM extensions, dashboard + cost tracking) still pending approval._

@@ -19,6 +19,7 @@ import {
   MessageCircle,
   Phone,
   RefreshCw,
+  Rocket,
   Search,
   Send,
   Sparkles,
@@ -219,6 +220,7 @@ export default function LeadOSView({ session }: { session: Session }) {
   // Admin-only "which user generated these leads" filter + per-user tally.
   const [owner, setOwner] = useState("");
   const [owners, setOwners] = useState<OwnerStat[]>([]);
+  const [sources, setSources] = useState<AnyDoc[]>([]);
 
   const [view, setView] = useState<"list" | "board" | "sent">("list");
   const [sentEmails, setSentEmails] = useState<AnyDoc[] | null>(null);
@@ -267,6 +269,7 @@ export default function LeadOSView({ session }: { session: Session }) {
         setTotal(data.total);
         if (data.counts) setCounts(data.counts);
         if (Array.isArray(data.owners)) setOwners(data.owners);
+        if (Array.isArray(data.sources)) setSources(data.sources);
       }
     } finally {
       setLoading(false);
@@ -390,6 +393,15 @@ export default function LeadOSView({ session }: { session: Session }) {
     if (data?.ok) setShowSearch(false);
   };
 
+  // Pull leads from an intent source (Product Hunt today).
+  const runSource = async (id: string, label: string) => {
+    await act(
+      `source-${id}`,
+      { action: "run-source", source: id, limit: 40, daysBack: 7 },
+      `Imported from ${label}`
+    );
+  };
+
   // Move a lead to a new pipeline stage (optimistic for the kanban).
   const moveStage = async (leadKey: string, next: string) => {
     setStageOverrides((o) => ({ ...o, [leadKey]: next }));
@@ -493,6 +505,21 @@ export default function LeadOSView({ session }: { session: Session }) {
           {busy === "import" ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
           Import from scraper
         </button>
+        {sources
+          .filter((s) => s.intentSource)
+          .map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => runSource(s.id, s.label)}
+              disabled={busy === `source-${s.id}` || !s.configured}
+              title={s.configured ? s.description : `${s.label} is not configured on the server.`}
+              className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-400/10 px-4 py-2 text-sm text-violet-200 disabled:opacity-50"
+            >
+              {busy === `source-${s.id}` ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}
+              Import {s.label}
+            </button>
+          ))}
         <button
           type="button"
           onClick={() => act("batch", { action: "analyze-batch", size: 10 }, "Batch analysed")}
