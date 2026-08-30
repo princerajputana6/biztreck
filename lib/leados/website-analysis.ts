@@ -147,6 +147,98 @@ function scoreAnalysis(a: WebsiteAnalysis): { score: number; issues: string[] } 
   return { score: Math.max(0, Math.min(100, Math.round(score))), issues };
 }
 
+/**
+ * Pull social profile links a site already exposes (footer/header icons).
+ * Only reads links the business chose to publish on its own page — no scraping
+ * of the social platforms themselves.
+ */
+export function extractSocialLinks(html: string): WebsiteAnalysis["socialLinks"] {
+  // Return the first profile URL that isn't a share/intent/post link.
+  const firstValid = (re: RegExp, reject: RegExp): string => {
+    for (const m of html.matchAll(new RegExp(re, "gi"))) {
+      const url = (m[0].startsWith("http") ? m[0] : `https://${m[0]}`)
+        .replace(/["'<> ].*$/, "")
+        .replace(/\/$/, "");
+      if (!reject.test(url)) return url;
+    }
+    return "";
+  };
+  const out: NonNullable<WebsiteAnalysis["socialLinks"]> = {};
+  const linkedin = firstValid(
+    /https?:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\/(?:company|in|school)\/[A-Za-z0-9._%\-]+/,
+    /\/(sharing|shareArticle)/i
+  );
+  const instagram = firstValid(
+    /https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9._]+/,
+    /instagram\.com\/(p|reel|reels|explore|share)\b/i
+  );
+  const facebook = firstValid(
+    /https?:\/\/(?:www\.)?facebook\.com\/[A-Za-z0-9._%\-]+/,
+    /facebook\.com\/(sharer|share|dialog|tr\b)/i
+  );
+  const twitter = firstValid(
+    /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[A-Za-z0-9._]+/,
+    /(twitter|x)\.com\/(intent|share|home|search|hashtag)\b/i
+  );
+  const youtube = firstValid(
+    /https?:\/\/(?:www\.)?youtube\.com\/(?:@|channel\/|c\/|user\/)[A-Za-z0-9._%\-]+/,
+    /$^/
+  );
+  if (linkedin) out.linkedin = linkedin;
+  if (instagram) out.instagram = instagram;
+  if (facebook) out.facebook = facebook;
+  if (twitter) out.twitter = twitter;
+  if (youtube) out.youtube = youtube;
+  return Object.keys(out).length ? out : undefined;
+}
+
+// Country hints from a phone dial code seen in tel: links or free text.
+const DIAL_TO_COUNTRY: [RegExp, string][] = [
+  [/\+44[\s\-]?\d/, "United Kingdom"],
+  [/\+61[\s\-]?\d/, "Australia"],
+  [/\+64[\s\-]?\d/, "New Zealand"],
+  [/\+353[\s\-]?\d/, "Ireland"],
+  [/\+65[\s\-]?\d/, "Singapore"],
+  [/\+971[\s\-]?\d/, "United Arab Emirates"],
+  [/\+91[\s\-]?\d/, "India"],
+  // +1 is broad (US/CA share it) — checked last so more specific codes win.
+  [/\+1[\s\-(]?\d/, "United States"],
+];
+
+const TLD_TO_COUNTRY: Record<string, string> = {
+  uk: "United Kingdom",
+  au: "Australia",
+  nz: "New Zealand",
+  ie: "Ireland",
+  ca: "Canada",
+  sg: "Singapore",
+  ae: "United Arab Emirates",
+  in: "India",
+};
+
+/** Best-effort country from schema.org address, dial code, or ccTLD. */
+export function detectCountry(html: string, finalUrl: string): string {
+  const addr = attr(html, /"addressCountry"\s*:\s*"?([A-Za-z .]{2,40})"?/i);
+  if (addr) {
+    const code = addr.trim().toUpperCase();
+    const named: Record<string, string> = {
+      US: "United States", USA: "United States", GB: "United Kingdom", UK: "United Kingdom",
+      AU: "Australia", CA: "Canada", NZ: "New Zealand", IE: "Ireland", SG: "Singapore",
+      AE: "United Arab Emirates", IN: "India",
+    };
+    if (named[code]) return named[code];
+    if (addr.length > 3) return addr.trim();
+  }
+  for (const [re, country] of DIAL_TO_COUNTRY) if (re.test(html)) return country;
+  try {
+    const tld = new URL(finalUrl).hostname.split(".").pop() || "";
+    if (TLD_TO_COUNTRY[tld]) return TLD_TO_COUNTRY[tld];
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
 export async function analyzeWebsite(
   websiteInput: string
 ): Promise<WebsiteAnalysis> {
@@ -328,6 +420,10 @@ export async function analyzeWebsite(
     pageBytes: html.length || null,
     imageCount: imgTags.length,
     imagesMissingAlt,
+
+    socialLinks: extractSocialLinks(html),
+    detectedCountry: detectCountry(html, finalUrl),
+    whatsappLink: /(?:wa\.me\/|api\.whatsapp\.com\/send|href=["']https?:\/\/(?:www\.)?whatsapp\.com\/)/i.test(html),
   };
 
   analysis.titleLength = analysis.title.length;

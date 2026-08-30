@@ -80,5 +80,6 @@ _Plan section numbers reference the brief. Verdicts: ✅ exists (reuse) · 🟡 
 - **Phase 2 (data model)** ✅ shipped — `prospect` block + intent/premium/funding/launch/hiring/founder/`sources[]` fields on `Lead`.
 - **Phase 3 (scoring v2)** ✅ shipped — `computeProspectScores` (buying-intent / premium+tier / contactability) + `classifyOpportunities`; configurable weights in `scoring-config.ts`. Backfilled onto all existing leads.
 - **Phase 4 (source adapters)** 🟡 in progress — adapter interface (`lib/leados/sources/`), Google Maps refactored into an adapter, **Product Hunt** adapter added (first real intent source; needs `PRODUCT_HUNT_TOKEN`). `run-source` API action + UI import buttons. Next: Reddit/YC + CSV-import adapter.
+- **Phase 5 (decision-maker + social enrichment)** ✅ shipped — from the lead's OWN site only: social-link extraction (`extractSocialLinks`), country inference (schema/dial/ccTLD via `detectCountry`), WhatsApp-link detection, and named founder/CEO discovery from About/Team pages (`discovery.ts`). Compliant (no LinkedIn/IG scraping, no people-search API); never fabricates — returns blank when unsure. Feeds contactability + premium scores and surfaces in the profile.
 
-_Later phases (5–9: decision-maker/social enrichment, best-channel persistence, message variants, CRM extensions, dashboard + cost tracking) still pending approval._
+_Later phases (6–9: best-channel persistence, message variants, CRM extensions, dashboard + cost tracking) still pending approval._

@@ -135,6 +135,19 @@ export type WebsiteAnalysis = {
   /** Human-readable issues, ordered most severe first. */
   issues: string[];
   error?: string;
+
+  /** Social profile links found on the site (Phase 5 discovery). */
+  socialLinks?: {
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  };
+  /** Country inferred from the site (address/phone/TLD) — best-effort. */
+  detectedCountry?: string;
+  /** A click-to-chat WhatsApp link is present. */
+  whatsappLink?: boolean;
 };
 
 /** Module 4 — business intelligence. */

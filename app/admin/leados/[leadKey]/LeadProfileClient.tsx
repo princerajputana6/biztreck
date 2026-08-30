@@ -292,6 +292,12 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
         <Section title="Overview">
           <Row label="Email">{lead.email || "—"}</Row>
           <Row label="Phone">{lead.phone || "—"}</Row>
+          {(lead.founderName || lead.decisionMakerTitle) && (
+            <Row label="Decision maker">
+              {[lead.founderName, lead.decisionMakerTitle].filter(Boolean).join(" · ") || "—"}
+            </Row>
+          )}
+          {lead.whatsappAvailable && <Row label="WhatsApp"><Bool value={true} /></Row>}
           <Row label="Rating">
             {lead.googleRating ?? "—"} ({lead.googleReviews || 0} reviews)
           </Row>
