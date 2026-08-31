@@ -449,9 +449,9 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
       }
     }
     doc.moveTo(sigX, sy).lineTo(right, sy).strokeColor(INK).lineWidth(0.8).stroke();
-    doc.font("Helvetica-Bold").fontSize(9.5).fillColor(INK).text(co.signatory.name, sigX, sy + 6, { width: sigW, align: "right" });
-    doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(co.signatory.title, sigX, sy + 19, { width: sigW, align: "right" });
-    doc.text(co.name, sigX, sy + 31, { width: sigW, align: "right" });
+    // Only the handwritten signature above the line — no printed signatory name.
+    doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(co.signatory.title, sigX, sy + 6, { width: sigW, align: "right" });
+    doc.text(co.name, sigX, sy + 18, { width: sigW, align: "right" });
     doc.font("Helvetica").fontSize(8).fillColor(MUTED).text("Authorized Signature", sigX, sy - 14, { width: sigW, align: "right" });
 
     // Footer on every page (post-pass over buffered pages).

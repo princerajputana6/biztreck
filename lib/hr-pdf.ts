@@ -195,8 +195,8 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
       }
     }
     pdf.strokeColor(INK).lineWidth(0.8).moveTo(left, sigLineY).lineTo(left + 200, sigLineY).stroke();
-    pdf.font("Helvetica-Bold").fontSize(10.5).fillColor(INK).text(doc.signatory.name, left, sigLineY + 5, { width: 260 });
-    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title} · Authorized Signatory`, left, sigLineY + 19, { width: 260 });
+    // Only the handwritten signature identifies the signer — no printed name.
+    pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title} · Authorized Signatory`, left, sigLineY + 6, { width: 260 });
 
     if (doc.acceptance) {
       const colW = 200;
@@ -341,7 +341,7 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     }
     pdf.save().strokeColor(INK).lineWidth(0.8).moveTo(sigX, rowY).lineTo(sigX + 150, rowY).stroke();
     pdf.restore();
-    pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.signatory.name, sigX, rowY - 15, { width: 150 });
+    // Only the handwritten signature sits above the line — no printed name.
     pdf.font("Times-Roman").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title}, ${doc.signatory.company}`, sigX, rowY + 4, { width: 150 });
 
     // Seal (centre) — a clean gold rosette with a star, label beneath the ring.
