@@ -29,10 +29,12 @@ const nextConfig = {
     "/api/admin/invoices/[id]/pdf": [
       "./node_modules/pdfkit/js/data/**/*",
       "./public/logo.png",
+      "./public/signature.png",
     ],
     "/api/admin/agreements/[clientId]/pdf": [
       "./node_modules/pdfkit/js/data/**/*",
       "./public/logo.png",
+      "./public/signature.png",
     ],
     "/api/admin/leados/[leadKey]/audit-pdf": [
       "./node_modules/pdfkit/js/data/**/*",
@@ -46,6 +48,7 @@ const nextConfig = {
       "./node_modules/pdfkit/js/data/**/*",
       "./public/logo.png",
       "./public/logo-dark.png",
+      "./public/signature.png",
     ],
   },
   // Map the dot-prefixed /.well-known/* paths (which the App Router cannot host

@@ -92,7 +92,7 @@ export function companyProfile() {
     },
     signatory: {
       name: process.env.COMPANY_SIGNATORY_NAME || "Prince Kumar",
-      title: process.env.COMPANY_SIGNATORY_TITLE || "Founder",
+      title: process.env.COMPANY_SIGNATORY_TITLE || "Founder & CEO",
     },
   };
 }

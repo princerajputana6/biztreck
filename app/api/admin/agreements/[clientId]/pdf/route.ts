@@ -30,6 +30,17 @@ function getLogo(): Buffer | null {
   return logoBuffer;
 }
 
+let signatureBuffer: Buffer | null | undefined;
+function getSignature(): Buffer | null {
+  if (signatureBuffer !== undefined) return signatureBuffer;
+  try {
+    signatureBuffer = fs.readFileSync(path.join(process.cwd(), "public", "signature.png"));
+  } catch {
+    signatureBuffer = null;
+  }
+  return signatureBuffer;
+}
+
 function buildAgreementPdf(client: any): Promise<Buffer> {
   return new Promise((resolve) => {
     const doc = new PDFDocument({
@@ -233,6 +244,15 @@ function buildAgreementPdf(client: any): Promise<Buffer> {
     para("By signing below, both parties accept and agree to the terms of this Agreement.");
     const sy = doc.y + 24;
     const colW = (contentW - 40) / 2;
+    // Company signatory (left column) gets the founder's handwritten signature.
+    const agrSig = getSignature();
+    if (agrSig) {
+      try {
+        doc.image(agrSig, left + 2, sy - 40, { fit: [150, 38] });
+      } catch {
+        /* bad image → blank line */
+      }
+    }
     doc.strokeColor(INK).lineWidth(0.8);
     doc.moveTo(left, sy).lineTo(left + colW, sy).stroke();
     doc.moveTo(right - colW, sy).lineTo(right, sy).stroke();

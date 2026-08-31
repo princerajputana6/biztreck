@@ -35,6 +35,17 @@ function getLogo(): Buffer | null {
   return logoBuffer;
 }
 
+let signatureBuffer: Buffer | null | undefined;
+function getSignature(): Buffer | null {
+  if (signatureBuffer !== undefined) return signatureBuffer;
+  try {
+    signatureBuffer = fs.readFileSync(path.join(process.cwd(), "public", "signature.png"));
+  } catch {
+    signatureBuffer = null;
+  }
+  return signatureBuffer;
+}
+
 function buildPdfBuffer(invoice: any): Promise<Buffer> {
   return new Promise((resolve) => {
     const doc = new PDFDocument({
@@ -429,6 +440,14 @@ function buildPdfBuffer(invoice: any): Promise<Buffer> {
     const sigW = 200;
     const sigX = right - sigW;
     const sy = doc.y + 26;
+    const invSig = getSignature();
+    if (invSig) {
+      try {
+        doc.image(invSig, right - 150, sy - 40, { fit: [150, 38], align: "right" });
+      } catch {
+        /* bad image → blank line */
+      }
+    }
     doc.moveTo(sigX, sy).lineTo(right, sy).strokeColor(INK).lineWidth(0.8).stroke();
     doc.font("Helvetica-Bold").fontSize(9.5).fillColor(INK).text(co.signatory.name, sigX, sy + 6, { width: sigW, align: "right" });
     doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(co.signatory.title, sigX, sy + 19, { width: sigW, align: "right" });

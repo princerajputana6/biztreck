@@ -41,6 +41,20 @@ function getLogoDark(): Buffer | null {
   return logoDarkBuffer;
 }
 
+// The founder's handwritten signature (transparent PNG), overlaid above the
+// signature line on every letter and certificate. Absent → the line is drawn
+// blank as before, so nothing breaks if the file isn't present.
+let signatureBuffer: Buffer | null | undefined;
+function getSignature(): Buffer | null {
+  if (signatureBuffer !== undefined) return signatureBuffer;
+  try {
+    signatureBuffer = fs.readFileSync(path.join(process.cwd(), "public", "signature.png"));
+  } catch {
+    signatureBuffer = null;
+  }
+  return signatureBuffer;
+}
+
 function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
   return new Promise((resolve) => {
     const pdf = new PDFDocument({
@@ -171,6 +185,15 @@ function buildLetterPdf(doc: LetterDoc): Promise<Buffer> {
     pdf.moveDown(0.5);
     pdf.font("Times-Roman").fontSize(10.5).fillColor(INK).text(`For ${doc.signatory.company},`, left, pdf.y, { width: contentW });
     const sigLineY = pdf.y + 30;
+    // Handwritten signature sitting on the line (if available).
+    const sig = getSignature();
+    if (sig) {
+      try {
+        pdf.image(sig, left + 4, sigLineY - 40, { fit: [170, 40] });
+      } catch {
+        /* bad image → fall back to a blank line */
+      }
+    }
     pdf.strokeColor(INK).lineWidth(0.8).moveTo(left, sigLineY).lineTo(left + 200, sigLineY).stroke();
     pdf.font("Helvetica-Bold").fontSize(10.5).fillColor(INK).text(doc.signatory.name, left, sigLineY + 5, { width: 260 });
     pdf.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`${doc.signatory.title} · Authorized Signatory`, left, sigLineY + 19, { width: 260 });
@@ -306,8 +329,16 @@ function buildCertificatePdf(doc: CertificateDoc): Promise<Buffer> {
     pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.dateLabel, 90, rowY - 15, { width: 150 });
     pdf.font("Times-Roman").fontSize(8.5).fillColor(MUTED).text("Date", 90, rowY + 4, { width: 150 });
 
-    // Signature (right)
+    // Signature (right) — handwritten mark sitting on the line, if available.
     const sigX = pageW - 240;
+    const certSig = getSignature();
+    if (certSig) {
+      try {
+        pdf.image(certSig, sigX + 2, rowY - 42, { fit: [150, 36] });
+      } catch {
+        /* bad image → blank line */
+      }
+    }
     pdf.save().strokeColor(INK).lineWidth(0.8).moveTo(sigX, rowY).lineTo(sigX + 150, rowY).stroke();
     pdf.restore();
     pdf.font("Times-Bold").fontSize(10).fillColor(INK).text(doc.signatory.name, sigX, rowY - 15, { width: 150 });
