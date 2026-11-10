@@ -9,10 +9,14 @@
     "lint": "next lint",
     "seed:admin": "node --env-file=.env scripts/seed-admin.mjs",
     "seed:places": "node --env-file=.env scripts/seed-places.mjs",
-    "seed:clients": "node --env-file=.env scripts/seed-showcase-clients.mjs"
+    "seed:clients": "node --env-file=.env scripts/seed-showcase-clients.mjs",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "@opennextjs/cloudflare": "^1.20.16",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^11.0.0",
     "groq-sdk": "^1.1.2",
@@ -40,6 +44,10 @@
     "eslint-config-next": "^15.5.18",
     "postcss": "^8.5.14",
     "tailwindcss": "^3.4.13",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.159.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261109.1": true
   }
 }

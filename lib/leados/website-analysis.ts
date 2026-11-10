@@ -9,7 +9,7 @@
 import type { WebsiteAnalysis } from "./types";
 
 const UA =
-  "Mozilla/5.0 (compatible; BiztreckLeadOS/1.0; +https://www.biztreck.world)";
+  "Mozilla/5.0 (compatible; BiztreckLeadOS/1.0; +https://www.biztrek.com)";
 
 const SECURITY_HEADERS = [
   "strict-transport-security",

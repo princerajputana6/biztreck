@@ -54,7 +54,7 @@ export function buildDynamicVariables(lead: Lead): Record<string, string> {
     top_opportunity_reason: topOpp?.rationale || "",
     audit_headline: lead.audit?.headline || "",
     website_score: lead.analysis ? String(lead.analysis.score) : "",
-    booking_link: process.env.LEADOS_BOOKING_LINK || "https://biztreck.world",
+    booking_link: process.env.LEADOS_BOOKING_LINK || "https://biztrek.com",
   };
 }
 

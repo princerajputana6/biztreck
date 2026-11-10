@@ -65,7 +65,7 @@ export default function Page() {
         Subject to applicable law, you may request access, correction, deletion,
         portability, or restriction of your personal data, and may withdraw
         consent at any time. To exercise any right, email{" "}
-        <a href="mailto:connect@biztreck.world">connect@biztreck.world</a>.
+        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>.
       </p>
 
       <h2>8. Security</h2>
@@ -90,7 +90,7 @@ export default function Page() {
       <h2>11. Contact</h2>
       <p>
         Biztreck Solutions, Greater Noida, Delhi NCR (201306), India. Email{" "}
-        <a href="mailto:connect@biztreck.world">connect@biztreck.world</a>.
+        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>.
       </p>
     </LegalLayout>
   );

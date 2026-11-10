@@ -84,7 +84,7 @@ export async function chat(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://www.biztreck.world",
+          "HTTP-Referer": "https://www.biztrek.com",
           "X-Title": "Biztreck LeadOS",
         },
         body: JSON.stringify({
@@ -159,7 +159,7 @@ export async function complete(
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         // Optional attribution headers OpenRouter surfaces in its dashboard.
-        "HTTP-Referer": "https://www.biztreck.world",
+        "HTTP-Referer": "https://www.biztrek.com",
         "X-Title": "Biztreck LeadOS",
       },
       body: JSON.stringify({

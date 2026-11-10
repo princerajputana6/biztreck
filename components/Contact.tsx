@@ -87,8 +87,8 @@ export default function Contact() {
                 {
                   icon: Mail,
                   label: "Email",
-                  value: "connect@biztreck.world",
-                  href: "mailto:connect@biztreck.world",
+                  value: "connect@biztrek.com",
+                  href: "mailto:connect@biztrek.com",
                 },
                 {
                   icon: Phone,
@@ -285,7 +285,7 @@ export default function Contact() {
                     exit={{ opacity: 0 }}
                     className="mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-300"
                   >
-                    Something went wrong. Please email connect@biztreck.world.
+                    Something went wrong. Please email connect@biztrek.com.
                   </motion.div>
                 )}
               </AnimatePresence>

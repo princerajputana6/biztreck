@@ -77,7 +77,7 @@ Add these fields so the webhook can route the outcome. LeadOS reads them in
 Set the agent's webhook URL to:
 
 ```
-https://www.biztreck.world/api/webhooks/retell?s=<RETELL_WEBHOOK_SECRET>
+https://www.biztrek.com/api/webhooks/retell?s=<RETELL_WEBHOOK_SECRET>
 ```
 
 The `?s=` guard is a fallback; if you enable signature verification, the

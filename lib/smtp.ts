@@ -54,7 +54,7 @@ function getTransport(): Transporter | null {
   return globalThis._btSmtpTransport;
 }
 
-// Locked to a @biztreck.world sender (defaults to connect@biztreck.world).
+// Locked to a @biztrek.com sender (defaults to connect@biztrek.com).
 const smtpFrom = safeFrom(
   process.env.SMTP_FROM ||
     process.env.FROM_EMAIL ||

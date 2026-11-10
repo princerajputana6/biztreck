@@ -64,7 +64,7 @@ function buildAgreementPdf(client: any): Promise<Buffer> {
       address:
         process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
       gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
-      email: process.env.COMPANY_EMAIL || "connect@biztreck.world",
+      email: process.env.COMPANY_EMAIL || "connect@biztrek.com",
     };
     const party = client.company || client.name || "Client";
     const today = new Date().toLocaleDateString("en-IN", {

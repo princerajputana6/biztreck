@@ -1,14 +1,14 @@
 // Canonical, locked sender address for ALL outgoing mail.
 //
-// Every email this app sends must come from a @biztreck.world address (the
-// verified domain), defaulting to connect@biztreck.world. If an env var is
+// Every email this app sends must come from a @biztrek.com address (the
+// verified domain), defaulting to connect@biztrek.com. If an env var is
 // missing or points at a different domain, we ignore it and use the default —
 // so this app can never send "from" anything unexpected (e.g. a stray
 // parking@… address, which is NOT ours). Accepts either a plain "email" or a
 // "Display Name <email>" value and preserves the display name when valid.
 
-const ALLOWED_DOMAIN = "@biztreck.world";
-export const DEFAULT_FROM = "connect@biztreck.world";
+const ALLOWED_DOMAIN = "@biztrek.com";
+export const DEFAULT_FROM = "connect@biztrek.com";
 
 export function safeFrom(raw?: string): string {
   const v = (raw || "").trim();
