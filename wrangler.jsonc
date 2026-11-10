@@ -6,12 +6,14 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "observability": { "enabled": true },
-  // Replaces the Vercel crons from vercel.json. NOTE: the Workers Free plan
-  // allows at most 5 cron triggers per account across ALL Workers. The dave
-  // sites already use some — if this pushes the account over the limit, drop a
-  // cron here (or trigger it via a service binding) and run it elsewhere.
+  // Vercel crons (vercel.json) were /api/cron/generate-blogs (30 0 * * *) and
+  // /api/cron/leados-maintenance (0 2 * * *). They are left EMPTY here because
+  // this account is already at the Workers Free limit of 5 cron triggers per
+  // account. To re-enable: upgrade to Workers Paid, or free a slot and add the
+  // schedules back below (custom-worker.ts already dispatches both), or trigger
+  // the endpoints externally with `Authorization: Bearer ${CRON_SECRET}`.
   "triggers": {
-    "crons": ["30 0 * * *", "0 2 * * *"]
+    "crons": []
   }
   // No "routes" here on purpose: the biztrek.com zone is not in Cloudflare yet.
   // Attach the custom domain (biztrek.com / www) to this Worker from the
