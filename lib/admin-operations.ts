@@ -71,8 +71,8 @@ export function companyProfile() {
     address:
       process.env.COMPANY_ADDRESS ||
       "Khas-502, Devla, Noida 201306, Greater Noida, Uttar Pradesh, India",
-    website: process.env.COMPANY_WEBSITE || "https://www.biztrek.com",
-    email: process.env.COMPANY_EMAIL || "connect@biztrek.com",
+    website: process.env.COMPANY_WEBSITE || "https://www.biztreck.com",
+    email: process.env.COMPANY_EMAIL || "connect@biztreck.com",
     phone: process.env.COMPANY_PHONE || "+91 81307 38333",
     gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
     pan: process.env.COMPANY_PAN || "HRTPK7815L",
@@ -392,7 +392,7 @@ export function buildInvoiceMarkdown(invoice: {
       "Greater Noida, Uttar Pradesh, India",
     gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
     logo: process.env.COMPANY_LOGO_URL || "",
-    email: process.env.COMPANY_EMAIL || "connect@biztrek.com",
+    email: process.env.COMPANY_EMAIL || "connect@biztreck.com",
   };
   const today = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -455,7 +455,7 @@ export function buildProjectInvoiceMarkdown(invoice: {
       process.env.COMPANY_ADDRESS || "Greater Noida, Uttar Pradesh, India",
     gst: process.env.COMPANY_GST || "09HRTPK7815L1ZQ",
     logo: process.env.COMPANY_LOGO_URL || "",
-    email: process.env.COMPANY_EMAIL || "connect@biztrek.com",
+    email: process.env.COMPANY_EMAIL || "connect@biztreck.com",
   };
   const sac = invoice.sacCode || companyProfile().sac;
   const inr = (v: number) => formatMoney(v, invoice.currency || "INR");

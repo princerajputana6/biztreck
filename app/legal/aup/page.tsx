@@ -31,7 +31,7 @@ export default function Page() {
       <h2>3. Reporting abuse</h2>
       <p>
         If you become aware of any violation of this AUP, please report it to{" "}
-        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>. We
+        <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>. We
         investigate every report.
       </p>
 

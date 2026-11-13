@@ -6,7 +6,7 @@
 // no third-party people-search API. When no name is confidently found we return
 // nothing rather than guessing — a fabricated founder is worse than a blank.
 
-const UA = "Mozilla/5.0 (compatible; BiztreckLeadOS/1.0; +https://www.biztrek.com)";
+const UA = "Mozilla/5.0 (compatible; BiztreckLeadOS/1.0; +https://www.biztreck.com)";
 
 const ROLE_WORDS =
   "founder|co-?founder|owner|ceo|chief executive|managing director|president|principal|proprietor|director";

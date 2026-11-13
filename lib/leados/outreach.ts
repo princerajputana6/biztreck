@@ -8,12 +8,12 @@
 import { complete, hasLLM, LLM_MODEL } from "@/lib/groq";
 import type { Lead, LeadOutreach, OutreachEmail } from "./types";
 
-const SENDER = { name: "Biztreck", contact: "connect@biztrek.com" };
+const SENDER = { name: "Biztreck", contact: "connect@biztreck.com" };
 // Human-facing sign-off — a real name/team, never an "[Your Name]" placeholder.
 // Set OUTREACH_SENDER_NAME to your own name to personalise it.
 const SENDER_NAME = process.env.OUTREACH_SENDER_NAME || "Biztreck Solutions";
 const SENDER_CONTACT =
-  process.env.FROM_EMAIL || process.env.RESEND_FROM || "connect@biztrek.com";
+  process.env.FROM_EMAIL || process.env.RESEND_FROM || "connect@biztreck.com";
 
 // Replace AI-looking bracket placeholders (e.g. "[Your Name]") with a real name.
 function stripPlaceholders(text: string): string {

@@ -59,7 +59,7 @@ export default function Page() {
       <h2>7. Reporting a vulnerability</h2>
       <p>
         Found a security issue? Email{" "}
-        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>{" "}
+        <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>{" "}
         with the subject line &quot;Security Disclosure&quot;. We acknowledge reports
         within 2 business days.
       </p>

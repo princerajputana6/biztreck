@@ -88,7 +88,7 @@ export default function Page() {
       <h2>11. Contact</h2>
       <p>
         Questions about these terms? Email{" "}
-        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>.
+        <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>.
       </p>
     </LegalLayout>
   );

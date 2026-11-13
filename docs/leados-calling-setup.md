@@ -22,7 +22,7 @@ RETELL_API_KEY=key_xxxxxxxx          # Retell dashboard → API keys
 RETELL_FROM_NUMBER=+14155550123      # a number you own in Retell (E.164)
 RETELL_AGENT_ID=agent_xxxxxxxx       # the published "Aria" agent
 RETELL_WEBHOOK_SECRET=some-long-random-string   # optional URL guard
-LEADOS_BOOKING_LINK=https://biztrek.com/book # optional, spoken/emailed
+LEADOS_BOOKING_LINK=https://biztreck.com/book # optional, spoken/emailed
 ```
 
 ## Wiring in Retell (one-time)
@@ -31,18 +31,18 @@ LEADOS_BOOKING_LINK=https://biztrek.com/book # optional, spoken/emailed
 2. Add the 8 Custom Analysis Data fields from that doc.
 3. Buy/import a phone number, assign the agent as its outbound agent.
 4. Set the agent webhook to
-   `https://www.biztrek.com/api/webhooks/retell?s=<RETELL_WEBHOOK_SECRET>`.
+   `https://www.biztreck.com/api/webhooks/retell?s=<RETELL_WEBHOOK_SECRET>`.
 5. Put the env vars above into Vercel.
 
 ## Try it
 
 ```bash
 # Dry-run the compliance gate for a lead (no call placed):
-curl -s https://www.biztrek.com/api/admin/leados/<leadKey>/call \
+curl -s https://www.biztreck.com/api/admin/leados/<leadKey>/call \
   -H "Cookie: <your admin cookie>"
 
 # Place the call (only fires if the gate passes):
-curl -s -X POST https://www.biztrek.com/api/admin/leados/<leadKey>/call \
+curl -s -X POST https://www.biztreck.com/api/admin/leados/<leadKey>/call \
   -H "Cookie: <your admin cookie>"
 ```
 

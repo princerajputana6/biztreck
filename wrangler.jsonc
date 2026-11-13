@@ -15,7 +15,7 @@
   "triggers": {
     "crons": []
   }
-  // No "routes" here on purpose: the biztrek.com zone is not in Cloudflare yet.
-  // Attach the custom domain (biztrek.com / www) to this Worker from the
-  // Cloudflare dashboard after the zone is added and nameservers are pointed.
+  // No "routes" here on purpose: the biztreck.com custom domain is attached to
+  // this Worker from the Cloudflare dashboard (Workers → Domains & Routes), not
+  // via a wrangler route binding.
 }

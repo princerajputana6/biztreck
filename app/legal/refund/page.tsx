@@ -42,7 +42,7 @@ export default function Page() {
 
       <h2>5. How to request a refund</h2>
       <p>
-        Email <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>{" "}
+        Email <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>{" "}
         with your invoice reference and reason. Approved refunds are processed
         within 14 business days to the original payment method.
       </p>

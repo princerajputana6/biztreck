@@ -3,10 +3,10 @@ import { sendViaSmtp, smtpConfigured } from "@/lib/smtp";
 import { safeFrom } from "@/lib/mail-from";
 
 const apiKey = process.env.RESEND_API_KEY;
-// Locked to a @biztrek.com sender (defaults to connect@biztrek.com) so a
+// Locked to a @biztreck.com sender (defaults to connect@biztreck.com) so a
 // misconfigured env can never make this app send "from" anything else.
 const fromAddress = safeFrom(process.env.RESEND_FROM);
-const adminEmail = process.env.ADMIN_EMAIL || "connect@biztrek.com";
+const adminEmail = process.env.ADMIN_EMAIL || "connect@biztreck.com";
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -171,7 +171,7 @@ export function emailShell(title: string, body: string) {
     </div>
     <div style="margin-top:18px;font-size:11px;color:#94a3b8;text-align:center;">
       Biztreck Solutions · Greater Noida, Delhi NCR (201306)<br/>
-      connect@biztrek.com · +91 81307 38333
+      connect@biztreck.com · +91 81307 38333
     </div>
   </div>
 </body></html>`;

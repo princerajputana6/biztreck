@@ -5,29 +5,29 @@
 > startup launches. Based in Greater Noida, Delhi NCR, India.
 
 ## About
-- Site: https://biztrek.com
-- Contact: connect@biztrek.com
+- Site: https://biztreck.com
+- Contact: connect@biztreck.com
 - Services: Website development, website revamp, app development, DevOps,
   SEO, MVP / startup launch.
 
 ## Key pages
-- Home: https://biztrek.com/
-- About: https://biztrek.com/about
-- Blog: https://biztrek.com/blog
-- Careers: https://biztrek.com/careers
+- Home: https://biztreck.com/
+- About: https://biztreck.com/about
+- Blog: https://biztreck.com/blog
+- Careers: https://biztreck.com/careers
 
 ## Machine-readable interfaces
-- API catalog: https://biztrek.com/.well-known/api-catalog
-- Agent skills index: https://biztrek.com/.well-known/agent-skills/index.json
-- Blog list (JSON): https://biztrek.com/api/blogs
-- Open roles (JSON): https://biztrek.com/api/jobs
-- Contact (POST JSON): https://biztrek.com/api/contact
-- Health: https://biztrek.com/api/health
+- API catalog: https://biztreck.com/.well-known/api-catalog
+- Agent skills index: https://biztreck.com/.well-known/agent-skills/index.json
+- Blog list (JSON): https://biztreck.com/api/blogs
+- Open roles (JSON): https://biztreck.com/api/jobs
+- Contact (POST JSON): https://biztreck.com/api/contact
+- Health: https://biztreck.com/api/health
 
 ## Content negotiation
 Any page also serves Markdown when requested with `Accept: text/markdown`,
-e.g. `curl -H "Accept: text/markdown" https://biztrek.com/blog/<slug>`.
+e.g. `curl -H "Accept: text/markdown" https://biztreck.com/blog/<slug>`.
 
 ## Content usage preferences
-Declared in https://biztrek.com/robots.txt via Content-Signal:
+Declared in https://biztreck.com/robots.txt via Content-Signal:
 search=yes, ai-input=yes, ai-train=no.

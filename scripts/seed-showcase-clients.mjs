@@ -47,7 +47,7 @@ const COMPANIES = [
   {
     order: 2,
     company: "REP",
-    websiteUrl: "https://biztrek.com",
+    websiteUrl: "https://biztreck.com",
     showcase: {
       slug: "rep",
       category: "erp-development",
@@ -103,7 +103,7 @@ const COMPANIES = [
   {
     order: 6,
     company: "SafarMates",
-    websiteUrl: "https://biztrek.com",
+    websiteUrl: "https://biztreck.com",
     showcase: {
       slug: "safarmates",
       category: "custom-software",
@@ -130,7 +130,7 @@ const COMPANIES = [
   {
     order: 8,
     company: "BookMyGuide",
-    websiteUrl: "https://biztrek.com",
+    websiteUrl: "https://biztreck.com",
     showcase: {
       slug: "bookmyguide",
       category: "customer-portals",

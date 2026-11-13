@@ -72,7 +72,7 @@ export default function Page() {
       <h2>9. Contact</h2>
       <p>
         To execute a signed DPA, email{" "}
-        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>.
+        <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>.
       </p>
     </LegalLayout>
   );

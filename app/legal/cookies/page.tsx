@@ -40,7 +40,7 @@ export default function Page() {
 
       <h2>5. Contact</h2>
       <p>
-        Email <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>{" "}
+        Email <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>{" "}
         for any cookie-related questions.
       </p>
     </LegalLayout>

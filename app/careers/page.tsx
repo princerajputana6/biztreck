@@ -108,7 +108,7 @@ export default async function Careers() {
                 exceptional talent.
               </p>
               <a
-                href="mailto:connect@biztrek.com?subject=General%20application"
+                href="mailto:connect@biztreck.com?subject=General%20application"
                 className="btn-ghost mt-6 inline-flex"
               >
                 Send us your CV

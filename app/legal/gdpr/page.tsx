@@ -56,7 +56,7 @@ export default function Page() {
       <h2>6. Data Protection Officer</h2>
       <p>
         For GDPR matters, contact our DPO at{" "}
-        <a href="mailto:connect@biztrek.com">connect@biztrek.com</a>{" "}
+        <a href="mailto:connect@biztreck.com">connect@biztreck.com</a>{" "}
         with the subject line &quot;GDPR Request&quot;.
       </p>
     </LegalLayout>

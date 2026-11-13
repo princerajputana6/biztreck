@@ -33,13 +33,13 @@ discover your entrypoints via DNS, then enable DNSSEC.
 
 ```
 ; name                            TTL   type  priority  target           params
-_index._agents.biztrek.com.    3600  SVCB  1         biztrek.com.  alpn="h2" port=443
-_mcp._agents.biztrek.com.      3600  SVCB  1         biztrek.com.  alpn="h2" port=443
-_a2a._agents.biztrek.com.      3600  SVCB  1         biztrek.com.  alpn="h2" port=443
+_index._agents.biztreck.com.    3600  SVCB  1         biztreck.com.  alpn="h2" port=443
+_mcp._agents.biztreck.com.      3600  SVCB  1         biztreck.com.  alpn="h2" port=443
+_a2a._agents.biztreck.com.      3600  SVCB  1         biztreck.com.  alpn="h2" port=443
 ```
 
 Per record in Cloudflare's UI: Type = **SVCB**, Name = `_index._agents` (then
-`_mcp._agents`, `_a2a._agents`), SvcPriority `1`, TargetName `biztrek.com`,
+`_mcp._agents`, `_a2a._agents`), SvcPriority `1`, TargetName `biztreck.com`,
 params `alpn=h2` and `port=443`. If only **HTTPS** record type is offered, use
 that with the same params.
 
@@ -47,5 +47,5 @@ Then **DNSSEC**: Cloudflare → DNS → Settings → Enable DNSSEC, and add the 
 record it generates at your domain registrar. Re-scan after propagation.
 
 ## Note
-`SITE.url` in `lib/site.ts` is `https://biztrek.com`. The MCP/A2A/auth.md docs
+`SITE.url` in `lib/site.ts` is `https://biztreck.com`. The MCP/A2A/auth.md docs
 reference it, so keep it pointing at the host that actually serves the app.
