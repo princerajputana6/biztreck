@@ -59,11 +59,11 @@ export default function ResourcesPage() {
       <section className="relative z-10 container-px pt-32 sm:pt-40">
         <div className="max-w-3xl">
           <div className="eyebrow">Resources</div>
-          <h1 className="section-title mt-5 text-white">
+          <h1 className="section-title mt-5 text-ink">
             Decide with{" "}
             <span className="gradient-text">better information</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
             Choosing whether to build, integrate or buy is an expensive decision
             to get wrong. These resources are written to help you make it well —
             including when the answer is to do nothing.
@@ -82,14 +82,14 @@ export default function ResourcesPage() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-500 to-navy-700 shadow-glow">
                   <Icon className="text-accent-glow" size={22} />
                 </div>
-                <h2 className="mt-5 flex items-center gap-1.5 font-display text-xl font-bold text-white">
+                <h2 className="mt-5 flex items-center gap-1.5 font-display text-xl font-bold text-ink">
                   {r.title}
                   <ArrowUpRight
                     size={18}
                     className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                   />
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
                   {r.desc}
                 </p>
                 <span className="mt-5 inline-block text-sm font-semibold text-accent-glow">
@@ -101,10 +101,10 @@ export default function ResourcesPage() {
         </div>
 
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-bold text-ink">
             Rather just talk it through?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600">
             Book a 30-minute strategy call and get a straight answer on whether
             software would pay for itself in your operation.
           </p>

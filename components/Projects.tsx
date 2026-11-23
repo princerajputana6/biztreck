@@ -50,7 +50,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
             className={`relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${p.accent} shadow-glow`}
             style={{ boxShadow: `0 0 30px ${p.glow}` }}
           >
-            <Boxes className="text-white" size={26} />
+            <Boxes className="text-ink" size={26} />
             <span className="absolute -inset-1 rounded-2xl border border-white/20" />
           </div>
         )}
@@ -64,13 +64,13 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
         </span>
       </div>
 
-      <h3 className="relative mt-6 font-display text-3xl font-extrabold text-white">
+      <h3 className="relative mt-6 font-display text-3xl font-extrabold text-ink">
         {p.name}
       </h3>
       <p className="relative mt-1.5 text-sm font-medium uppercase tracking-wider text-navy-300">
         {p.tagline}
       </p>
-      <p className="relative mt-4 text-[15px] leading-relaxed text-slate-300">
+      <p className="relative mt-4 text-[15px] leading-relaxed text-slate-600">
         {p.description}
       </p>
 
@@ -78,7 +78,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
         {p.tags.map((t) => (
           <span
             key={t}
-            className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-200"
+            className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-700"
           >
             {t}
           </span>
@@ -96,7 +96,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
           href={p.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-white transition-all group-hover:bg-accent-electric"
+          className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-ink transition-all group-hover:bg-accent-electric group-hover:text-white"
         >
           Launch site <ArrowUpRight size={12} />
         </a>
@@ -144,7 +144,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             Products we&apos;ve <span className="gradient-text">built.</span>
           </motion.h2>
@@ -153,7 +153,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-300"
+            className="mt-5 text-lg text-slate-600"
           >
             Platforms we designed, built and run ourselves — the same engineering
             we bring to client work.
@@ -171,8 +171,8 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 onClick={() => setActive(t.slug)}
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? "border-accent-cyan/40 bg-accent-cyan/15 text-white"
-                    : "border-navy-700/50 bg-navy-900/50 text-slate-300 hover:border-accent-electric hover:text-white"
+                    ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
+                    : "border-navy-700/50 bg-navy-900/50 text-slate-600 hover:border-accent-electric hover:text-ink"
                 }`}
               >
                 {t.label}

@@ -40,11 +40,11 @@ export default function CaseStudiesPage() {
       <section className="relative z-10 container-px pt-32 sm:pt-40">
         <div className="max-w-3xl">
           <div className="eyebrow">Proof, not screenshots</div>
-          <h1 className="section-title mt-5 text-white">
+          <h1 className="section-title mt-5 text-ink">
             Case studies with{" "}
             <span className="gradient-text">measurable results</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
             Every case study below states the business challenge, what we built,
             the technology, how long it took, and what actually changed. Client
             names are withheld where the work is commercially sensitive.
@@ -61,7 +61,7 @@ export default function CaseStudiesPage() {
                 <div className="eyebrow">{cs.industry}</div>
                 <Link
                   href={`/solutions/${sol.slug}`}
-                  className="text-sm font-semibold text-accent-glow transition-colors hover:text-white"
+                  className="text-sm font-semibold text-accent-glow transition-colors hover:text-ink"
                 >
                   {sol.name} →
                 </Link>
@@ -69,29 +69,29 @@ export default function CaseStudiesPage() {
 
               <div className="mt-6 grid gap-8 lg:grid-cols-2">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-white">
+                  <h2 className="font-display text-lg font-bold text-ink">
                     Business challenge
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
                     {cs.challenge}
                   </p>
-                  <h3 className="mt-6 font-display text-lg font-bold text-white">
+                  <h3 className="mt-6 font-display text-lg font-bold text-ink">
                     Solution
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
                     {cs.solution}
                   </p>
-                  <h3 className="mt-6 font-display text-lg font-bold text-white">
+                  <h3 className="mt-6 font-display text-lg font-bold text-ink">
                     Timeline
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
                     {cs.timeline}
                   </p>
                   <div className="mt-6 flex flex-wrap gap-2">
                     {cs.tech.map((t) => (
                       <span
                         key={t}
-                        className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-300"
+                        className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-600"
                       >
                         {t}
                       </span>
@@ -99,14 +99,14 @@ export default function CaseStudiesPage() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-bold text-white">
+                  <h3 className="font-display text-lg font-bold text-ink">
                     Business results
                   </h3>
                   <ul className="mt-3 space-y-3">
                     {cs.results.map((r) => (
                       <li key={r} className="flex items-start gap-3">
                         <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                        <span className="text-sm leading-relaxed text-slate-300">
+                        <span className="text-sm leading-relaxed text-slate-600">
                           {r}
                         </span>
                       </li>
@@ -119,10 +119,10 @@ export default function CaseStudiesPage() {
         </div>
 
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-bold text-ink">
             Want results like these?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600">
             Start with a strategy call. We&apos;ll tell you what is realistic for
             your operation, and what it would take.
           </p>

@@ -47,12 +47,12 @@ export default function WhyUs() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="section-title mt-5 text-white"
+              className="section-title mt-5 text-ink"
             >
               An agency that thinks like your{" "}
               <span className="gradient-text">in-house team.</span>
             </motion.h2>
-            <p className="mt-6 text-lg text-slate-300">
+            <p className="mt-6 text-lg text-slate-600">
               We blend product thinking, design, engineering and growth so you
               don&apos;t need to juggle five different vendors. One contract.
               One outcome. One team.
@@ -66,7 +66,7 @@ export default function WhyUs() {
               ].map((c) => (
                 <span
                   key={c}
-                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-4 py-1.5 text-xs font-medium text-slate-200"
+                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-4 py-1.5 text-xs font-medium text-slate-700"
                 >
                   {c}
                 </span>
@@ -91,10 +91,10 @@ export default function WhyUs() {
                     <div className="grid h-10 w-10 place-items-center rounded-lg bg-navy-700/60 ring-1 ring-navy-500/40">
                       <Icon size={18} className="text-accent-glow" />
                     </div>
-                    <div className="mt-4 font-display text-lg font-semibold text-white">
+                    <div className="mt-4 font-display text-lg font-semibold text-ink">
                       {r.title}
                     </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
                       {r.desc}
                     </p>
                   </motion.div>

@@ -106,20 +106,20 @@ export default async function SolutionPage({
 
       <article className="relative z-10 container-px pt-32 sm:pt-40">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-slate-400" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-white">Home</Link>
+        <nav className="mb-6 text-sm text-slate-500" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-ink">Home</Link>
           <span className="mx-2">/</span>
-          <Link href="/solutions" className="hover:text-white">Solutions</Link>
+          <Link href="/solutions" className="hover:text-ink">Solutions</Link>
           <span className="mx-2">/</span>
-          <span className="text-slate-300">{sol.name}</span>
+          <span className="text-slate-600">{sol.name}</span>
         </nav>
 
         {/* Hero */}
         <header className="max-w-3xl">
           <div className="eyebrow">{sol.tagline}</div>
-          <h1 className="section-title mt-5 text-white">{sol.h1}</h1>
+          <h1 className="section-title mt-5 text-ink">{sol.h1}</h1>
           {sol.intro.map((p, i) => (
-            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-300">
+            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-600">
               {p}
             </p>
           ))}
@@ -135,7 +135,7 @@ export default async function SolutionPage({
 
         {/* Problem */}
         <section className="mt-20">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             The problem
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -145,7 +145,7 @@ export default async function SolutionPage({
                 className="flex items-start gap-3 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5"
               >
                 <AlertTriangle size={18} className="mt-0.5 shrink-0 text-accent-glow" />
-                <p className="text-sm leading-relaxed text-slate-300">{p}</p>
+                <p className="text-sm leading-relaxed text-slate-600">{p}</p>
               </div>
             ))}
           </div>
@@ -153,7 +153,7 @@ export default async function SolutionPage({
 
         {/* Business impact */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             What it costs your business
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -163,10 +163,10 @@ export default async function SolutionPage({
                 className="rounded-3xl border border-navy-700/40 bg-navy-900/40 p-6"
               >
                 <TrendingUp size={20} className="text-accent-cyan" />
-                <h3 className="mt-3 font-display text-lg font-bold text-white">
+                <h3 className="mt-3 font-display text-lg font-bold text-ink">
                   {b.label}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {b.desc}
                 </p>
               </div>
@@ -176,11 +176,11 @@ export default async function SolutionPage({
 
         {/* Our solution */}
         <section className="mt-20 max-w-3xl">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             Our solution
           </h2>
           {sol.approach.map((p, i) => (
-            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-300">
+            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-600">
               {p}
             </p>
           ))}
@@ -188,7 +188,7 @@ export default async function SolutionPage({
 
         {/* Features */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             What you get
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -198,10 +198,10 @@ export default async function SolutionPage({
                 className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-7"
               >
                 <Check className="text-accent-cyan" size={22} />
-                <h3 className="mt-4 font-display text-lg font-bold text-white">
+                <h3 className="mt-4 font-display text-lg font-bold text-ink">
                   {d.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {d.desc}
                 </p>
               </div>
@@ -211,7 +211,7 @@ export default async function SolutionPage({
 
         {/* Process */}
         <section className="mt-20">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             How we work
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
@@ -223,10 +223,10 @@ export default async function SolutionPage({
                 <div className="font-display text-3xl font-bold gradient-text">
                   {String(i + 1).padStart(2, "0")}
                 </div>
-                <h3 className="mt-3 font-display text-lg font-bold text-white">
+                <h3 className="mt-3 font-display text-lg font-bold text-ink">
                   {p.step}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {p.desc}
                 </p>
               </div>
@@ -236,14 +236,14 @@ export default async function SolutionPage({
 
         {/* Technology */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             Technology we use
           </h2>
           <div className="mt-6 flex flex-wrap gap-3">
             {sol.tech.map((t) => (
               <span
                 key={t}
-                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200"
+                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700"
               >
                 {t}
               </span>
@@ -253,7 +253,7 @@ export default async function SolutionPage({
 
         {/* Business outcomes */}
         <section className="mt-16">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             Business outcomes
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -263,7 +263,7 @@ export default async function SolutionPage({
                 className="flex items-start gap-3 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5"
               >
                 <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                <p className="text-sm leading-relaxed text-slate-300">{o}</p>
+                <p className="text-sm leading-relaxed text-slate-600">{o}</p>
               </div>
             ))}
           </div>
@@ -271,36 +271,36 @@ export default async function SolutionPage({
 
         {/* Case study */}
         <section className="mt-20">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             Case study
           </h2>
           <div className="mt-8 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/70 to-navy-900/50 p-8 sm:p-10">
             <div className="eyebrow">{sol.caseStudy.industry}</div>
             <div className="mt-6 grid gap-8 lg:grid-cols-2">
               <div>
-                <h3 className="font-display text-lg font-bold text-white">
+                <h3 className="font-display text-lg font-bold text-ink">
                   Business challenge
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {sol.caseStudy.challenge}
                 </p>
-                <h3 className="mt-6 font-display text-lg font-bold text-white">
+                <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Solution
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {sol.caseStudy.solution}
                 </p>
-                <h3 className="mt-6 font-display text-lg font-bold text-white">
+                <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Timeline
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {sol.caseStudy.timeline}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {sol.caseStudy.tech.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-300"
+                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-600"
                     >
                       {t}
                     </span>
@@ -308,14 +308,14 @@ export default async function SolutionPage({
                 </div>
               </div>
               <div>
-                <h3 className="font-display text-lg font-bold text-white">
+                <h3 className="font-display text-lg font-bold text-ink">
                   Business results
                 </h3>
                 <ul className="mt-3 space-y-3">
                   {sol.caseStudy.results.map((r) => (
                     <li key={r} className="flex items-start gap-3">
                       <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                      <span className="text-sm leading-relaxed text-slate-300">{r}</span>
+                      <span className="text-sm leading-relaxed text-slate-600">{r}</span>
                     </li>
                   ))}
                 </ul>
@@ -326,7 +326,7 @@ export default async function SolutionPage({
 
         {/* FAQ */}
         <section className="mt-20 max-w-3xl">
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-ink">
             Frequently asked questions
           </h2>
           <div className="mt-8 space-y-4">
@@ -335,10 +335,10 @@ export default async function SolutionPage({
                 key={f.q}
                 className="group rounded-2xl border border-navy-700/40 bg-navy-900/40 p-6"
               >
-                <summary className="cursor-pointer list-none font-display text-lg font-semibold text-white">
+                <summary className="cursor-pointer list-none font-display text-lg font-semibold text-ink">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
                   {f.a}
                 </p>
               </details>
@@ -349,7 +349,7 @@ export default async function SolutionPage({
         {/* Related */}
         {related.length > 0 && (
           <section className="mt-20">
-            <h2 className="font-display text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-ink">
               Related solutions
             </h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
@@ -359,14 +359,14 @@ export default async function SolutionPage({
                   href={`/solutions/${r.slug}`}
                   className="group rounded-3xl border border-navy-700/40 bg-navy-900/40 p-6 transition-colors hover:border-accent-electric"
                 >
-                  <h3 className="flex items-center gap-1.5 font-display text-lg font-bold text-white">
+                  <h3 className="flex items-center gap-1.5 font-display text-lg font-bold text-ink">
                     {r.name}
                     <ArrowUpRight
                       size={16}
                       className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                     />
                   </h3>
-                  <p className="mt-2 text-sm text-slate-400">{r.tagline}</p>
+                  <p className="mt-2 text-sm text-slate-500">{r.tagline}</p>
                 </Link>
               ))}
             </div>
@@ -375,10 +375,10 @@ export default async function SolutionPage({
 
         {/* CTA */}
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-bold text-ink">
             Let&apos;s build software that grows your business
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600">
             Book a 30-minute strategy call and we will map where {sol.name.toLowerCase()} would
             remove the most cost from your operation — no obligation, no pitch deck.
           </p>

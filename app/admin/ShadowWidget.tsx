@@ -512,8 +512,8 @@ export default function ShadowWidget() {
                 )}
               </span>
               <div className="leading-tight">
-                <div className="text-sm font-semibold text-white">Shadow</div>
-                <div className="text-[11px] text-slate-400">{status}</div>
+                <div className="text-sm font-semibold text-ink">Shadow</div>
+                <div className="text-[11px] text-slate-500">{status}</div>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -522,7 +522,7 @@ export default function ShadowWidget() {
                 onClick={toggleConvoMode}
                 title={convoMode ? "Always listening — click for wake-word mode" : "Wake-word mode — click for always-on"}
                 className={`grid h-8 w-8 place-items-center rounded-full ${
-                  convoMode ? "text-accent-cyan" : "text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                  convoMode ? "text-accent-cyan" : "text-slate-500 hover:bg-navy-800/70 hover:text-ink"
                 }`}
               >
                 <RadioTower size={16} />
@@ -531,7 +531,7 @@ export default function ShadowWidget() {
                 type="button"
                 onClick={() => (voiceOn ? (setVoiceOn(false), stopSpeaking()) : setVoiceOn(true))}
                 title={voiceOn ? "Mute Shadow's voice" : "Unmute Shadow's voice"}
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-navy-800/70 hover:text-ink"
               >
                 {voiceOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
               </button>
@@ -541,7 +541,7 @@ export default function ShadowWidget() {
                   onClick={toggleMic}
                   title={micEnabled ? "Turn Shadow's listening off" : "Turn Shadow's listening on"}
                   className={`grid h-8 w-8 place-items-center rounded-full ${
-                    micEnabled ? "text-emerald-300" : "text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                    micEnabled ? "text-emerald-300" : "text-slate-500 hover:bg-navy-800/70 hover:text-ink"
                   }`}
                 >
                   {micEnabled ? <Mic size={16} /> : <MicOff size={16} />}
@@ -551,7 +551,7 @@ export default function ShadowWidget() {
                 type="button"
                 onClick={clearMemory}
                 title="Clear conversation & memory"
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-navy-800/70 hover:text-ink"
               >
                 <Trash2 size={15} />
               </button>
@@ -559,7 +559,7 @@ export default function ShadowWidget() {
                 type="button"
                 onClick={() => setOpen(false)}
                 title="Close"
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-navy-800/70 hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-navy-800/70 hover:text-ink"
               >
                 <X size={16} />
               </button>
@@ -573,7 +573,7 @@ export default function ShadowWidget() {
                 <div className="grid h-14 w-14 place-items-center rounded-full bg-accent-cyan/10 text-accent-cyan">
                   <Sparkles size={24} />
                 </div>
-                <p className="mt-3 text-sm text-slate-300">Hi, I&apos;m Shadow.</p>
+                <p className="mt-3 text-sm text-slate-600">Hi, I&apos;m Shadow.</p>
                 <p className="mt-1 max-w-[15rem] text-xs">
                   {convoMode
                     ? "I'm listening — just start talking, or type below."
@@ -585,7 +585,7 @@ export default function ShadowWidget() {
                       key={s}
                       type="button"
                       onClick={() => send(s)}
-                      className="rounded-lg border border-navy-700/50 bg-navy-900/40 px-3 py-1.5 text-left text-[11px] text-slate-300 hover:border-accent-cyan hover:text-white"
+                      className="rounded-lg border border-navy-700/50 bg-navy-900/40 px-3 py-1.5 text-left text-[11px] text-slate-600 hover:border-accent-cyan hover:text-ink"
                     >
                       {s}
                     </button>
@@ -598,15 +598,15 @@ export default function ShadowWidget() {
                   <div
                     className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${
                       m.role === "user"
-                        ? "bg-accent-cyan/15 text-white"
-                        : "border border-navy-700/50 bg-navy-900/50 text-slate-200"
+                        ? "bg-accent-cyan/15 text-ink"
+                        : "border border-navy-700/50 bg-navy-900/50 text-slate-700"
                     }`}
                   >
                     {m.content}
                     {m.leads && m.leads.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {m.leads.slice(0, 8).map((l: any, j: number) => (
-                          <span key={j} className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-300">
+                          <span key={j} className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-600">
                             {l.business}
                             {l.score != null ? ` · ${l.score}` : ""}
                           </span>
@@ -620,7 +620,7 @@ export default function ShadowWidget() {
 
             {interim && (
               <div className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl border border-accent-cyan/30 bg-accent-cyan/5 px-3.5 py-2 text-sm text-slate-400 italic">
+                <div className="max-w-[85%] rounded-2xl border border-accent-cyan/30 bg-accent-cyan/5 px-3.5 py-2 text-sm text-slate-500 italic">
                   {interim}
                 </div>
               </div>
@@ -654,7 +654,7 @@ export default function ShadowWidget() {
                   <button
                     type="button"
                     onClick={cancelPending}
-                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3.5 py-1.5 text-xs text-slate-200"
+                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3.5 py-1.5 text-xs text-slate-700"
                   >
                     Cancel
                   </button>
@@ -675,7 +675,7 @@ export default function ShadowWidget() {
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition ${
                     micEnabled
                       ? "bg-emerald-400/15 text-emerald-300"
-                      : "bg-navy-800/60 text-slate-300 hover:text-white"
+                      : "bg-navy-800/60 text-slate-600 hover:text-ink"
                   }`}
                 >
                   {micEnabled ? <Mic size={17} /> : <MicOff size={17} />}
@@ -686,7 +686,7 @@ export default function ShadowWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send(input)}
                 placeholder="Ask Shadow anything…"
-                className="flex-1 rounded-full border border-navy-700/70 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"
+                className="flex-1 rounded-full border border-navy-700/70 bg-navy-950/60 px-4 py-2.5 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan"
               />
               <button
                 type="button"

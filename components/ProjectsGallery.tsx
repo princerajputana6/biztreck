@@ -54,8 +54,8 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
               onClick={() => select(t.slug)}
               className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "border-accent-cyan/40 bg-accent-cyan/15 text-white"
-                  : "border-navy-700/50 bg-navy-900/50 text-slate-300 hover:border-accent-electric hover:text-white"
+                  ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
+                  : "border-navy-700/50 bg-navy-900/50 text-slate-600 hover:border-accent-electric hover:text-ink"
               }`}
             >
               {t.label}
@@ -73,8 +73,8 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
         })}
       </div>
 
-      <p className="mt-6 text-sm text-slate-400">
-        Showing <span className="text-white">{filtered.length}</span>{" "}
+      <p className="mt-6 text-sm text-slate-500">
+        Showing <span className="text-ink">{filtered.length}</span>{" "}
         {filtered.length === 1 ? "project" : "projects"} in {activeLabel}.
         {active !== "all" && (
           <>
@@ -82,7 +82,7 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
             Explore the{" "}
             <Link
               href={`/solutions/${active}`}
-              className="text-accent-glow hover:text-white"
+              className="text-accent-glow hover:text-ink"
             >
               {PROJECT_CATEGORY_LABELS[active]} solution
             </Link>
@@ -121,25 +121,25 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
                   className={`relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${p.accent} shadow-glow`}
                   style={{ boxShadow: `0 0 30px ${p.glow}` }}
                 >
-                  <Boxes className="text-white" size={26} />
+                  <Boxes className="text-ink" size={26} />
                   <span className="absolute -inset-1 rounded-2xl border border-white/20" />
                 </div>
               )}
               <Link
                 href={`/solutions/${p.category}`}
-                className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-300 transition-colors hover:border-accent-electric hover:text-white"
+                className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:border-accent-electric hover:text-ink"
               >
                 {PROJECT_CATEGORY_LABELS[p.category] || p.category}
               </Link>
             </div>
 
-            <h2 className="relative mt-6 font-display text-3xl font-extrabold text-white">
+            <h2 className="relative mt-6 font-display text-3xl font-extrabold text-ink">
               {p.name}
             </h2>
             <p className="relative mt-1.5 text-sm font-medium uppercase tracking-wider text-navy-300">
               {p.tagline}
             </p>
-            <p className="relative mt-4 text-[15px] leading-relaxed text-slate-300">
+            <p className="relative mt-4 text-[15px] leading-relaxed text-slate-600">
               {p.description}
             </p>
 
@@ -147,7 +147,7 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
               {p.tags.map((t) => (
                 <span
                   key={t}
-                  className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-200"
+                  className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-700"
                 >
                   {t}
                 </span>
@@ -162,7 +162,7 @@ export default function ProjectsGallery({ projects }: { projects: Project[] }) {
                 href={p.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-white transition-all group-hover:bg-accent-electric"
+                className="inline-flex items-center gap-1.5 rounded-full bg-navy-800/60 px-4 py-2 text-xs font-semibold text-ink transition-all group-hover:bg-accent-electric group-hover:text-white"
               >
                 Launch site <ArrowUpRight size={12} />
               </a>

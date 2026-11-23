@@ -68,10 +68,10 @@ export default async function Careers() {
       <section className="relative z-10 pt-36 pb-12 sm:pt-40">
         <div className="container-px">
           <div className="eyebrow">Careers</div>
-          <h1 className="mt-5 font-display text-5xl font-extrabold leading-tight text-white sm:text-6xl">
+          <h1 className="mt-5 font-display text-5xl font-extrabold leading-tight text-ink sm:text-6xl">
             Build the future of digital — <span className="gradient-text">with us.</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-slate-300">
+          <p className="mt-5 max-w-2xl text-lg text-slate-600">
             We hire senior, curious, kind people who care about craft. If
             shipping work that matters sounds fun, we&apos;d love to hear from
             you.
@@ -80,7 +80,7 @@ export default async function Careers() {
             {perks.map((p) => (
               <span
                 key={p}
-                className="inline-flex items-center gap-2 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs font-medium text-slate-200"
+                className="inline-flex items-center gap-2 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs font-medium text-slate-700"
               >
                 <Sparkles size={11} className="text-accent-glow" /> {p}
               </span>
@@ -92,9 +92,9 @@ export default async function Careers() {
       <section className="relative z-10 pb-24">
         <div className="container-px">
           <div className="mb-8 flex items-end justify-between">
-            <h2 className="font-display text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-ink">
               Open roles{" "}
-              <span className="text-base font-normal text-slate-400">
+              <span className="text-base font-normal text-slate-500">
                 ({jobs.length})
               </span>
             </h2>
@@ -103,7 +103,7 @@ export default async function Careers() {
           {jobs.length === 0 ? (
             <div className="glass rounded-3xl p-10 text-center">
               <Briefcase className="mx-auto mb-4 text-accent-glow" size={32} />
-              <p className="text-lg text-slate-300">
+              <p className="text-lg text-slate-600">
                 No open roles right now — but we&apos;re always open to
                 exceptional talent.
               </p>
@@ -127,13 +127,13 @@ export default async function Careers() {
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-navy-300">
                       {j.department}
                     </div>
-                    <div className="mt-2 font-display text-2xl font-bold text-white group-hover:text-accent-glow">
+                    <div className="mt-2 font-display text-2xl font-bold text-ink group-hover:text-accent-glow">
                       {j.title}
                     </div>
-                    <p className="mt-2 max-w-2xl text-sm text-slate-400">
+                    <p className="mt-2 max-w-2xl text-sm text-slate-500">
                       {j.shortDescription}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-300">
+                    <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-600">
                       <span className="inline-flex items-center gap-1.5">
                         <MapPin size={12} className="text-accent-glow" />{" "}
                         {j.location}
@@ -154,7 +154,7 @@ export default async function Careers() {
                     </div>
                   </div>
                   <div className="relative">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-navy-800/60 px-5 py-2.5 text-sm font-semibold text-white transition-all group-hover:bg-accent-electric">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-navy-800/60 px-5 py-2.5 text-sm font-semibold text-ink transition-all group-hover:bg-accent-electric group-hover:text-white">
                       View role <ArrowUpRight size={14} />
                     </span>
                   </div>

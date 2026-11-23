@@ -118,7 +118,7 @@ export default function Solutions() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             Software that replaces{" "}
             <span className="gradient-text">manual work.</span>
@@ -128,7 +128,7 @@ export default function Solutions() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-300"
+            className="mt-5 text-lg text-slate-600"
           >
             We help growing businesses automate operations, modernise outdated
             systems, and build scalable software that drives measurable growth.
@@ -153,22 +153,22 @@ export default function Solutions() {
                 <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-500 to-navy-700 shadow-glow">
                   <Icon className="text-accent-glow" size={22} />
                 </div>
-                <h3 className="relative mt-5 font-display text-xl font-bold text-white">
+                <h3 className="relative mt-5 font-display text-xl font-bold text-ink">
                   {s.title}
                 </h3>
-                <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
+                <p className="relative mt-3 text-sm leading-relaxed text-slate-500">
                   {s.problem}
                 </p>
-                <p className="relative mt-3 text-sm leading-relaxed text-slate-300">
+                <p className="relative mt-3 text-sm leading-relaxed text-slate-600">
                   {s.solution}
                 </p>
-                <p className="relative mt-3 flex items-start gap-2 text-sm leading-relaxed text-slate-200">
+                <p className="relative mt-3 flex items-start gap-2 text-sm leading-relaxed text-slate-700">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-cyan" />
                   {s.outcome}
                 </p>
                 <Link
                   href={`/solutions/${s.slug}`}
-                  className="relative mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent-glow transition-colors hover:text-white"
+                  className="relative mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent-glow transition-colors hover:text-ink"
                 >
                   Explore {s.title}
                   <ArrowUpRight size={14} />

@@ -33,7 +33,7 @@ export default function TrustStrip() {
           {tech.map((t) => (
             <span
               key={t}
-              className="font-display text-lg font-bold text-slate-400 transition-colors hover:text-white sm:text-xl"
+              className="font-display text-lg font-bold text-slate-500 transition-colors hover:text-ink sm:text-xl"
             >
               {t}
             </span>

@@ -60,7 +60,7 @@ export default async function JobPage({
         <div className="container-px mx-auto max-w-4xl">
           <Link
             href="/careers"
-            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-ink"
           >
             <ArrowLeft size={14} /> All open roles
           </Link>
@@ -68,10 +68,10 @@ export default async function JobPage({
           <div className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
             {job.department}
           </div>
-          <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+          <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight text-ink sm:text-5xl">
             {job.title}
           </h1>
-          <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-300">
+          <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
             <span className="inline-flex items-center gap-1.5">
               <MapPin size={14} className="text-accent-glow" /> {job.location}
             </span>
@@ -108,10 +108,10 @@ export default async function JobPage({
           )}
 
           <div id="apply" className="mt-16">
-            <h2 className="font-display text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-ink">
               Apply for this role
             </h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-slate-500">
               Tell us about yourself. We read every application.
             </p>
             <ApplyForm jobSlug={job.slug} jobTitle={job.title} />
@@ -135,12 +135,12 @@ function Section({
   return (
     <section className="mt-12">
       <h2
-        className="font-display text-2xl font-bold text-white"
+        className="font-display text-2xl font-bold text-ink"
         dangerouslySetInnerHTML={{ __html: title }}
       />
       <ul className="mt-5 space-y-2.5">
         {items.map((it, i) => (
-          <li key={i} className="flex items-start gap-3 text-slate-300">
+          <li key={i} className="flex items-start gap-3 text-slate-600">
             <span
               className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
                 accent ? "bg-accent-cyan/20" : "bg-navy-700/60"

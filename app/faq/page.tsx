@@ -257,10 +257,10 @@ export default function FaqPage() {
       <article className="relative z-10 container-px pt-32 sm:pt-40">
         <header className="max-w-3xl">
           <div className="eyebrow">{allFaqs.length} questions answered</div>
-          <h1 className="section-title mt-5 text-white">
+          <h1 className="section-title mt-5 text-ink">
             Frequently asked <span className="gradient-text">questions</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
             The questions businesses actually ask before commissioning software —
             answered directly, including the ones where the honest answer is
             &ldquo;you probably don&apos;t need us for that&rdquo;.
@@ -272,7 +272,7 @@ export default function FaqPage() {
             <a
               key={g.title}
               href={`#${g.title.toLowerCase().replace(/[^a-z]+/g, "-")}`}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200 transition-colors hover:border-accent-electric hover:text-white"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700 transition-colors hover:border-accent-electric hover:text-ink"
             >
               {g.title}
             </a>
@@ -285,7 +285,7 @@ export default function FaqPage() {
             id={g.title.toLowerCase().replace(/[^a-z]+/g, "-")}
             className="mt-16 max-w-3xl scroll-mt-28"
           >
-            <h2 className="font-display text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-ink">
               {g.title}
             </h2>
             <div className="mt-6 space-y-4">
@@ -294,10 +294,10 @@ export default function FaqPage() {
                   key={f.q}
                   className="group rounded-2xl border border-navy-700/40 bg-navy-900/40 p-6"
                 >
-                  <summary className="cursor-pointer list-none font-display text-lg font-semibold text-white">
+                  <summary className="cursor-pointer list-none font-display text-lg font-semibold text-ink">
                     {f.q}
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
                     {f.a}
                   </p>
                 </details>
@@ -307,10 +307,10 @@ export default function FaqPage() {
         ))}
 
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-bold text-ink">
             Still have a question?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600">
             Ask it on a 30-minute strategy call. You&apos;ll get a straight
             answer, whether or not it leads to a project.
           </p>

@@ -185,7 +185,7 @@ export default function UsersView({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500">
           Create team members and control exactly which modules each can access.
         </p>
         <button
@@ -201,47 +201,47 @@ export default function UsersView({
       {/* Create / edit form */}
       {showForm && (
         <div className="rounded-xl border border-navy-700/40 bg-navy-900/35 p-5">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
             {editing ? <Pencil size={16} className="text-accent-cyan" /> : <UserPlus size={16} className="text-accent-cyan" />}
             {editing ? `Edit ${editing}` : "New user"}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               Full name
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               Email
               <input
                 type="email"
                 value={form.email}
                 disabled={Boolean(editing)}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan disabled:opacity-60"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan disabled:opacity-60"
               />
             </label>
             {!editing && (
-              <label className="grid gap-1 text-sm text-slate-300">
+              <label className="grid gap-1 text-sm text-slate-600">
                 Temporary password
                 <input
                   type="text"
                   value={form.password}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   placeholder="min 8 characters"
-                  className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                  className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
                 />
               </label>
             )}
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               Role
               <select
                 value={form.role}
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as "owner" | "member" }))}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               >
                 <option value="member">Member (assigned modules)</option>
                 <option value="owner" disabled={ownerFieldsDisabled}>
@@ -263,7 +263,7 @@ export default function UsersView({
                     key={p.name}
                     type="button"
                     onClick={() => applyPreset(p.permissions)}
-                    className="rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1 text-xs text-slate-200 hover:border-accent-cyan"
+                    className="rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1 text-xs text-slate-700 hover:border-accent-cyan"
                   >
                     {p.name}
                   </button>
@@ -288,7 +288,7 @@ export default function UsersView({
                         className="mt-0.5 h-4 w-4 rounded border-navy-700 bg-navy-950"
                       />
                       <span>
-                        <span className="font-medium text-white">{p.label}</span>
+                        <span className="font-medium text-ink">{p.label}</span>
                         <span className="block text-[11px] text-slate-500">{p.desc}</span>
                       </span>
                     </label>
@@ -312,7 +312,7 @@ export default function UsersView({
 
       {/* User list */}
       {loading ? (
-        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
           <Loader2 size={16} className="animate-spin" /> Loading users…
         </div>
       ) : (
@@ -327,7 +327,7 @@ export default function UsersView({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-white">{u.name || u.email}</span>
+                    <span className="font-semibold text-ink">{u.name || u.email}</span>
                     {u.role === "owner" && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] text-amber-300">
                         <ShieldCheck size={10} /> Owner
@@ -339,7 +339,7 @@ export default function UsersView({
                       </span>
                     )}
                     {u.email === me && (
-                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
+                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
                         You
                       </span>
                     )}
@@ -347,12 +347,12 @@ export default function UsersView({
                   <div className="mt-0.5 text-xs text-slate-500">{u.email}</div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {u.role === "owner" ? (
-                      <span className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-300">
+                      <span className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-600">
                         All modules
                       </span>
                     ) : u.permissions.length ? (
                       u.permissions.map((p) => (
-                        <span key={p} className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-300">
+                        <span key={p} className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-600">
                           {PERMISSIONS.find((x) => x.key === p)?.label || p}
                         </span>
                       ))
@@ -365,7 +365,7 @@ export default function UsersView({
                   <button
                     type="button"
                     onClick={() => startEdit(u)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
                   >
                     <Pencil size={12} /> Edit
                   </button>
@@ -373,7 +373,7 @@ export default function UsersView({
                     type="button"
                     onClick={() => resetPassword(u.email)}
                     disabled={busy === `pw-${u.email}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
                   >
                     <KeyRound size={12} /> Password
                   </button>
@@ -382,7 +382,7 @@ export default function UsersView({
                       type="button"
                       onClick={() => toggleActive(u)}
                       disabled={busy === `act-${u.email}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
                     >
                       {busy === `act-${u.email}` ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                       {u.active ? "Deactivate" : "Activate"}

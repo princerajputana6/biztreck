@@ -127,7 +127,7 @@ export default function NewJobClient() {
           </div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-ink"
           >
             <ArrowLeft size={14} /> Dashboard
           </Link>
@@ -136,10 +136,10 @@ export default function NewJobClient() {
 
       <main className="container-px py-10">
         <div className="eyebrow">AI Job description generator</div>
-        <h1 className="mt-4 font-display text-3xl font-bold text-white sm:text-4xl">
+        <h1 className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">
           Type a role — get a complete job listing.
         </h1>
-        <p className="mt-2 max-w-2xl text-slate-400">
+        <p className="mt-2 max-w-2xl text-slate-500">
           Generates the full description, responsibilities, requirements,
           benefits, and salary range — all editable.
         </p>
@@ -154,21 +154,21 @@ export default function NewJobClient() {
               value={brief.role}
               onChange={(e) => setBrief({ ...brief, role: e.target.value })}
               placeholder="Senior Next.js Engineer"
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink outline-none focus:border-accent-electric"
             />
           </Field>
           <Field label="Location">
             <input
               value={brief.location}
               onChange={(e) => setBrief({ ...brief, location: e.target.value })}
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink outline-none focus:border-accent-electric"
             />
           </Field>
           <Field label="Type">
             <select
               value={brief.type}
               onChange={(e) => setBrief({ ...brief, type: e.target.value })}
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink outline-none focus:border-accent-electric"
             >
               <option>Full-time</option>
               <option>Part-time</option>
@@ -181,7 +181,7 @@ export default function NewJobClient() {
               value={brief.experience}
               onChange={(e) => setBrief({ ...brief, experience: e.target.value })}
               placeholder="e.g. 2-4 years"
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink outline-none focus:border-accent-electric"
             />
           </Field>
           <div className="sm:col-span-2">
@@ -191,7 +191,7 @@ export default function NewJobClient() {
                 value={brief.notes}
                 onChange={(e) => setBrief({ ...brief, notes: e.target.value })}
                 placeholder="Anything specific you want highlighted (tech stack, team size, mission)…"
-                className="w-full resize-none rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none focus:border-accent-electric"
+                className="w-full resize-none rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink outline-none focus:border-accent-electric"
               />
             </Field>
           </div>
@@ -233,7 +233,7 @@ export default function NewJobClient() {
               >
                 <Sparkles size={28} className="text-accent-glow" />
               </motion.div>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-500">
                 Crafting your job description…
               </p>
             </motion.div>
@@ -259,13 +259,13 @@ export default function NewJobClient() {
                 <input
                   value={job.title}
                   onChange={(e) => updateField("title", e.target.value)}
-                  className="mt-3 w-full bg-transparent font-display text-3xl font-bold text-white outline-none"
+                  className="mt-3 w-full bg-transparent font-display text-3xl font-bold text-ink outline-none"
                 />
                 <textarea
                   value={job.shortDescription}
                   onChange={(e) => updateField("shortDescription", e.target.value)}
                   rows={2}
-                  className="mt-3 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-300 outline-none"
+                  className="mt-3 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-600 outline-none"
                 />
               </div>
 
@@ -305,14 +305,14 @@ export default function NewJobClient() {
                 <textarea
                   value={job.descriptionMarkdown}
                   onChange={(e) => updateField("descriptionMarkdown", e.target.value)}
-                  className="mt-3 h-72 w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-200 outline-none"
+                  className="mt-3 h-72 w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-700 outline-none"
                 />
               </div>
             </div>
 
             <aside className="lg:col-span-4">
               <div className="glass sticky top-24 rounded-3xl p-6">
-                <h3 className="font-display text-lg font-semibold text-white">
+                <h3 className="font-display text-lg font-semibold text-ink">
                   Publish settings
                 </h3>
                 <div className="mt-4 space-y-4">
@@ -320,28 +320,28 @@ export default function NewJobClient() {
                     <input
                       value={job.slug}
                       onChange={(e) => updateField("slug", e.target.value)}
-                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-white outline-none"
+                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-ink outline-none"
                     />
                   </Field>
                   <Field label="Location">
                     <input
                       value={job.location}
                       onChange={(e) => updateField("location", e.target.value)}
-                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-white outline-none"
+                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-ink outline-none"
                     />
                   </Field>
                   <Field label="Experience">
                     <input
                       value={job.experience}
                       onChange={(e) => updateField("experience", e.target.value)}
-                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-white outline-none"
+                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-ink outline-none"
                     />
                   </Field>
                   <Field label="Salary">
                     <input
                       value={job.salary}
                       onChange={(e) => updateField("salary", e.target.value)}
-                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-white outline-none"
+                      className="w-full rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-ink outline-none"
                     />
                   </Field>
                 </div>
@@ -381,7 +381,7 @@ export default function NewJobClient() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
         {label}
       </div>
       {children}
@@ -416,11 +416,11 @@ function ListEditor({
   return (
     <div className="glass rounded-3xl p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-display text-lg font-semibold text-white">{title}</h3>
+        <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
         <button
           onClick={onAdd}
           type="button"
-          className="inline-flex items-center gap-1 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-200 hover:border-accent-electric"
+          className="inline-flex items-center gap-1 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-700 hover:border-accent-electric"
         >
           <Plus size={12} /> Add
         </button>
@@ -431,7 +431,7 @@ function ListEditor({
             <input
               value={it}
               onChange={(e) => onChange(i, e.target.value)}
-              className="flex-1 rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-white outline-none"
+              className="flex-1 rounded-xl border border-navy-700/40 bg-navy-900/60 px-3 py-2 text-sm text-ink outline-none"
             />
             <button
               type="button"

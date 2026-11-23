@@ -40,7 +40,7 @@ export default function Testimonials() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             Trusted by founders &{" "}
             <span className="gradient-text">growth teams.</span>
@@ -68,7 +68,7 @@ export default function Testimonials() {
                 ))}
               </div>
               <blockquote
-                className="relative mt-4 text-slate-200"
+                className="relative mt-4 text-slate-700"
                 dangerouslySetInnerHTML={{ __html: t.quote }}
               />
               <figcaption className="mt-6 flex items-center gap-3">
@@ -76,8 +76,8 @@ export default function Testimonials() {
                   {t.name.charAt(0)}
                 </div>
                 <div>
-                  <div className="font-semibold text-white">{t.name}</div>
-                  <div className="text-xs text-slate-400">{t.role}</div>
+                  <div className="font-semibold text-ink">{t.name}</div>
+                  <div className="text-xs text-slate-500">{t.role}</div>
                 </div>
               </figcaption>
             </motion.figure>

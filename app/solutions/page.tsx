@@ -49,11 +49,11 @@ export default function SolutionsIndex() {
       <section className="relative z-10 container-px pt-32 sm:pt-40">
         <div className="max-w-3xl">
           <div className="eyebrow">What we build</div>
-          <h1 className="section-title mt-5 text-white">
+          <h1 className="section-title mt-5 text-ink">
             Software that replaces{" "}
             <span className="gradient-text">manual work</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
             We help growing businesses automate operations, modernise outdated
             systems, and build scalable software that drives measurable growth.
             Every engagement starts with the process that is costing you money —
@@ -76,7 +76,7 @@ export default function SolutionsIndex() {
               href={`/solutions/${s.slug}`}
               className="group rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-7 transition-colors hover:border-accent-electric"
             >
-              <h2 className="flex items-center gap-1.5 font-display text-xl font-bold text-white">
+              <h2 className="flex items-center gap-1.5 font-display text-xl font-bold text-ink">
                 {s.name}
                 <ArrowUpRight
                   size={18}
@@ -86,19 +86,19 @@ export default function SolutionsIndex() {
               <p className="mt-4 text-xs uppercase tracking-wider text-slate-500">
                 Problem
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-300">
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
                 {s.card.problem}
               </p>
               <p className="mt-3 text-xs uppercase tracking-wider text-slate-500">
                 Solution
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-300">
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
                 {s.card.solution}
               </p>
               <p className="mt-3 text-xs uppercase tracking-wider text-accent-cyan">
                 Outcome
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-200">
+              <p className="mt-1 text-sm leading-relaxed text-slate-700">
                 {s.card.outcome}
               </p>
             </Link>
@@ -106,10 +106,10 @@ export default function SolutionsIndex() {
         </div>
 
         <section className="my-24 rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-14">
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-bold text-ink">
             Not sure which one you need?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600">
             That is what the free business audit is for. We look at your current
             systems and workflows, then tell you where software would actually pay
             for itself — and where it would not.

@@ -58,9 +58,9 @@ export default function Comments({ slug }: { slug: string }) {
 
   return (
     <section className="mt-16 border-t border-navy-700/40 pt-10">
-      <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-white">
+      <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
         <MessageCircle size={20} className="text-accent-glow" /> Comments
-        <span className="ml-2 text-sm font-normal text-slate-400">
+        <span className="ml-2 text-sm font-normal text-slate-500">
           ({comments.length})
         </span>
       </h2>
@@ -74,7 +74,7 @@ export default function Comments({ slug }: { slug: string }) {
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric"
+          className="rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric"
         />
         <input
           required
@@ -82,7 +82,7 @@ export default function Comments({ slug }: { slug: string }) {
           placeholder="you@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric"
+          className="rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric"
         />
         <textarea
           required
@@ -90,7 +90,7 @@ export default function Comments({ slug }: { slug: string }) {
           placeholder="Share your thoughts…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="resize-none rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric sm:col-span-2"
+          className="resize-none rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric sm:col-span-2"
         />
         <div className="sm:col-span-2 flex items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
@@ -131,9 +131,9 @@ export default function Comments({ slug }: { slug: string }) {
 
       <div className="mt-8 space-y-4">
         {loading ? (
-          <div className="text-sm text-slate-400">Loading…</div>
+          <div className="text-sm text-slate-500">Loading…</div>
         ) : comments.length === 0 ? (
-          <div className="rounded-2xl border border-navy-700/30 bg-navy-800/20 p-6 text-center text-sm text-slate-400">
+          <div className="rounded-2xl border border-navy-700/30 bg-navy-800/20 p-6 text-center text-sm text-slate-500">
             No comments yet. Be the first to share your thoughts.
           </div>
         ) : (
@@ -149,7 +149,7 @@ export default function Comments({ slug }: { slug: string }) {
                   {c.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-semibold text-white">{c.name}</div>
+                  <div className="font-semibold text-ink">{c.name}</div>
                   <div className="text-xs text-slate-500">
                     {new Date(c.createdAt).toLocaleString("en-IN", {
                       dateStyle: "medium",
@@ -158,7 +158,7 @@ export default function Comments({ slug }: { slug: string }) {
                   </div>
                 </div>
               </div>
-              <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+              <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">
                 {c.message}
               </p>
             </motion.div>

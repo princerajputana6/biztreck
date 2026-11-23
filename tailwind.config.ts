@@ -8,21 +8,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Deep-ocean-blue + white light theme.
+        // The `navy` ramp is intentionally INVERTED vs a dark theme: high
+        // numbers are near-white surfaces, low numbers are deep ocean ink.
+        // This lets the site's existing `bg-navy-900`, `border-navy-700`,
+        // `text-navy-300` classes read correctly on a light background.
         navy: {
-          950: "#030711",
-          900: "#070d1f",
-          850: "#0a142e",
-          800: "#0d1a3a",
-          700: "#11265a",
-          600: "#1a3a8c",
-          500: "#2c52c4",
-          400: "#4f7cf0",
-          300: "#7fa2ff",
+          950: "#f4f8ff", // page background
+          900: "#eaf2ff", // raised background
+          850: "#e2ecfe",
+          800: "#d7e6fc", // cards / surfaces
+          700: "#b8cff3", // borders / dividers
+          600: "#6c90d8", // strong border / muted accent
+          500: "#2f5ec9", // brand
+          400: "#1e4fa8", // links / accent text
+          300: "#0a2f6b", // deep ocean headings / eyebrow text
+        },
+        // Deep-ocean "ink" used as the primary text color (replaces white).
+        ink: {
+          DEFAULT: "#0a2540",
+          soft: "#33507a",
+          mute: "#5b7196",
         },
         accent: {
-          cyan: "#22d3ee",
-          electric: "#3b82f6",
-          glow: "#60a5fa",
+          cyan: "#0e7490", // deep teal — readable on white
+          electric: "#1d4ed8",
+          glow: "#2563eb",
         },
       },
       fontFamily: {
@@ -47,13 +58,13 @@ const config: Config = {
       },
       backgroundImage: {
         "grid-pattern":
-          "linear-gradient(rgba(79, 124, 240, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 124, 240, 0.07) 1px, transparent 1px)",
+          "linear-gradient(rgba(13, 71, 161, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 71, 161, 0.06) 1px, transparent 1px)",
         "radial-glow":
-          "radial-gradient(circle at center, rgba(59, 130, 246, 0.25), transparent 60%)",
+          "radial-gradient(circle at center, rgba(37, 99, 235, 0.14), transparent 60%)",
       },
       boxShadow: {
-        glow: "0 0 30px rgba(59, 130, 246, 0.35)",
-        "glow-lg": "0 0 60px rgba(59, 130, 246, 0.45)",
+        glow: "0 18px 40px -12px rgba(37, 99, 235, 0.28)",
+        "glow-lg": "0 30px 70px -16px rgba(37, 99, 235, 0.35)",
       },
     },
   },

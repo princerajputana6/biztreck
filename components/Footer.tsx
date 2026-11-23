@@ -97,7 +97,7 @@ export default function Footer() {
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Logo size={72} showWordmark={false} />
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-400">
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-500">
               We are a senior product studio building modern websites and apps,
               revamping legacy platforms, automating infrastructure, growing
               search rankings, and helping startups launch from zero. One team,
@@ -107,17 +107,17 @@ export default function Footer() {
             <div className="mt-6 space-y-2.5 text-sm">
               <a
                 href={`mailto:${SITE.email}`}
-                className="flex items-center gap-3 text-slate-300 hover:text-white"
+                className="flex items-center gap-3 text-slate-600 hover:text-ink"
               >
                 <Mail size={16} className="text-accent-glow" /> {SITE.email}
               </a>
               <a
                 href={`tel:${SITE.phoneRaw}`}
-                className="flex items-center gap-3 text-slate-300 hover:text-white"
+                className="flex items-center gap-3 text-slate-600 hover:text-ink"
               >
                 <Phone size={16} className="text-accent-glow" /> {SITE.phone}
               </a>
-              <div className="flex items-center gap-3 text-slate-300">
+              <div className="flex items-center gap-3 text-slate-600">
                 <MapPin size={16} className="text-accent-glow" /> {SITE.address}
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function Footer() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
-                  className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                  className="flex-1 bg-transparent px-5 py-3 text-sm text-ink placeholder:text-slate-500 outline-none"
                 />
                 <motion.button
                   whileHover={{ scale: 1.04 }}
@@ -159,7 +159,7 @@ export default function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-7">
             {columns.map((col) => (
               <div key={col.title}>
-                <div className="font-display text-sm font-semibold uppercase tracking-wider text-white">
+                <div className="font-display text-sm font-semibold uppercase tracking-wider text-ink">
                   {col.title}
                 </div>
                 <ul className="mt-4 space-y-2.5">
@@ -167,7 +167,7 @@ export default function Footer() {
                     <li key={l.label}>
                       <a
                         href={l.href}
-                        className="group inline-flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-white"
+                        className="group inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-ink"
                       >
                         {l.label}
                         <ArrowUpRight
@@ -191,8 +191,8 @@ export default function Footer() {
             { city: "Remote-first", role: "Async global delivery" },
           ].map((l) => (
             <div key={l.city} className="text-sm">
-              <div className="font-semibold text-white">{l.city}</div>
-              <div className="text-slate-400">{l.role}</div>
+              <div className="font-semibold text-ink">{l.city}</div>
+              <div className="text-slate-500">{l.role}</div>
             </div>
           ))}
         </div>
@@ -212,7 +212,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 whileHover={{ y: -3 }}
-                className="grid h-9 w-9 place-items-center rounded-full border border-navy-700/60 bg-navy-800/40 text-slate-300 transition-colors hover:border-accent-electric hover:text-white"
+                className="grid h-9 w-9 place-items-center rounded-full border border-navy-700/60 bg-navy-800/40 text-slate-600 transition-colors hover:border-accent-electric hover:text-ink"
               >
                 <Icon size={15} />
               </motion.a>

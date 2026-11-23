@@ -39,7 +39,7 @@ export default async function PublicAuditPage({
           </div>
           <a
             href={`/audit/${token}/pdf`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-ink hover:bg-slate-700"
           >
             <Download size={15} /> Download PDF
           </a>
@@ -107,9 +107,9 @@ export default async function PublicAuditPage({
             )}
 
             {/* CTA */}
-            <section className="rounded-xl bg-slate-900 p-6 text-white">
+            <section className="rounded-xl bg-slate-900 p-6 text-ink">
               <p className="text-lg font-semibold">{a.callToAction}</p>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-300">
+              <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
                 <a href={`mailto:${SITE.email}`} className="hover:text-cyan-300">
                   {SITE.email}
                 </a>
@@ -121,7 +121,7 @@ export default async function PublicAuditPage({
           </div>
         </article>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs text-slate-500">
           Prepared by {SITE.name} · {SITE.shortAddress}
         </p>
       </div>

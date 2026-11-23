@@ -99,7 +99,7 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
 
   return (
     <div className="mt-8 space-y-6">
-      <div className="flex items-start gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4 text-sm text-slate-400">
+      <div className="flex items-start gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4 text-sm text-slate-500">
         <Info size={16} className="mt-0.5 shrink-0 text-accent-cyan" />
         <p>
           Google connects via one-click OAuth sign-in and unlocks live Calendar scheduling in the
@@ -121,7 +121,7 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
       )}
 
       {loading ? (
-        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : (
@@ -135,8 +135,8 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">{p.name}</span>
-                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
+                      <span className="font-semibold text-ink">{p.name}</span>
+                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
                         {p.category}
                       </span>
                       {connected && (
@@ -145,7 +145,7 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-slate-400">{p.desc}</p>
+                    <p className="mt-1 text-xs text-slate-500">{p.desc}</p>
                     <p className="mt-1 text-[11px] text-slate-500">{p.unlocks}</p>
                     {connected && st?.email && (
                       <p className="mt-1 text-[11px] text-emerald-300/80">Signed in as {st.email}</p>
@@ -181,14 +181,14 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
                 ) : isEditing ? (
                   <div className="mt-4 space-y-2">
                     {p.fields.map((f) => (
-                      <label key={f.key} className="grid gap-1 text-xs text-slate-400">
+                      <label key={f.key} className="grid gap-1 text-xs text-slate-500">
                         {f.label}
                         <input
                           type={f.secret ? "password" : "text"}
                           value={form[f.key] || ""}
                           placeholder={f.placeholder}
                           onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
-                          className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                          className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
                         />
                       </label>
                     ))}
@@ -204,7 +204,7 @@ export default function IntegrationsView({ initialStatus }: { initialStatus?: St
                       <button
                         type="button"
                         onClick={() => setEditing(null)}
-                        className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200"
+                        className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700"
                       >
                         Cancel
                       </button>

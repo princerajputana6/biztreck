@@ -66,15 +66,15 @@ export default function AdminLogin() {
         <div className="flex justify-center">
           <Logo showWordmark={false} size={56} href="" />
         </div>
-        <h1 className="mt-5 text-center font-display text-2xl font-bold text-white">
+        <h1 className="mt-5 text-center font-display text-2xl font-bold text-ink">
           Admin Access
         </h1>
-        <p className="mt-1 text-center text-sm text-slate-400">
+        <p className="mt-1 text-center text-sm text-slate-500">
           Enter your admin email and password to continue.
         </p>
 
         <div className="mt-6">
-          <label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Email
           </label>
           <div className="relative mt-2">
@@ -85,7 +85,7 @@ export default function AdminLogin() {
             <input
               autoFocus
               type="email"
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 py-3 pl-11 pr-4 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@biztreck.com"
@@ -94,7 +94,7 @@ export default function AdminLogin() {
         </div>
 
         <div className="mt-4">
-          <label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Password
           </label>
           <div className="relative mt-2">
@@ -106,7 +106,7 @@ export default function AdminLogin() {
               autoFocus
               type="password"
               required
-              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 outline-none focus:border-accent-electric"
+              className="w-full rounded-xl border border-navy-700/60 bg-navy-900/60 py-3 pl-11 pr-4 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

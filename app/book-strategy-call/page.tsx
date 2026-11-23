@@ -50,28 +50,28 @@ export default function BookStrategyCallPage() {
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <div className="eyebrow">Free 30-minute call</div>
-            <h1 className="section-title mt-5 text-white">
+            <h1 className="section-title mt-5 text-ink">
               Book a <span className="gradient-text">strategy call</span>
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-slate-300">
+            <p className="mt-5 text-lg leading-relaxed text-slate-600">
               A focused conversation about where your operation is losing time
               and whether software would actually pay for itself. No pitch deck,
               no obligation.
             </p>
 
-            <h2 className="mt-10 font-display text-xl font-bold text-white">
+            <h2 className="mt-10 font-display text-xl font-bold text-ink">
               What you get
             </h2>
             <ul className="mt-5 space-y-3">
               {expect.map((e) => (
                 <li key={e} className="flex items-start gap-3">
                   <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                  <span className="text-sm leading-relaxed text-slate-300">{e}</span>
+                  <span className="text-sm leading-relaxed text-slate-600">{e}</span>
                 </li>
               ))}
             </ul>
 
-            <h2 className="mt-10 font-display text-xl font-bold text-white">
+            <h2 className="mt-10 font-display text-xl font-bold text-ink">
               How the call runs
             </h2>
             <div className="mt-5 space-y-4">
@@ -83,19 +83,19 @@ export default function BookStrategyCallPage() {
                   <div className="font-display text-sm font-bold gradient-text">
                     {String(i + 1).padStart(2, "0")}
                   </div>
-                  <h3 className="mt-1 font-display text-base font-bold text-white">
+                  <h3 className="mt-1 font-display text-base font-bold text-ink">
                     {a.step}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-1 text-sm leading-relaxed text-slate-600">
                     {a.desc}
                   </p>
                 </div>
               ))}
             </div>
 
-            <p className="mt-8 text-sm text-slate-400">
+            <p className="mt-8 text-sm text-slate-500">
               Prefer email? Reach us at{" "}
-              <a href={`mailto:${SITE.email}`} className="text-accent-glow hover:text-white">
+              <a href={`mailto:${SITE.email}`} className="text-accent-glow hover:text-ink">
                 {SITE.email}
               </a>
             </p>
@@ -103,10 +103,10 @@ export default function BookStrategyCallPage() {
 
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-8 sm:p-10">
-              <h2 className="font-display text-2xl font-bold text-white">
+              <h2 className="font-display text-2xl font-bold text-ink">
                 Tell us about your business
               </h2>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-500">
                 Five fields. We&apos;ll come back with times that suit your zone.
               </p>
               <div className="mt-8">

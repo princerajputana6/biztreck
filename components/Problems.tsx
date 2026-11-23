@@ -44,7 +44,7 @@ export default function Problems() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             Problems <span className="gradient-text">we solve.</span>
           </motion.h2>
@@ -53,7 +53,7 @@ export default function Problems() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-300"
+            className="mt-5 text-lg text-slate-600"
           >
             Most growing businesses hit the same set of bottlenecks. Pick the one
             that costs you the most and we&apos;ll show you what fixing it looks
@@ -75,7 +75,7 @@ export default function Problems() {
                 href={`/solutions/${p.slug}`}
                 className="group flex h-full items-start justify-between gap-2 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5 transition-colors hover:border-accent-electric"
               >
-                <span className="text-sm font-medium leading-relaxed text-slate-200">
+                <span className="text-sm font-medium leading-relaxed text-slate-700">
                   {p.label}
                 </span>
                 <ArrowUpRight

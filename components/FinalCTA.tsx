@@ -13,11 +13,11 @@ export default function FinalCTA() {
           transition={{ duration: 0.6 }}
           className="rounded-3xl border border-navy-700/40 bg-gradient-to-br from-navy-850/80 to-navy-900/60 p-10 text-center sm:p-16"
         >
-          <h2 className="section-title text-white">
+          <h2 className="section-title text-ink">
             Let&apos;s build software that{" "}
             <span className="gradient-text">grows your business.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-300">
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
             Start with a 30-minute strategy call. We&apos;ll map where software
             would remove the most cost from your operation — and tell you
             honestly if it wouldn&apos;t.

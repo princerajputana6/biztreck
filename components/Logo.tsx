@@ -42,7 +42,7 @@ export default function Logo({
       </div>
       {showWordmark && (
         <div className="leading-tight">
-          <div className="font-display text-base font-bold text-white sm:text-lg">
+          <div className="font-display text-base font-bold text-ink sm:text-lg">
             Biztreck
           </div>
           <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-navy-300">

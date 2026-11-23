@@ -48,12 +48,12 @@ export default function Stats() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="text-center"
               >
-                <div className="font-display text-5xl font-extrabold text-white sm:text-6xl">
+                <div className="font-display text-5xl font-extrabold text-ink sm:text-6xl">
                   <span className="gradient-text">
                     <Counter to={s.value} suffix={s.suffix} />
                   </span>
                 </div>
-                <div className="mt-3 text-sm font-medium uppercase tracking-wider text-slate-400">
+                <div className="mt-3 text-sm font-medium uppercase tracking-wider text-slate-500">
                   {s.label}
                 </div>
               </motion.div>

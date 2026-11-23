@@ -19,11 +19,11 @@ export default function LegalLayout({
         <div className="container-px">
           <div className="mx-auto max-w-3xl">
             <div className="eyebrow">Legal</div>
-            <h1 className="mt-5 font-display text-4xl font-extrabold text-white sm:text-5xl">
+            <h1 className="mt-5 font-display text-4xl font-extrabold text-ink sm:text-5xl">
               {title}
             </h1>
-            <p className="mt-3 text-sm text-slate-400">Last updated: {updated}</p>
-            <div className="prose-legal mt-10 space-y-5 text-slate-300 leading-relaxed">
+            <p className="mt-3 text-sm text-slate-500">Last updated: {updated}</p>
+            <div className="prose-legal mt-10 space-y-5 text-slate-600 leading-relaxed">
               {children}
             </div>
           </div>

@@ -65,7 +65,7 @@ export default function Process() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             A predictable path from{" "}
             <span className="gradient-text">idea to scale.</span>
@@ -95,16 +95,16 @@ export default function Process() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-navy-500 to-accent-electric shadow-glow">
-                        <Icon size={18} className="text-white" />
+                        <Icon size={18} className="text-ink" />
                       </div>
                       <div className="font-mono text-xs uppercase tracking-[0.2em] text-navy-300">
                         Step 0{i + 1}
                       </div>
                     </div>
-                    <h3 className="mt-4 font-display text-2xl font-bold text-white">
+                    <h3 className="mt-4 font-display text-2xl font-bold text-ink">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-slate-300">{s.desc}</p>
+                    <p className="mt-2 text-slate-600">{s.desc}</p>
                   </div>
 
                   <div className="hidden lg:block" />

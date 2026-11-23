@@ -58,13 +58,13 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
   return (
     <div className="mt-4 rounded-lg border border-navy-700/40 bg-navy-950/40 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="uppercase tracking-wider">Best channel</span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
               actionable
                 ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-                : "border-slate-500/30 bg-slate-400/10 text-slate-300"
+                : "border-slate-500/30 bg-slate-400/10 text-slate-600"
             }`}
           >
             <Icon size={12} /> {r.label}
@@ -76,7 +76,7 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
             actionable
               ? "bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/25"
-              : "border border-navy-700/70 bg-navy-800/50 text-slate-300 hover:text-white"
+              : "border border-navy-700/70 bg-navy-800/50 text-slate-600 hover:text-ink"
           }`}
         >
           <Icon size={12} />
@@ -103,7 +103,7 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
                 chosen
                   ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
                   : rung.available
-                    ? "border-navy-700/60 bg-navy-800/50 text-slate-300"
+                    ? "border-navy-700/60 bg-navy-800/50 text-slate-600"
                     : "border-navy-800/60 bg-navy-900/40 text-slate-600 line-through"
               }`}
             >
@@ -122,13 +122,13 @@ const PRIORITY_TONE: Record<string, string> = {
   hot: "text-rose-300 bg-rose-400/10 border-rose-400/25",
   warm: "text-amber-300 bg-amber-400/10 border-amber-400/25",
   cold: "text-cyan-300 bg-cyan-400/10 border-cyan-400/25",
-  ignore: "text-slate-400 bg-slate-400/10 border-slate-500/25",
+  ignore: "text-slate-500 bg-slate-400/10 border-slate-500/25",
 };
 
 const PREMIUM_TONE: Record<string, string> = {
   PREMIUM: "text-amber-200 bg-amber-400/10 border-amber-400/30",
   STANDARD: "text-cyan-200 bg-cyan-400/10 border-cyan-400/25",
-  LOW_VALUE: "text-slate-400 bg-slate-500/10 border-slate-500/25",
+  LOW_VALUE: "text-slate-500 bg-slate-500/10 border-slate-500/25",
 };
 
 export function ScoreBar({ label, value }: { label: string; value: number }) {
@@ -136,9 +136,9 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
     value >= 70 ? "bg-rose-400" : value >= 45 ? "bg-amber-400" : "bg-cyan-400";
   return (
     <div>
-      <div className="flex items-center justify-between text-[11px] text-slate-400">
+      <div className="flex items-center justify-between text-[11px] text-slate-500">
         <span>{label}</span>
-        <span className="text-slate-200">{value}</span>
+        <span className="text-slate-700">{value}</span>
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-navy-800">
         <div className={`h-full ${tone}`} style={{ width: `${value}%` }} />
@@ -478,7 +478,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 <span className="text-xs uppercase tracking-wider text-slate-500">{s.label}</span>
                 <Icon size={16} className={active ? "text-emerald-300" : "text-accent-cyan"} />
               </div>
-              <div className="mt-3 font-display text-2xl font-bold text-white">{s.value}</div>
+              <div className="mt-3 font-display text-2xl font-bold text-ink">{s.value}</div>
               <div className={`mt-1 text-xs ${active ? "text-emerald-300" : "text-slate-500"}`}>
                 {active ? "showing contacted only" : s.hint}
               </div>
@@ -500,7 +500,7 @@ export default function LeadOSView({ session }: { session: Session }) {
           type="button"
           onClick={() => act("import", { action: "import-from-scraper", limit: 500 }, "Imported from scraper")}
           disabled={busy === "import"}
-          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
         >
           {busy === "import" ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
           Import from scraper
@@ -532,7 +532,7 @@ export default function LeadOSView({ session }: { session: Session }) {
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200"
+          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-700"
         >
           <RefreshCw size={15} /> Refresh
         </button>
@@ -544,21 +544,21 @@ export default function LeadOSView({ session }: { session: Session }) {
       {/* Live Google Places search */}
       {showSearch && (
         <div className="rounded-xl border border-navy-700/40 bg-navy-900/35 p-5">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
             <Search size={16} className="text-accent-cyan" /> Search Google Places
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1 text-sm text-slate-300 md:col-span-2">
+            <label className="grid gap-1 text-sm text-slate-600 md:col-span-2">
               Search terms (one per line)
               <textarea
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 rows={3}
                 placeholder={"law firms\ndental clinics\nconstruction companies"}
-                className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-accent-cyan"
+                className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               Country
               <select
                 value={searchCountry}
@@ -566,18 +566,18 @@ export default function LeadOSView({ session }: { session: Session }) {
                   setSearchCountry(e.target.value);
                   setSearchState("");
                 }}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               >
                 <option value="">Any country</option>
                 {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               State / region
               <select
                 value={searchState}
                 onChange={(e) => setSearchState(e.target.value)}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               >
                 <option value="">
                   {searchCountry ? `Whole ${searchCountry}` : "Any state"}
@@ -585,16 +585,16 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {statesFor(searchCountry).map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               City / area <span className="text-slate-500">(optional)</span>
               <input
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
                 placeholder="e.g. Bengaluru"
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-300">
+            <label className="grid gap-1 text-sm text-slate-600">
               Max results per term
               <input
                 type="number"
@@ -602,7 +602,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 max={100}
                 value={searchMax}
                 onChange={(e) => setSearchMax(Number(e.target.value))}
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
           </div>
@@ -616,7 +616,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             Search &amp; import
           </button>
           <p className="mt-3 text-xs text-slate-500">
-            Runs the Apify Google Places actor (needs <code className="text-slate-400">APIFY_TOKEN</code>)
+            Runs the Apify Google Places actor (needs <code className="text-slate-500">APIFY_TOKEN</code>)
             and imports results straight into your lead database.
           </p>
         </div>
@@ -631,14 +631,14 @@ export default function LeadOSView({ session }: { session: Session }) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search business name"
-              className="w-full rounded-lg border border-navy-700/70 bg-navy-950/50 py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-600 outline-none focus:border-accent-cyan"
+              className="w-full rounded-lg border border-navy-700/70 bg-navy-950/50 py-2 pl-9 pr-3 text-sm text-ink placeholder:text-slate-600 outline-none focus:border-accent-cyan"
             />
           </label>
-          <select value={priority} onChange={(e) => setPriority(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white">
+          <select value={priority} onChange={(e) => setPriority(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink">
             <option value="">All priorities</option>
             {["hot", "warm", "cold", "ignore"].map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <select value={stage} onChange={(e) => setStage(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white">
+          <select value={stage} onChange={(e) => setStage(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink">
             <option value="">All stages</option>
             {PIPELINE_STAGES.map((s) => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
           </select>
@@ -650,7 +650,7 @@ export default function LeadOSView({ session }: { session: Session }) {
               // may not belong to the new country — clear it.
               setStateFilter("");
             }}
-            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white"
+            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink"
           >
             <option value="">All countries</option>
             {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -658,7 +658,7 @@ export default function LeadOSView({ session }: { session: Session }) {
           <select
             value={stateFilter}
             onChange={(e) => setStateFilter(e.target.value)}
-            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white"
+            className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink"
             title={country ? `States in ${country}` : "States (all countries)"}
           >
             <option value="">{country ? `All states in ${country}` : "All states"}</option>
@@ -669,7 +669,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             <select
               value={owner}
               onChange={(e) => setOwner(e.target.value)}
-              className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white md:col-span-4"
+              className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink md:col-span-4"
               title="Filter by the user who generated the leads"
             >
               <option value="">All users ({owners.reduce((s, o) => s + o.count, 0)})</option>
@@ -692,8 +692,8 @@ export default function LeadOSView({ session }: { session: Session }) {
               onClick={() => toggleContacted(k)}
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 flags[k]
-                  ? "border-emerald-400/40 bg-emerald-400/15 text-white"
-                  : "border-navy-700/60 bg-navy-900/60 text-slate-300 hover:text-white"
+                  ? "border-emerald-400/40 bg-emerald-400/15 text-ink"
+                  : "border-navy-700/60 bg-navy-900/60 text-slate-600 hover:text-ink"
               }`}
             >
               {label}
@@ -712,8 +712,8 @@ export default function LeadOSView({ session }: { session: Session }) {
               onClick={() => toggle(k)}
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 flags[k]
-                  ? "border-accent-cyan/40 bg-accent-cyan/15 text-white"
-                  : "border-navy-700/60 bg-navy-900/60 text-slate-300 hover:text-white"
+                  ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
+                  : "border-navy-700/60 bg-navy-900/60 text-slate-600 hover:text-ink"
               }`}
             >
               {label}
@@ -732,7 +732,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("list")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "list" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+              view === "list" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             <LayoutGrid size={15} /> List
@@ -741,7 +741,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("board")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "board" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+              view === "board" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             <Columns3 size={15} /> Board
@@ -750,7 +750,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("sent")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "sent" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
+              view === "sent" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             <Mail size={15} /> Sent
@@ -761,7 +761,7 @@ export default function LeadOSView({ session }: { session: Session }) {
       {/* Lead list */}
       {view === "sent" ? (
         sentLoading ? (
-          <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+          <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
             <Loader2 size={16} className="animate-spin" /> Loading sent emails…
           </div>
         ) : !sentEmails || sentEmails.length === 0 ? (
@@ -771,8 +771,8 @@ export default function LeadOSView({ session }: { session: Session }) {
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="rounded-lg border border-navy-700/40 bg-navy-900/30 p-3 text-xs text-slate-400">
-              These went out via Resend / SMTP — <span className="text-slate-300">not your Gmail</span>,
+            <div className="rounded-lg border border-navy-700/40 bg-navy-900/30 p-3 text-xs text-slate-500">
+              These went out via Resend / SMTP — <span className="text-slate-600">not your Gmail</span>,
               so they won&apos;t appear in Gmail&apos;s Sent folder. Check your Resend dashboard for
               delivery status.
             </div>
@@ -790,14 +790,14 @@ export default function LeadOSView({ session }: { session: Session }) {
                 <tbody>
                   {sentEmails.map((e, i) => (
                     <tr key={i} className="border-t border-navy-700/30">
-                      <td className="px-4 py-2.5 text-white">{e.businessName || "—"}</td>
-                      <td className="px-4 py-2.5 text-slate-300">{e.to}</td>
-                      <td className="px-4 py-2.5 text-slate-400">{e.subject}</td>
-                      <td className="px-4 py-2.5 text-slate-400">
+                      <td className="px-4 py-2.5 text-ink">{e.businessName || "—"}</td>
+                      <td className="px-4 py-2.5 text-slate-600">{e.to}</td>
+                      <td className="px-4 py-2.5 text-slate-500">{e.subject}</td>
+                      <td className="px-4 py-2.5 text-slate-500">
                         {e.at ? new Date(e.at).toLocaleString() : "—"}
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] uppercase text-slate-400">
+                        <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] uppercase text-slate-500">
                           {e.transport || "resend"}
                         </span>
                       </td>
@@ -809,7 +809,7 @@ export default function LeadOSView({ session }: { session: Session }) {
           </div>
         )
       ) : loading ? (
-        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
+        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
           <Loader2 size={16} className="animate-spin" /> Loading leads…
         </div>
       ) : leads.length === 0 ? (
@@ -829,16 +829,16 @@ export default function LeadOSView({ session }: { session: Session }) {
                   <div className="min-w-0">
                     <Link
                       href={`/admin/leados/${encodeURIComponent(l.leadKey)}`}
-                      className="flex items-center gap-1.5 truncate font-display text-lg font-bold text-white hover:text-accent-cyan"
+                      className="flex items-center gap-1.5 truncate font-display text-lg font-bold text-ink hover:text-accent-cyan"
                     >
                       <span className="truncate">{l.businessName}</span>
                       <ExternalLink size={13} className="shrink-0 text-slate-500" />
                     </Link>
-                    <div className="mt-1 truncate text-xs text-slate-400">
+                    <div className="mt-1 truncate text-xs text-slate-500">
                       {[l.businessCategory, l.city, l.country].filter(Boolean).join(" · ") || "—"}
                     </div>
                     {l.website ? (
-                      <a href={l.website} target="_blank" rel="noreferrer" className="mt-1 block truncate text-xs text-accent-glow hover:text-white">
+                      <a href={l.website} target="_blank" rel="noreferrer" className="mt-1 block truncate text-xs text-accent-glow hover:text-ink">
                         {l.domain || l.website}
                       </a>
                     ) : (
@@ -852,7 +852,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                     <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize ${PRIORITY_TONE[s?.priority] || PRIORITY_TONE.ignore}`}>
                       {s?.priority || "unscored"}
                     </span>
-                    <div className="mt-2 font-display text-2xl font-bold text-white">{s?.overall ?? "—"}</div>
+                    <div className="mt-2 font-display text-2xl font-bold text-ink">{s?.overall ?? "—"}</div>
                   </div>
                 </div>
 
@@ -882,7 +882,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {a?.issues?.length > 0 && (
                   <div className="mt-4 space-y-1">
                     {a.issues.slice(0, 3).map((i: string) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                      <div key={i} className="flex items-start gap-2 text-xs text-slate-500">
                         <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />
                         {i}
                       </div>
@@ -893,7 +893,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {l.opportunities?.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {l.opportunities.slice(0, 4).map((o: AnyDoc) => (
-                      <span key={o.service} className="rounded-full border border-navy-700/60 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200">
+                      <span key={o.service} className="rounded-full border border-navy-700/60 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-700">
                         {o.service} · {o.confidence}%
                       </span>
                     ))}
@@ -942,7 +942,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                   <select
                     value={l.stage}
                     onChange={(e) => act(`s-${l.leadKey}`, { action: "set-stage", leadKey: l.leadKey, stage: e.target.value }, "Stage updated")}
-                    className="rounded-lg border border-navy-700/70 bg-navy-950/70 px-2.5 py-1.5 text-xs text-white"
+                    className="rounded-lg border border-navy-700/70 bg-navy-950/70 px-2.5 py-1.5 text-xs text-ink"
                   >
                     {PIPELINE_STAGES.map((st) => (
                       <option key={st} value={st}>{STAGE_LABELS[st]}</option>
@@ -951,14 +951,14 @@ export default function LeadOSView({ session }: { session: Session }) {
                   <button
                     type="button"
                     onClick={() => setSelected(selected?.leadKey === l.leadKey ? null : l)}
-                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200"
+                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700"
                   >
                     {selected?.leadKey === l.leadKey ? "Hide" : "Details"}
                   </button>
                 </div>
 
                 {selected?.leadKey === l.leadKey && (
-                  <div className="mt-4 space-y-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-4 text-xs text-slate-300">
+                  <div className="mt-4 space-y-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-4 text-xs text-slate-600">
                     <div className="grid gap-2 sm:grid-cols-2">
                       <div><span className="text-slate-500">Email:</span> {l.email || "—"}</div>
                       <div><span className="text-slate-500">Phone:</span> {l.phone || "—"}</div>
@@ -1143,11 +1143,11 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-violet-300">
               <FileText size={14} /> AI Business Audit
-              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
+              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
                 {a.source && a.source !== "rules" ? "AI-written" : "rules-based"}
               </span>
             </div>
-            <h2 className="mt-1 truncate font-display text-xl font-bold text-white">{lead.businessName}</h2>
+            <h2 className="mt-1 truncate font-display text-xl font-bold text-ink">{lead.businessName}</h2>
             <p className="mt-1 text-sm text-accent-glow">{a.headline}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -1155,7 +1155,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
               href={pdfHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
               title="Download the audit as a PDF"
             >
               <FileText size={13} /> PDF
@@ -1163,7 +1163,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <button
               type="button"
               onClick={download}
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
               title="Download a self-contained HTML report"
             >
               <Download size={13} /> HTML
@@ -1171,7 +1171,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-200 hover:border-rose-400/50 hover:text-rose-300"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-700 hover:border-rose-400/50 hover:text-rose-300"
             >
               <X size={16} />
             </button>
@@ -1180,11 +1180,11 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
 
         <div className="max-h-[70vh] space-y-5 overflow-y-auto p-6 text-sm">
           <div className="flex flex-wrap gap-3 text-xs">
-            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-300">
-              Website score <span className="text-white">{a.websiteScore}/100</span>
+            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-600">
+              Website score <span className="text-ink">{a.websiteScore}/100</span>
             </span>
-            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-300 capitalize">
-              Priority <span className="text-white">{a.priority}</span>
+            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-600 capitalize">
+              Priority <span className="text-ink">{a.priority}</span>
             </span>
           </div>
 
@@ -1200,7 +1200,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
                     readOnly
                     value={shareUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="min-w-0 flex-1 rounded-lg border border-navy-700/70 bg-navy-950/60 px-3 py-2 text-xs text-slate-200 outline-none"
+                    className="min-w-0 flex-1 rounded-lg border border-navy-700/70 bg-navy-950/60 px-3 py-2 text-xs text-slate-700 outline-none"
                   />
                   <button
                     type="button"
@@ -1213,7 +1213,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
                     href={shareUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-navy-700/70 bg-navy-800/50 px-3 py-2 text-xs text-slate-200 hover:border-accent-cyan"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-navy-700/70 bg-navy-800/50 px-3 py-2 text-xs text-slate-700 hover:border-accent-cyan"
                   >
                     <ExternalLink size={12} /> Open
                   </a>
@@ -1232,7 +1232,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Create an unlisted public link to send this audit to the prospect.
                 </p>
                 <button
@@ -1249,18 +1249,18 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
           </div>
 
           <div>
-            <h3 className="mb-1 font-semibold text-white">Executive Summary</h3>
-            <p className="text-slate-300">{a.executiveSummary}</p>
+            <h3 className="mb-1 font-semibold text-ink">Executive Summary</h3>
+            <p className="text-slate-600">{a.executiveSummary}</p>
           </div>
 
           {(a.sections || []).map((s: AnyDoc) => (
             <div key={s.title} className="border-t border-navy-700/40 pt-4">
-              <h3 className="mb-1 font-semibold text-white">{s.title}</h3>
-              {s.summary && <p className="text-slate-300">{s.summary}</p>}
+              <h3 className="mb-1 font-semibold text-ink">{s.title}</h3>
+              {s.summary && <p className="text-slate-600">{s.summary}</p>}
               {s.points?.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {s.points.map((p: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-slate-400">
+                    <li key={i} className="flex items-start gap-2 text-slate-500">
                       <Check size={13} className="mt-0.5 shrink-0 text-accent-cyan" />
                       {p}
                     </li>
@@ -1271,14 +1271,14 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
           ))}
 
           <div className="rounded-xl border border-accent-cyan/25 bg-accent-cyan/5 p-4">
-            <h3 className="mb-1 font-semibold text-white">Estimated ROI</h3>
-            <p className="text-slate-300">{a.estimatedRoi}</p>
+            <h3 className="mb-1 font-semibold text-ink">Estimated ROI</h3>
+            <p className="text-slate-600">{a.estimatedRoi}</p>
           </div>
 
           {a.nextSteps?.length > 0 && (
             <div>
-              <h3 className="mb-1 font-semibold text-white">Recommended Next Steps</h3>
-              <ol className="ml-4 list-decimal space-y-1 text-slate-300">
+              <h3 className="mb-1 font-semibold text-ink">Recommended Next Steps</h3>
+              <ol className="ml-4 list-decimal space-y-1 text-slate-600">
                 {a.nextSteps.map((n: string, i: number) => (
                   <li key={i}>{n}</li>
                 ))}
@@ -1353,11 +1353,11 @@ function LeadKanban({
             }`}
           >
             <div className="flex items-center justify-between border-b border-navy-700/40 px-3 py-2.5">
-              <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
                 <span className={`h-2.5 w-2.5 rounded-full ${STAGE_TONE[s] || "bg-slate-400"}`} />
                 {STAGE_LABELS[s]}
               </span>
-              <span className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-400">
+              <span className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-500">
                 {items.length}
               </span>
             </div>
@@ -1387,11 +1387,11 @@ function LeadKanban({
                     <div className="flex items-start justify-between gap-2">
                       <Link
                         href={`/admin/leados/${encodeURIComponent(l.leadKey)}`}
-                        className="line-clamp-2 text-sm font-semibold text-white hover:text-accent-cyan"
+                        className="line-clamp-2 text-sm font-semibold text-ink hover:text-accent-cyan"
                       >
                         {l.businessName}
                       </Link>
-                      <span className="shrink-0 font-display text-sm font-bold text-white">
+                      <span className="shrink-0 font-display text-sm font-bold text-ink">
                         {l.scores?.overall ?? "—"}
                       </span>
                     </div>
@@ -1450,7 +1450,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
           /* clipboard blocked — ignore */
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
     >
       {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
       {copied ? "Copied" : label}
@@ -1476,7 +1476,7 @@ function EmailEditor({
   return (
     <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold text-white">
+        <div className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Mail size={14} className="text-accent-cyan" /> {title}
         </div>
         <div className="flex items-center gap-2">
@@ -1496,13 +1496,13 @@ function EmailEditor({
         value={value.subject}
         onChange={(e) => onChange({ ...value, subject: e.target.value })}
         placeholder="Subject"
-        className="mb-2 w-full rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+        className="mb-2 w-full rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
       />
       <textarea
         value={value.body}
         onChange={(e) => onChange({ ...value, body: e.target.value })}
         rows={7}
-        className="w-full resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+        className="w-full resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
       />
     </div>
   );
@@ -1524,7 +1524,7 @@ function TextBlock({
   return (
     <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold text-white">
+        <div className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Icon size={14} className="text-accent-cyan" /> {title}
         </div>
         <div className="flex items-center gap-2">
@@ -1536,7 +1536,7 @@ function TextBlock({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
-        className="w-full resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+        className="w-full resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
       />
     </div>
   );
@@ -1626,11 +1626,11 @@ export function OutreachModal({
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-300">
               <Send size={14} /> AI Outreach kit
-              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
+              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
                 {o.source && o.source !== "rules" ? "AI-written" : "rules-based"}
               </span>
             </div>
-            <h2 className="mt-1 truncate font-display text-xl font-bold text-white">{lead.businessName}</h2>
+            <h2 className="mt-1 truncate font-display text-xl font-bold text-ink">{lead.businessName}</h2>
             <p className="mt-1 text-xs text-slate-500">
               Every message references this lead&apos;s audit findings.
             </p>
@@ -1640,7 +1640,7 @@ export function OutreachModal({
               type="button"
               onClick={onRegenerate}
               disabled={regenerating}
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
             >
               {regenerating ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
               Regenerate
@@ -1648,7 +1648,7 @@ export function OutreachModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-200 hover:border-rose-400/50 hover:text-rose-300"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-700 hover:border-rose-400/50 hover:text-rose-300"
             >
               <X size={16} />
             </button>
@@ -1658,13 +1658,13 @@ export function OutreachModal({
         <div className="max-h-[72vh] space-y-4 overflow-y-auto p-5">
           {/* Recipient */}
           <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
-            <label className="grid gap-1 text-xs text-slate-400">
+            <label className="grid gap-1 text-xs text-slate-500">
               Recipient email {lead.email ? "" : "(none on file — add one to send)"}
               <input
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
                 placeholder="owner@theirdomain.com"
-                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan"
+                className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
             <p className="mt-2 text-[11px] text-slate-500">
@@ -1715,7 +1715,7 @@ export function OutreachModal({
                   href={linkedinUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
                 >
                   <Linkedin size={12} /> Open
                 </a>

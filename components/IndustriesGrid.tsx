@@ -41,7 +41,7 @@ export default function IndustriesGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
-            className="section-title mt-5 text-white"
+            className="section-title mt-5 text-ink"
           >
             Built for your <span className="gradient-text">industry.</span>
           </motion.h2>
@@ -50,7 +50,7 @@ export default function IndustriesGrid() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-300"
+            className="mt-5 text-lg text-slate-600"
           >
             Every sector has its own workflows and compliance obligations. We
             build around them instead of forcing a generic product to fit.
@@ -72,7 +72,7 @@ export default function IndustriesGrid() {
                 href={`/industries/${ind.slug}`}
                 className="group flex h-full items-center justify-between gap-2 rounded-2xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-6 transition-colors hover:border-accent-electric"
               >
-                <span className="font-display text-base font-bold text-white">
+                <span className="font-display text-base font-bold text-ink">
                   {ind.name}
                 </span>
                 <ArrowUpRight

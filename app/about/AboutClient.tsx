@@ -120,7 +120,7 @@ export default function AboutClient() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="font-display text-5xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl"
+            className="font-display text-5xl font-extrabold leading-[1.1] tracking-tight text-ink sm:text-6xl lg:text-7xl"
           >
             The Biztreck Way
           </motion.h1>
@@ -128,7 +128,7 @@ export default function AboutClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-400"
+            className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-500"
           >
             Get a glimpse into who we are, what we do, our values and the
             experiences we&apos;ve had along the way
@@ -151,7 +151,7 @@ export default function AboutClient() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="section-title text-center text-white"
+              className="section-title text-center text-ink"
             >
               Who we are
             </motion.h2>
@@ -160,7 +160,7 @@ export default function AboutClient() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="mt-6 text-center text-lg leading-relaxed text-slate-300"
+              className="mt-6 text-center text-lg leading-relaxed text-slate-600"
             >
               We are dreamers, innovators, challengers and fun lovers who happen
               to design and engineer world-class technology solutions. Our magic
@@ -181,8 +181,8 @@ export default function AboutClient() {
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
-            <h2 className="section-title text-white">Our values</h2>
-            <p className="mt-4 text-slate-400">
+            <h2 className="section-title text-ink">Our values</h2>
+            <p className="mt-4 text-slate-500">
               Our values are part of everything we build here
             </p>
           </motion.div>
@@ -209,12 +209,12 @@ export default function AboutClient() {
                     transition={{ duration: 0.6 }}
                     className={`relative mb-5 grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${v.accent}`}
                   >
-                    <Icon className="text-white" size={22} />
+                    <Icon className="text-ink" size={22} />
                   </motion.div>
-                  <h3 className="relative font-display text-xl font-bold text-white">
+                  <h3 className="relative font-display text-xl font-bold text-ink">
                     {v.title}
                   </h3>
-                  <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
+                  <p className="relative mt-3 text-sm leading-relaxed text-slate-500">
                     {v.description}
                   </p>
                 </motion.div>
@@ -234,8 +234,8 @@ export default function AboutClient() {
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
-            <h2 className="section-title text-white">Our Journey</h2>
-            <p className="mx-auto mt-4 max-w-3xl text-slate-400">
+            <h2 className="section-title text-ink">Our Journey</h2>
+            <p className="mx-auto mt-4 max-w-3xl text-slate-500">
               Our journey began with a desire to build products that matter.
               Since our beginning, we&apos;ve enabled Startups towards Success,
               Medium-Enterprises towards Scale, and Corporate Giants towards
@@ -271,7 +271,7 @@ export default function AboutClient() {
                     whileHover={{ scale: 1.1, rotate: 360 }}
                     className="absolute left-8 top-0 z-10 grid h-16 w-16 place-items-center rounded-full border-4 border-navy-950 bg-gradient-to-br from-blue-400 to-indigo-500 shadow-lg sm:left-1/2 sm:-translate-x-1/2"
                   >
-                    <Calendar className="text-white" size={24} />
+                    <Calendar className="text-ink" size={24} />
                   </motion.div>
                   <motion.div
                     whileHover={{ scale: 1.03, y: -5 }}
@@ -287,10 +287,10 @@ export default function AboutClient() {
                       <TrendingUp size={14} />
                       {j.year}
                     </motion.div>
-                    <h3 className="mt-3 font-display text-2xl font-bold text-white">
+                    <h3 className="mt-3 font-display text-2xl font-bold text-ink">
                       {j.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                    <p className="mt-3 text-sm leading-relaxed text-slate-500">
                       {j.description}
                     </p>
                   </motion.div>
@@ -341,7 +341,7 @@ export default function AboutClient() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="section-title text-white"
+                className="section-title text-ink"
               >
                 Let&apos;s start something{" "}
                 <span className="gradient-text">meaningful together</span>
@@ -351,7 +351,7 @@ export default function AboutClient() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mx-auto mt-4 max-w-2xl text-slate-400"
+                className="mx-auto mt-4 max-w-2xl text-slate-500"
               >
                 Whether you&apos;re a startup with a bold idea or an enterprise
                 looking to scale — we&apos;d love to hear from you.

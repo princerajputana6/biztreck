@@ -57,7 +57,7 @@ export default function BackgroundFX() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at top, rgba(13,26,58,0.0) 0%, rgba(3,7,17,0.85) 70%)",
+              "radial-gradient(ellipse at top, rgba(244,248,255,0) 0%, rgba(214,230,252,0.55) 72%)",
           }}
         />
       </div>

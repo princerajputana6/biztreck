@@ -166,7 +166,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${sora.variable}`}>
-      <body className="bg-navy-950 text-slate-100 antialiased">
+      <body className="bg-navy-950 text-ink antialiased">
         {children}
         <WebMCP />
         <script

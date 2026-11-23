@@ -98,11 +98,11 @@ export default function BusinessAuditPage() {
       <section className="relative z-10 container-px pt-32 sm:pt-40">
         <div className="mx-auto max-w-3xl text-center">
           <div className="eyebrow mx-auto">Free business audit</div>
-          <h1 className="section-title mt-5 text-white">
+          <h1 className="section-title mt-5 text-ink">
             Discover what&apos;s{" "}
             <span className="gradient-text">holding your business back</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
             A practical review of your website, operations and automation
             potential — with a phased roadmap showing what to fix first and what
             it would take. No obligation.
@@ -116,10 +116,10 @@ export default function BusinessAuditPage() {
               className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-7"
             >
               <Check className="text-accent-cyan" size={22} />
-              <h2 className="mt-4 font-display text-lg font-bold text-white">
+              <h2 className="mt-4 font-display text-lg font-bold text-ink">
                 {d.title}
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 {d.desc}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function BusinessAuditPage() {
 
         <div className="mt-20 grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
-            <h2 className="font-display text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-ink">
               Frequently asked
             </h2>
             <div className="mt-8 space-y-4">
@@ -137,18 +137,18 @@ export default function BusinessAuditPage() {
                   key={f.q}
                   className="group rounded-2xl border border-navy-700/40 bg-navy-900/40 p-6"
                 >
-                  <summary className="cursor-pointer list-none font-display text-base font-semibold text-white">
+                  <summary className="cursor-pointer list-none font-display text-base font-semibold text-ink">
                     {f.q}
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
                     {f.a}
                   </p>
                 </details>
               ))}
             </div>
-            <p className="mt-8 text-sm text-slate-400">
+            <p className="mt-8 text-sm text-slate-500">
               Would rather talk it through first?{" "}
-              <Link href="/book-strategy-call" className="text-accent-glow hover:text-white">
+              <Link href="/book-strategy-call" className="text-accent-glow hover:text-ink">
                 Book a strategy call
               </Link>
               .
@@ -157,10 +157,10 @@ export default function BusinessAuditPage() {
 
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-8 sm:p-10">
-              <h2 className="font-display text-2xl font-bold text-white">
+              <h2 className="font-display text-2xl font-bold text-ink">
                 Request your free audit
               </h2>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-500">
                 We&apos;ll send it back within three to five business days.
               </p>
               <div className="mt-8">

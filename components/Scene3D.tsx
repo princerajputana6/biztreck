@@ -38,7 +38,7 @@ export default function Scene3D() {
 
     /* Scene + camera */
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x030711, 8, 28);
+    scene.fog = new THREE.Fog(0xf4f8ff, 8, 28);
 
     const camera = new THREE.PerspectiveCamera(
       55,
@@ -59,8 +59,8 @@ export default function Scene3D() {
 
     /* Two-tone wireframe via vertex colors so the mesh fades to navy at distance */
     const colors = new Float32Array(geometry.attributes.position.count * 3);
-    const colorNear = new THREE.Color(0x7fa2ff);  // accent-glow
-    const colorFar = new THREE.Color(0x1a3a8c);   // navy-700
+    const colorNear = new THREE.Color(0x1d4ed8);  // deep ocean electric
+    const colorFar = new THREE.Color(0xaccbf2);   // light ocean — fades into white
     const positions = geometry.attributes.position;
     for (let i = 0; i < positions.count; i++) {
       const z = positions.getZ(i); // since plane was rotated, z is depth
@@ -76,7 +76,7 @@ export default function Scene3D() {
       wireframe: true,
       vertexColors: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.42,
     });
     const terrain = new THREE.Mesh(geometry, wireMaterial);
     terrain.position.y = -2.2;
@@ -96,11 +96,11 @@ export default function Scene3D() {
     const starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
     const starMat = new THREE.PointsMaterial({
-      color: 0x7fa2ff,
-      size: 0.06,
+      color: 0x3a63c4,
+      size: 0.05,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.4,
       depthWrite: false,
     });
     const stars = new THREE.Points(starGeo, starMat);

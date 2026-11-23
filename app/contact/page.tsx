@@ -70,10 +70,10 @@ export default function ContactPage() {
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <div className="eyebrow">Get in touch</div>
-            <h1 className="section-title mt-5 text-white">
+            <h1 className="section-title mt-5 text-ink">
               Talk to a <span className="gradient-text">real engineer</span>
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-slate-300">
+            <p className="mt-5 text-lg leading-relaxed text-slate-600">
               No call centre, no qualification gauntlet. Tell us what you&apos;re
               trying to solve and you&apos;ll hear back from someone who can
               actually scope it.
@@ -94,8 +94,8 @@ export default function ContactPage() {
                       <Icon size={18} className="text-accent-glow" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-white">{c.label}</div>
-                      <div className="truncate text-sm text-slate-300">{c.value}</div>
+                      <div className="text-sm font-semibold text-ink">{c.label}</div>
+                      <div className="truncate text-sm text-slate-600">{c.value}</div>
                       <div className="mt-0.5 text-xs text-slate-500">{c.hint}</div>
                     </div>
                   </a>
@@ -106,16 +106,16 @@ export default function ContactPage() {
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5">
                 <Clock size={18} className="text-accent-cyan" />
-                <div className="mt-2 text-sm font-semibold text-white">Business hours</div>
-                <p className="mt-1 text-sm text-slate-300">
+                <div className="mt-2 text-sm font-semibold text-ink">Business hours</div>
+                <p className="mt-1 text-sm text-slate-600">
                   Mon–Fri, 09:00–19:00 IST. Overlap hours arranged for US, UK and
                   AU clients.
                 </p>
               </div>
               <div className="rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5">
                 <Timer size={18} className="text-accent-cyan" />
-                <div className="mt-2 text-sm font-semibold text-white">Response time</div>
-                <p className="mt-1 text-sm text-slate-300">
+                <div className="mt-2 text-sm font-semibold text-ink">Response time</div>
+                <p className="mt-1 text-sm text-slate-600">
                   Within one business day, usually much sooner.
                 </p>
               </div>
@@ -123,21 +123,21 @@ export default function ContactPage() {
 
             <div className="mt-4 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5">
               <MapPin size={18} className="text-accent-cyan" />
-              <div className="mt-2 text-sm font-semibold text-white">Head office</div>
-              <p className="mt-1 text-sm text-slate-300">{SITE.address}</p>
+              <div className="mt-2 text-sm font-semibold text-ink">Head office</div>
+              <p className="mt-1 text-sm text-slate-600">{SITE.address}</p>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE.address)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-block text-sm text-accent-glow hover:text-white"
+                className="mt-2 inline-block text-sm text-accent-glow hover:text-ink"
               >
                 View on Google Maps →
               </a>
             </div>
 
-            <p className="mt-8 text-sm text-slate-400">
+            <p className="mt-8 text-sm text-slate-500">
               Prefer a scheduled conversation?{" "}
-              <Link href="/book-strategy-call" className="text-accent-glow hover:text-white">
+              <Link href="/book-strategy-call" className="text-accent-glow hover:text-ink">
                 Book a strategy call
               </Link>
               .
@@ -146,10 +146,10 @@ export default function ContactPage() {
 
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-8 sm:p-10">
-              <h2 className="font-display text-2xl font-bold text-white">
+              <h2 className="font-display text-2xl font-bold text-ink">
                 Send us a message
               </h2>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-500">
                 Five fields. We reply within one business day.
               </p>
               <div className="mt-8">

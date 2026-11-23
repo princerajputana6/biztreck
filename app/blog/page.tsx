@@ -61,11 +61,11 @@ export default async function BlogIndex() {
       <section className="relative z-10 pt-36 pb-12 sm:pt-40">
         <div className="container-px">
           <div className="eyebrow">Insights</div>
-          <h1 className="mt-5 font-display text-5xl font-extrabold leading-tight text-white sm:text-6xl">
+          <h1 className="mt-5 font-display text-5xl font-extrabold leading-tight text-ink sm:text-6xl">
             Field notes from the{" "}
             <span className="gradient-text">Biztreck team.</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-slate-300">
+          <p className="mt-5 max-w-2xl text-lg text-slate-600">
             Practical playbooks on building, revamping, ranking and scaling
             digital products — written by the people doing the work.
           </p>
@@ -76,7 +76,7 @@ export default async function BlogIndex() {
         <div className="container-px">
           {blogs.length === 0 ? (
             <div className="glass rounded-3xl p-10 text-center">
-              <p className="text-lg text-slate-300">
+              <p className="text-lg text-slate-600">
                 No posts published yet. Check back soon.
               </p>
             </div>
@@ -104,11 +104,11 @@ export default async function BlogIndex() {
                     <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-navy-300">
                       <Tag size={12} /> {featured.category} · Featured
                     </div>
-                    <h2 className="mt-4 font-display text-3xl font-bold text-white sm:text-4xl">
+                    <h2 className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">
                       {featured.title}
                     </h2>
-                    <p className="mt-4 text-slate-300">{featured.excerpt}</p>
-                    <div className="mt-6 flex items-center gap-4 text-sm text-slate-400">
+                    <p className="mt-4 text-slate-600">{featured.excerpt}</p>
+                    <div className="mt-6 flex items-center gap-4 text-sm text-slate-500">
                       <span className="flex items-center gap-1.5">
                         <Clock size={14} /> {featured.readMinutes || 6} min read
                       </span>
@@ -121,7 +121,7 @@ export default async function BlogIndex() {
                         })}
                       </span>
                     </div>
-                    <span className="mt-8 inline-flex items-center gap-2 self-start rounded-full bg-navy-800/60 px-5 py-2.5 text-sm font-semibold text-white transition-all group-hover:bg-accent-electric">
+                    <span className="mt-8 inline-flex items-center gap-2 self-start rounded-full bg-navy-800/60 px-5 py-2.5 text-sm font-semibold text-ink transition-all group-hover:bg-accent-electric group-hover:text-white">
                       Read article <ArrowUpRight size={14} />
                     </span>
                   </div>
@@ -152,10 +152,10 @@ export default async function BlogIndex() {
                         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-navy-300">
                           {b.category}
                         </div>
-                        <h3 className="mt-3 font-display text-xl font-semibold text-white group-hover:text-accent-glow">
+                        <h3 className="mt-3 font-display text-xl font-semibold text-ink group-hover:text-accent-glow">
                           {b.title}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm text-slate-400">
+                        <p className="mt-2 line-clamp-2 text-sm text-slate-500">
                           {b.excerpt}
                         </p>
                         <div className="mt-5 flex items-center gap-3 text-xs text-slate-500">
