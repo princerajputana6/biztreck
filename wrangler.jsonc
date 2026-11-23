@@ -5,6 +5,17 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  // Cloudflare D1 — holds a migrated copy of the MongoDB 'biztreck' data
+  // (JSON-document model; see docs/D1-MIGRATION.md). Bound as env.biztreck so
+  // the data layer can be cut over from Mongo to D1. The app still reads/writes
+  // MongoDB today; this binding is wired and ready, nothing uses it yet.
+  "d1_databases": [
+    {
+      "binding": "biztreck",
+      "database_name": "biztreck",
+      "database_id": "31af1ed8-9a68-43bd-9d7b-2d15621d46ce"
+    }
+  ],
   "observability": { "enabled": true },
   // Vercel crons (vercel.json) were /api/cron/generate-blogs (30 0 * * *) and
   // /api/cron/leados-maintenance (0 2 * * *). They are left EMPTY here because
