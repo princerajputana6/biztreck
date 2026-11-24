@@ -52,7 +52,7 @@ export default function IndustriesIndex() {
             Software built for{" "}
             <span className="gradient-text">how your industry works</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Every sector has its own workflows, compliance obligations and
             bottlenecks. We build around them rather than forcing a generic
             product to fit — for growing businesses across the US, UK, Canada,
@@ -82,7 +82,7 @@ export default function IndustriesIndex() {
                   className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                 />
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">
                 {i.blurb}
               </p>
             </Link>
@@ -93,7 +93,7 @@ export default function IndustriesIndex() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Don&apos;t see your industry?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             The underlying problems — manual handoffs, disconnected systems, no
             reporting — are remarkably consistent. Tell us how you operate and
             we&apos;ll tell you honestly whether we can help.

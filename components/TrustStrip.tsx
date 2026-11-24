@@ -19,7 +19,7 @@ export default function TrustStrip() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-center text-xs uppercase tracking-[0.18em] text-slate-500"
+          className="text-center text-xs uppercase tracking-[0.18em] text-slate-400"
         >
           Trusted technologies
         </motion.p>
@@ -33,7 +33,7 @@ export default function TrustStrip() {
           {tech.map((t) => (
             <span
               key={t}
-              className="font-display text-lg font-bold text-slate-500 transition-colors hover:text-ink sm:text-xl"
+              className="font-display text-lg font-bold text-slate-400 transition-colors hover:text-ink sm:text-xl"
             >
               {t}
             </span>

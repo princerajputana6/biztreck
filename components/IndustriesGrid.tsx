@@ -50,7 +50,7 @@ export default function IndustriesGrid() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-600"
+            className="mt-5 text-lg text-slate-300"
           >
             Every sector has its own workflows and compliance obligations. We
             build around them instead of forcing a generic product to fit.
@@ -77,7 +77,7 @@ export default function IndustriesGrid() {
                 </span>
                 <ArrowUpRight
                   size={16}
-                  className="shrink-0 text-slate-600 transition-colors group-hover:text-accent-cyan"
+                  className="shrink-0 text-slate-300 transition-colors group-hover:text-accent-cyan"
                 />
               </Link>
             </motion.div>

@@ -100,7 +100,7 @@ export default async function BlogPage({
         <div className="container-px mx-auto max-w-4xl">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-ink"
+            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-ink"
           >
             <ArrowLeft size={14} /> All posts
           </Link>
@@ -127,7 +127,7 @@ export default async function BlogPage({
             {blog.title}
           </h1>
 
-          <p className="mt-5 text-lg text-slate-600">{blog.excerpt}</p>
+          <p className="mt-5 text-lg text-slate-300">{blog.excerpt}</p>
 
           {blog.coverImage && (
             <div className="relative mt-10 overflow-hidden rounded-3xl border border-navy-700/40">
@@ -153,7 +153,7 @@ export default async function BlogPage({
               {blog.tags.map((t: string) => (
                 <span
                   key={t}
-                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-600"
+                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-300"
                 >
                   #{t}
                 </span>
@@ -169,7 +169,7 @@ export default async function BlogPage({
               <div className="font-semibold text-ink">
                 {blog.author || "Biztreck Editorial"}
               </div>
-              <div className="text-sm text-slate-500">Biztreck Solutions team</div>
+              <div className="text-sm text-slate-400">Biztreck Solutions team</div>
             </div>
           </div>
 

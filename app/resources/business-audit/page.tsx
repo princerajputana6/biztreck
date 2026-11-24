@@ -102,7 +102,7 @@ export default function BusinessAuditPage() {
             Discover what&apos;s{" "}
             <span className="gradient-text">holding your business back</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             A practical review of your website, operations and automation
             potential — with a phased roadmap showing what to fix first and what
             it would take. No obligation.
@@ -119,7 +119,7 @@ export default function BusinessAuditPage() {
               <h2 className="mt-4 font-display text-lg font-bold text-ink">
                 {d.title}
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">
                 {d.desc}
               </p>
             </div>
@@ -140,13 +140,13 @@ export default function BusinessAuditPage() {
                   <summary className="cursor-pointer list-none font-display text-base font-semibold text-ink">
                     {f.q}
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-300">
                     {f.a}
                   </p>
                 </details>
               ))}
             </div>
-            <p className="mt-8 text-sm text-slate-500">
+            <p className="mt-8 text-sm text-slate-400">
               Would rather talk it through first?{" "}
               <Link href="/book-strategy-call" className="text-accent-glow hover:text-ink">
                 Book a strategy call
@@ -160,7 +160,7 @@ export default function BusinessAuditPage() {
               <h2 className="font-display text-2xl font-bold text-ink">
                 Request your free audit
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-400">
                 We&apos;ll send it back within three to five business days.
               </p>
               <div className="mt-8">

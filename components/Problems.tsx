@@ -53,7 +53,7 @@ export default function Problems() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-600"
+            className="mt-5 text-lg text-slate-300"
           >
             Most growing businesses hit the same set of bottlenecks. Pick the one
             that costs you the most and we&apos;ll show you what fixing it looks
@@ -75,12 +75,12 @@ export default function Problems() {
                 href={`/solutions/${p.slug}`}
                 className="group flex h-full items-start justify-between gap-2 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5 transition-colors hover:border-accent-electric"
               >
-                <span className="text-sm font-medium leading-relaxed text-slate-700">
+                <span className="text-sm font-medium leading-relaxed text-slate-200">
                   {p.label}
                 </span>
                 <ArrowUpRight
                   size={16}
-                  className="mt-0.5 shrink-0 text-slate-600 transition-colors group-hover:text-accent-cyan"
+                  className="mt-0.5 shrink-0 text-slate-300 transition-colors group-hover:text-accent-cyan"
                 />
               </Link>
             </motion.div>

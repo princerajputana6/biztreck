@@ -185,7 +185,7 @@ export default function UsersView({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Create team members and control exactly which modules each can access.
         </p>
         <button
@@ -206,7 +206,7 @@ export default function UsersView({
             {editing ? `Edit ${editing}` : "New user"}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               Full name
               <input
                 value={form.name}
@@ -214,7 +214,7 @@ export default function UsersView({
                 className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               Email
               <input
                 type="email"
@@ -225,7 +225,7 @@ export default function UsersView({
               />
             </label>
             {!editing && (
-              <label className="grid gap-1 text-sm text-slate-600">
+              <label className="grid gap-1 text-sm text-slate-300">
                 Temporary password
                 <input
                   type="text"
@@ -236,7 +236,7 @@ export default function UsersView({
                 />
               </label>
             )}
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               Role
               <select
                 value={form.role}
@@ -249,7 +249,7 @@ export default function UsersView({
                 </option>
               </select>
               {ownerFieldsDisabled && (
-                <span className="text-[11px] text-slate-500">Only an owner can grant owner role.</span>
+                <span className="text-[11px] text-slate-400">Only an owner can grant owner role.</span>
               )}
             </label>
           </div>
@@ -257,13 +257,13 @@ export default function UsersView({
           {form.role === "member" && (
             <>
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-slate-500">Quick assign:</span>
+                <span className="text-xs text-slate-400">Quick assign:</span>
                 {PRESETS.map((p) => (
                   <button
                     key={p.name}
                     type="button"
                     onClick={() => applyPreset(p.permissions)}
-                    className="rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1 text-xs text-slate-700 hover:border-accent-cyan"
+                    className="rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1 text-xs text-slate-200 hover:border-accent-cyan"
                   >
                     {p.name}
                   </button>
@@ -289,7 +289,7 @@ export default function UsersView({
                       />
                       <span>
                         <span className="font-medium text-ink">{p.label}</span>
-                        <span className="block text-[11px] text-slate-500">{p.desc}</span>
+                        <span className="block text-[11px] text-slate-400">{p.desc}</span>
                       </span>
                     </label>
                   );
@@ -312,13 +312,13 @@ export default function UsersView({
 
       {/* User list */}
       {loading ? (
-        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
+        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
           <Loader2 size={16} className="animate-spin" /> Loading users…
         </div>
       ) : (
         <div className="space-y-3">
           {users.length === 0 && (
-            <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-8 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-8 text-center text-sm text-slate-400">
               No users yet. The owner (env login) always has full access — add members here.
             </div>
           )}
@@ -339,25 +339,25 @@ export default function UsersView({
                       </span>
                     )}
                     {u.email === me && (
-                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
+                      <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
                         You
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-xs text-slate-500">{u.email}</div>
+                  <div className="mt-0.5 text-xs text-slate-400">{u.email}</div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {u.role === "owner" ? (
-                      <span className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-600">
+                      <span className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-300">
                         All modules
                       </span>
                     ) : u.permissions.length ? (
                       u.permissions.map((p) => (
-                        <span key={p} className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-600">
+                        <span key={p} className="rounded-full bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-300">
                           {PERMISSIONS.find((x) => x.key === p)?.label || p}
                         </span>
                       ))
                     ) : (
-                      <span className="text-[11px] text-slate-600">No modules assigned</span>
+                      <span className="text-[11px] text-slate-300">No modules assigned</span>
                     )}
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export default function UsersView({
                   <button
                     type="button"
                     onClick={() => startEdit(u)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
                   >
                     <Pencil size={12} /> Edit
                   </button>
@@ -373,7 +373,7 @@ export default function UsersView({
                     type="button"
                     onClick={() => resetPassword(u.email)}
                     disabled={busy === `pw-${u.email}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
                   >
                     <KeyRound size={12} /> Password
                   </button>
@@ -382,7 +382,7 @@ export default function UsersView({
                       type="button"
                       onClick={() => toggleActive(u)}
                       disabled={busy === `act-${u.email}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
                     >
                       {busy === `act-${u.email}` ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                       {u.active ? "Deactivate" : "Activate"}

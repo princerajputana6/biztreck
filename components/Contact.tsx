@@ -59,7 +59,7 @@ export default function Contact() {
   };
 
   const fieldBase =
-    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
+    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
 
   return (
     <section id="contact" className="relative z-10 py-28 sm:py-32">
@@ -77,7 +77,7 @@ export default function Contact() {
               Let&apos;s build something{" "}
               <span className="gradient-text">remarkable.</span>
             </motion.h2>
-            <p className="mt-5 text-lg text-slate-600">
+            <p className="mt-5 text-lg text-slate-300">
               Tell us about your project. We&apos;ll get back within 24 hours
               with a free, no-obligation proposal and roadmap.
             </p>
@@ -145,7 +145,7 @@ export default function Contact() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Full name *
                   </label>
                   <input
@@ -157,7 +157,7 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Email *
                   </label>
                   <input
@@ -170,7 +170,7 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Company
                   </label>
                   <input
@@ -181,7 +181,7 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Phone
                   </label>
                   <input
@@ -192,7 +192,7 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Service interested in
                   </label>
                   <select
@@ -206,7 +206,7 @@ export default function Contact() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                     Estimated budget
                   </label>
                   <select
@@ -222,7 +222,7 @@ export default function Contact() {
               </div>
 
               <div className="mt-5">
-                <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">
+                <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
                   Project details *
                 </label>
                 <textarea
@@ -236,7 +236,7 @@ export default function Contact() {
               </div>
 
               <div className="mt-7 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   By submitting you agree to our{" "}
                   <a
                     href="#privacy"

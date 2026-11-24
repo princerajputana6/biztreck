@@ -127,7 +127,7 @@ export default function NewJobClient() {
           </div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-ink"
+            className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-ink"
           >
             <ArrowLeft size={14} /> Dashboard
           </Link>
@@ -139,7 +139,7 @@ export default function NewJobClient() {
         <h1 className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">
           Type a role — get a complete job listing.
         </h1>
-        <p className="mt-2 max-w-2xl text-slate-500">
+        <p className="mt-2 max-w-2xl text-slate-400">
           Generates the full description, responsibilities, requirements,
           benefits, and salary range — all editable.
         </p>
@@ -233,7 +233,7 @@ export default function NewJobClient() {
               >
                 <Sparkles size={28} className="text-accent-glow" />
               </motion.div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-400">
                 Crafting your job description…
               </p>
             </motion.div>
@@ -265,7 +265,7 @@ export default function NewJobClient() {
                   value={job.shortDescription}
                   onChange={(e) => updateField("shortDescription", e.target.value)}
                   rows={2}
-                  className="mt-3 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-600 outline-none"
+                  className="mt-3 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-300 outline-none"
                 />
               </div>
 
@@ -305,7 +305,7 @@ export default function NewJobClient() {
                 <textarea
                   value={job.descriptionMarkdown}
                   onChange={(e) => updateField("descriptionMarkdown", e.target.value)}
-                  className="mt-3 h-72 w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-700 outline-none"
+                  className="mt-3 h-72 w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-200 outline-none"
                 />
               </div>
             </div>
@@ -381,7 +381,7 @@ export default function NewJobClient() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
         {label}
       </div>
       {children}
@@ -420,7 +420,7 @@ function ListEditor({
         <button
           onClick={onAdd}
           type="button"
-          className="inline-flex items-center gap-1 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-700 hover:border-accent-electric"
+          className="inline-flex items-center gap-1 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1 text-xs text-slate-200 hover:border-accent-electric"
         >
           <Plus size={12} /> Add
         </button>

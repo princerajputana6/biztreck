@@ -3,17 +3,18 @@
 @tailwind utilities;
 
 :root {
-  /* Deep-ocean-blue + white light theme */
-  --bg: #f4f8ff;
-  --bg-2: #eaf2ff;
-  --bg-3: #dceafb;
-  --fg: #0a2540;
-  --muted: #425a79;
-  --primary: #1d4ed8;
-  --primary-glow: #2563eb;
-  --ocean-deep: #06306b;
-  --border: rgba(13, 71, 161, 0.14);
-  color-scheme: light;
+  /* Dark theme — near-black + electric blue + lime */
+  --bg: #030407;
+  --bg-2: #070a12;
+  --bg-3: #0b0f1a;
+  --fg: #eef3fc;
+  --muted: #8fa0bd;
+  --primary: #1558cb;
+  --primary-glow: #2f6fe0;
+  --lime: #d4ff24;
+  --ocean-deep: #030407;
+  --border: rgba(21, 88, 203, 0.22);
+  color-scheme: dark;
 }
 
 * {
@@ -33,8 +34,8 @@ body {
 }
 
 ::selection {
-  background: rgba(37, 99, 235, 0.2);
-  color: #06306b;
+  background: rgba(212, 255, 36, 0.3);
+  color: #030407;
 }
 
 ::-webkit-scrollbar {
@@ -42,14 +43,14 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #e3edfd;
+  background: #0b0f1a;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #93b4ec, #2f5ec9);
+  background: linear-gradient(180deg, #1558cb, #2f6fe0);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #2f5ec9, #1d4ed8);
+  background: linear-gradient(180deg, #2f6fe0, #d4ff24);
 }
 
 @layer components {
@@ -60,17 +61,17 @@ body {
   .glass {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.85),
-      rgba(231, 240, 255, 0.7)
+      rgba(255, 255, 255, 0.05),
+      rgba(21, 88, 203, 0.06)
     );
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(37, 99, 235, 0.16);
-    box-shadow: 0 18px 40px -24px rgba(13, 71, 161, 0.4);
+    border: 1px solid rgba(21, 88, 203, 0.18);
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
   }
 
   .gradient-text {
-    background: linear-gradient(120deg, #1d4ed8 0%, #2563eb 40%, #0e7490 100%);
+    background: linear-gradient(120deg, #4a84e6 0%, #1558cb 45%, #6aa0ff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -78,28 +79,31 @@ body {
     animation: gradient-x 8s ease infinite;
   }
 
+  /* Primary action — lime, the brand pop. Dark text for contrast. */
   .btn-primary {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-white transition-all;
-    background: linear-gradient(120deg, #06306b, #1d4ed8 50%, #0e7490);
+    @apply relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold transition-all;
+    color: #06140a;
+    background: linear-gradient(120deg, #c7f21a, #d4ff24 50%, #e4ff6b);
     background-size: 200% 200%;
-    box-shadow: 0 14px 30px -8px rgba(29, 78, 216, 0.45),
-      0 0 0 1px rgba(13, 71, 161, 0.25) inset;
+    box-shadow: 0 14px 30px -8px rgba(212, 255, 36, 0.4),
+      0 0 0 1px rgba(212, 255, 36, 0.3) inset;
   }
   .btn-primary:hover {
     background-position: 100% 50%;
-    box-shadow: 0 18px 44px -8px rgba(29, 78, 216, 0.55),
-      0 0 0 1px rgba(13, 71, 161, 0.4) inset;
+    box-shadow: 0 18px 44px -8px rgba(212, 255, 36, 0.55),
+      0 0 0 1px rgba(212, 255, 36, 0.5) inset;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold transition-all;
-    color: #0a2f6b;
-    border: 1px solid rgba(37, 99, 235, 0.3);
-    background: rgba(255, 255, 255, 0.7);
+    color: #cfe0fb;
+    border: 1px solid rgba(21, 88, 203, 0.45);
+    background: rgba(21, 88, 203, 0.08);
   }
   .btn-ghost:hover {
-    background: rgba(234, 242, 255, 0.95);
-    border-color: rgba(37, 99, 235, 0.55);
+    background: rgba(21, 88, 203, 0.18);
+    border-color: rgba(212, 255, 36, 0.6);
+    color: #eef3fc;
   }
 
   .section-title {
@@ -107,13 +111,13 @@ body {
   }
 
   .eyebrow {
-    @apply inline-flex items-center gap-2 rounded-full border border-navy-600/40 bg-navy-800/40 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-navy-300;
+    @apply inline-flex items-center gap-2 rounded-full border border-navy-600/50 bg-navy-800/50 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-navy-300;
   }
 }
 
 .bg-grid {
-  background-image: linear-gradient(rgba(79, 124, 240, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79, 124, 240, 0.08) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(74, 132, 230, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 132, 230, 0.12) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
   -webkit-mask-image: radial-gradient(
@@ -127,7 +131,7 @@ body {
   position: absolute;
   border-radius: 9999px;
   filter: blur(90px);
-  opacity: 0.28;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -294,13 +298,13 @@ body {
   @apply font-display text-lg font-semibold text-navy-300 mt-6 mb-2;
 }
 .prose-legal p {
-  @apply text-slate-600;
+  @apply text-slate-300;
 }
 .prose-legal ul {
-  @apply list-disc space-y-1 pl-6 text-slate-600;
+  @apply list-disc space-y-1 pl-6 text-slate-300;
 }
 .prose-legal ol {
-  @apply list-decimal space-y-1 pl-6 text-slate-600;
+  @apply list-decimal space-y-1 pl-6 text-slate-300;
 }
 .prose-legal a {
   @apply text-accent-electric underline decoration-dotted underline-offset-4 hover:text-navy-300;
@@ -310,7 +314,7 @@ body {
 }
 
 .prose-blog {
-  @apply text-slate-600 leading-relaxed;
+  @apply text-slate-300 leading-relaxed;
 }
 .prose-blog h2 {
   @apply font-display text-3xl font-bold text-navy-300 mt-12 mb-4;
@@ -319,13 +323,13 @@ body {
   @apply font-display text-xl font-semibold text-navy-300 mt-8 mb-3;
 }
 .prose-blog p {
-  @apply my-5 text-slate-600 text-[17px] leading-[1.8];
+  @apply my-5 text-slate-300 text-[17px] leading-[1.8];
 }
 .prose-blog ul {
-  @apply list-disc space-y-1.5 pl-6 my-4 text-slate-600;
+  @apply list-disc space-y-1.5 pl-6 my-4 text-slate-300;
 }
 .prose-blog ol {
-  @apply list-decimal space-y-1.5 pl-6 my-4 text-slate-600;
+  @apply list-decimal space-y-1.5 pl-6 my-4 text-slate-300;
 }
 .prose-blog a {
   @apply text-accent-electric underline decoration-dotted underline-offset-4 hover:text-navy-300;
@@ -340,10 +344,10 @@ body {
   @apply rounded-2xl border border-navy-700/50 bg-navy-900/80 p-5 my-6 overflow-x-auto;
 }
 .prose-blog pre code {
-  @apply bg-transparent p-0 text-slate-700;
+  @apply bg-transparent p-0 text-slate-200;
 }
 .prose-blog blockquote {
-  @apply border-l-4 border-accent-electric/60 pl-5 italic text-slate-700 my-6;
+  @apply border-l-4 border-accent-electric/60 pl-5 italic text-slate-200 my-6;
 }
 .prose-blog img {
   @apply rounded-2xl my-6;

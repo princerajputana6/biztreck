@@ -128,7 +128,7 @@ export default function AboutClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-500"
+            className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-400"
           >
             Get a glimpse into who we are, what we do, our values and the
             experiences we&apos;ve had along the way
@@ -160,7 +160,7 @@ export default function AboutClient() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="mt-6 text-center text-lg leading-relaxed text-slate-600"
+              className="mt-6 text-center text-lg leading-relaxed text-slate-300"
             >
               We are dreamers, innovators, challengers and fun lovers who happen
               to design and engineer world-class technology solutions. Our magic
@@ -182,7 +182,7 @@ export default function AboutClient() {
             className="mb-12 text-center"
           >
             <h2 className="section-title text-ink">Our values</h2>
-            <p className="mt-4 text-slate-500">
+            <p className="mt-4 text-slate-400">
               Our values are part of everything we build here
             </p>
           </motion.div>
@@ -214,7 +214,7 @@ export default function AboutClient() {
                   <h3 className="relative font-display text-xl font-bold text-ink">
                     {v.title}
                   </h3>
-                  <p className="relative mt-3 text-sm leading-relaxed text-slate-500">
+                  <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
                     {v.description}
                   </p>
                 </motion.div>
@@ -235,7 +235,7 @@ export default function AboutClient() {
             className="mb-12 text-center"
           >
             <h2 className="section-title text-ink">Our Journey</h2>
-            <p className="mx-auto mt-4 max-w-3xl text-slate-500">
+            <p className="mx-auto mt-4 max-w-3xl text-slate-400">
               Our journey began with a desire to build products that matter.
               Since our beginning, we&apos;ve enabled Startups towards Success,
               Medium-Enterprises towards Scale, and Corporate Giants towards
@@ -290,7 +290,7 @@ export default function AboutClient() {
                     <h3 className="mt-3 font-display text-2xl font-bold text-ink">
                       {j.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                    <p className="mt-3 text-sm leading-relaxed text-slate-400">
                       {j.description}
                     </p>
                   </motion.div>
@@ -351,7 +351,7 @@ export default function AboutClient() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mx-auto mt-4 max-w-2xl text-slate-500"
+                className="mx-auto mt-4 max-w-2xl text-slate-400"
               >
                 Whether you&apos;re a startup with a bold idea or an enterprise
                 looking to scale — we&apos;d love to hear from you.

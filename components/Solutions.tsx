@@ -128,7 +128,7 @@ export default function Solutions() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-600"
+            className="mt-5 text-lg text-slate-300"
           >
             We help growing businesses automate operations, modernise outdated
             systems, and build scalable software that drives measurable growth.
@@ -156,13 +156,13 @@ export default function Solutions() {
                 <h3 className="relative mt-5 font-display text-xl font-bold text-ink">
                   {s.title}
                 </h3>
-                <p className="relative mt-3 text-sm leading-relaxed text-slate-500">
+                <p className="relative mt-3 text-sm leading-relaxed text-slate-400">
                   {s.problem}
                 </p>
-                <p className="relative mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="relative mt-3 text-sm leading-relaxed text-slate-300">
                   {s.solution}
                 </p>
-                <p className="relative mt-3 flex items-start gap-2 text-sm leading-relaxed text-slate-700">
+                <p className="relative mt-3 flex items-start gap-2 text-sm leading-relaxed text-slate-200">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-cyan" />
                   {s.outcome}
                 </p>

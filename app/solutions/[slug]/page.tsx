@@ -106,12 +106,12 @@ export default async function SolutionPage({
 
       <article className="relative z-10 container-px pt-32 sm:pt-40">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-slate-500" aria-label="Breadcrumb">
+        <nav className="mb-6 text-sm text-slate-400" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-ink">Home</Link>
           <span className="mx-2">/</span>
           <Link href="/solutions" className="hover:text-ink">Solutions</Link>
           <span className="mx-2">/</span>
-          <span className="text-slate-600">{sol.name}</span>
+          <span className="text-slate-300">{sol.name}</span>
         </nav>
 
         {/* Hero */}
@@ -119,7 +119,7 @@ export default async function SolutionPage({
           <div className="eyebrow">{sol.tagline}</div>
           <h1 className="section-title mt-5 text-ink">{sol.h1}</h1>
           {sol.intro.map((p, i) => (
-            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-600">
+            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-300">
               {p}
             </p>
           ))}
@@ -145,7 +145,7 @@ export default async function SolutionPage({
                 className="flex items-start gap-3 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5"
               >
                 <AlertTriangle size={18} className="mt-0.5 shrink-0 text-accent-glow" />
-                <p className="text-sm leading-relaxed text-slate-600">{p}</p>
+                <p className="text-sm leading-relaxed text-slate-300">{p}</p>
               </div>
             ))}
           </div>
@@ -166,7 +166,7 @@ export default async function SolutionPage({
                 <h3 className="mt-3 font-display text-lg font-bold text-ink">
                   {b.label}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {b.desc}
                 </p>
               </div>
@@ -180,7 +180,7 @@ export default async function SolutionPage({
             Our solution
           </h2>
           {sol.approach.map((p, i) => (
-            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-600">
+            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-300">
               {p}
             </p>
           ))}
@@ -201,7 +201,7 @@ export default async function SolutionPage({
                 <h3 className="mt-4 font-display text-lg font-bold text-ink">
                   {d.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {d.desc}
                 </p>
               </div>
@@ -226,7 +226,7 @@ export default async function SolutionPage({
                 <h3 className="mt-3 font-display text-lg font-bold text-ink">
                   {p.step}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {p.desc}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export default async function SolutionPage({
             {sol.tech.map((t) => (
               <span
                 key={t}
-                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700"
+                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200"
               >
                 {t}
               </span>
@@ -263,7 +263,7 @@ export default async function SolutionPage({
                 className="flex items-start gap-3 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5"
               >
                 <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                <p className="text-sm leading-relaxed text-slate-600">{o}</p>
+                <p className="text-sm leading-relaxed text-slate-300">{o}</p>
               </div>
             ))}
           </div>
@@ -281,26 +281,26 @@ export default async function SolutionPage({
                 <h3 className="font-display text-lg font-bold text-ink">
                   Business challenge
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {sol.caseStudy.challenge}
                 </p>
                 <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Solution
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {sol.caseStudy.solution}
                 </p>
                 <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Timeline
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {sol.caseStudy.timeline}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {sol.caseStudy.tech.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-600"
+                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-300"
                     >
                       {t}
                     </span>
@@ -315,7 +315,7 @@ export default async function SolutionPage({
                   {sol.caseStudy.results.map((r) => (
                     <li key={r} className="flex items-start gap-3">
                       <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                      <span className="text-sm leading-relaxed text-slate-600">{r}</span>
+                      <span className="text-sm leading-relaxed text-slate-300">{r}</span>
                     </li>
                   ))}
                 </ul>
@@ -338,7 +338,7 @@ export default async function SolutionPage({
                 <summary className="cursor-pointer list-none font-display text-lg font-semibold text-ink">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
                   {f.a}
                 </p>
               </details>
@@ -366,7 +366,7 @@ export default async function SolutionPage({
                       className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                     />
                   </h3>
-                  <p className="mt-2 text-sm text-slate-500">{r.tagline}</p>
+                  <p className="mt-2 text-sm text-slate-400">{r.tagline}</p>
                 </Link>
               ))}
             </div>
@@ -378,7 +378,7 @@ export default async function SolutionPage({
           <h2 className="font-display text-3xl font-bold text-ink">
             Let&apos;s build software that grows your business
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Book a 30-minute strategy call and we will map where {sol.name.toLowerCase()} would
             remove the most cost from your operation — no obligation, no pitch deck.
           </p>

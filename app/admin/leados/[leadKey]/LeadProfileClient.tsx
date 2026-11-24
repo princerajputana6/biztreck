@@ -27,19 +27,19 @@ const PRIORITY_TONE: Record<string, string> = {
   hot: "text-rose-300 bg-rose-400/10 border-rose-400/25",
   warm: "text-amber-300 bg-amber-400/10 border-amber-400/25",
   cold: "text-cyan-300 bg-cyan-400/10 border-cyan-400/25",
-  ignore: "text-slate-500 bg-slate-400/10 border-slate-500/25",
+  ignore: "text-slate-400 bg-slate-400/10 border-slate-500/25",
 };
 
 const PREMIUM_TONE: Record<string, string> = {
   PREMIUM: "text-amber-200 bg-amber-400/10 border-amber-400/30",
   STANDARD: "text-cyan-200 bg-cyan-400/10 border-cyan-400/25",
-  LOW_VALUE: "text-slate-500 bg-slate-500/10 border-slate-500/25",
+  LOW_VALUE: "text-slate-400 bg-slate-500/10 border-slate-500/25",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-5">
-      <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider text-slate-600">
+      <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider text-slate-300">
         {title}
       </h2>
       {children}
@@ -50,8 +50,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-1.5 text-sm">
-      <span className="shrink-0 text-slate-500">{label}</span>
-      <span className="min-w-0 truncate text-right text-slate-700">{children}</span>
+      <span className="shrink-0 text-slate-400">{label}</span>
+      <span className="min-w-0 truncate text-right text-slate-200">{children}</span>
     </div>
   );
 }
@@ -134,7 +134,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
     <div className="space-y-6">
       <Link
         href="/admin/leados"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-ink"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-ink"
       >
         <ArrowLeft size={15} /> Back to LeadOS
       </Link>
@@ -156,7 +156,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-display text-2xl font-bold text-ink">{lead.businessName}</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               {[lead.businessCategory, lead.city, lead.country].filter(Boolean).join(" · ") || "—"}
             </p>
             {lead.website ? (
@@ -183,7 +183,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
               {s?.priority || "unscored"}
             </span>
             <div className="mt-2 font-display text-3xl font-bold text-ink">{s?.overall ?? "—"}</div>
-            <div className="text-[11px] text-slate-500">overall score</div>
+            <div className="text-[11px] text-slate-400">overall score</div>
           </div>
         </div>
 
@@ -244,7 +244,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
             <ScoreBar label="Website opp." value={s.website} />
           </div>
           {s.signals?.length > 0 && (
-            <ul className="mt-4 grid gap-1 text-xs text-slate-500 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-1 text-xs text-slate-400 sm:grid-cols-2">
               {s.signals.map((sig: string) => (
                 <li key={sig}>· {sig}</li>
               ))}
@@ -265,20 +265,20 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
             <span className={`rounded-full border px-2.5 py-0.5 font-medium ${PREMIUM_TONE[p.premiumTier] || PREMIUM_TONE.LOW_VALUE}`}>
               {p.premiumTier?.replace("_", " ").toLowerCase()}
             </span>
-            <span className="rounded-full border border-slate-500/30 bg-slate-500/10 px-2.5 py-0.5 text-slate-600">
+            <span className="rounded-full border border-slate-500/30 bg-slate-500/10 px-2.5 py-0.5 text-slate-300">
               budget: {p.estimatedBudgetCategory}
             </span>
             <span className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-0.5 text-accent-cyan">
               {String(p.primaryOpportunity || "—").replace(/_/g, " ").toLowerCase()}
             </span>
             {p.secondaryOpportunities?.map((o: string) => (
-              <span key={o} className="rounded-full border border-slate-600/40 bg-slate-700/20 px-2.5 py-0.5 text-slate-500">
+              <span key={o} className="rounded-full border border-slate-600/40 bg-slate-700/20 px-2.5 py-0.5 text-slate-400">
                 {o.replace(/_/g, " ").toLowerCase()}
               </span>
             ))}
           </div>
           {(p.buyingIntentSignals?.length > 0 || p.premiumSignals?.length > 0) && (
-            <ul className="mt-4 grid gap-1 text-xs text-slate-500 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-1 text-xs text-slate-400 sm:grid-cols-2">
               {[...(p.buyingIntentSignals || []), ...(p.premiumSignals || [])].map((sig: string, i: number) => (
                 <li key={`${sig}-${i}`}>· {sig}</li>
               ))}
@@ -334,7 +334,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
               {a.issues?.length > 0 && (
                 <div className="mt-3 space-y-1 border-t border-navy-700/40 pt-3">
                   {a.issues.map((i: string) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-slate-500">
+                    <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
                       <AlertTriangle size={12} className="mt-0.5 shrink-0 text-amber-400" /> {i}
                     </div>
                   ))}
@@ -342,7 +342,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
               )}
             </>
           ) : (
-            <p className="text-sm text-slate-500">Not analysed yet.</p>
+            <p className="text-sm text-slate-400">Not analysed yet.</p>
           )}
         </Section>
 
@@ -368,14 +368,14 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
               <Row label="Digital maturity">{intel.digitalMaturity}</Row>
               <Row label="Complexity">{intel.businessComplexity}</Row>
               <div className="mt-2 border-t border-navy-700/40 pt-2 text-sm">
-                <div className="text-slate-500">Likely decision makers</div>
-                <div className="mt-1 text-slate-700">
+                <div className="text-slate-400">Likely decision makers</div>
+                <div className="mt-1 text-slate-200">
                   {intel.likelyDecisionMakers?.join(", ") || "—"}
                 </div>
               </div>
             </>
           ) : (
-            <p className="text-sm text-slate-500">Analyse the lead to generate intelligence.</p>
+            <p className="text-sm text-slate-400">Analyse the lead to generate intelligence.</p>
           )}
         </Section>
       </div>
@@ -390,7 +390,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
                 href={v}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+                className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/60 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
               >
                 {k === "linkedin" ? <Linkedin size={12} /> : <Globe size={12} />} {k}
               </a>
@@ -409,7 +409,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
                   <span className="text-sm font-semibold text-ink">{o.service}</span>
                   <span className="text-xs text-accent-cyan">{o.confidence}%</span>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">{o.rationale}</p>
+                <p className="mt-1 text-xs text-slate-400">{o.rationale}</p>
               </div>
             ))}
           </div>
@@ -422,7 +422,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
           {audit && (
             <Section title="AI audit">
               <p className="text-sm text-accent-glow">{audit.headline}</p>
-              <p className="mt-2 line-clamp-3 text-xs text-slate-500">{audit.executiveSummary}</p>
+              <p className="mt-2 line-clamp-3 text-xs text-slate-400">{audit.executiveSummary}</p>
               <button
                 type="button"
                 onClick={() => setAuditOpen(true)}
@@ -435,7 +435,7 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
           {outreach && (
             <Section title="Outreach kit">
               <p className="text-sm font-medium text-ink">{outreach.coldEmail?.subject}</p>
-              <p className="mt-2 line-clamp-3 text-xs text-slate-500">{outreach.coldEmail?.body}</p>
+              <p className="mt-2 line-clamp-3 text-xs text-slate-400">{outreach.coldEmail?.body}</p>
               <button
                 type="button"
                 onClick={() => setOutreachOpen(true)}
@@ -474,9 +474,9 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
               .slice()
               .reverse()
               .map((t: AnyDoc, i: number) => (
-                <div key={i} className="rounded-lg border border-navy-700/40 bg-navy-950/40 p-3 text-sm text-slate-600">
+                <div key={i} className="rounded-lg border border-navy-700/40 bg-navy-950/40 p-3 text-sm text-slate-300">
                   {t.summary}
-                  <div className="mt-1 text-[10px] text-slate-600">{new Date(t.at).toLocaleString()}</div>
+                  <div className="mt-1 text-[10px] text-slate-300">{new Date(t.at).toLocaleString()}</div>
                 </div>
               ))}
           </div>
@@ -491,15 +491,15 @@ export default function LeadProfileClient({ lead }: { lead: AnyDoc }) {
                 <div key={i} className="flex gap-3 text-sm">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-cyan" />
                   <div className="min-w-0">
-                    <div className="text-slate-600">{t.summary}</div>
-                    <div className="text-[10px] text-slate-600">
+                    <div className="text-slate-300">{t.summary}</div>
+                    <div className="text-[10px] text-slate-300">
                       {t.type} · {new Date(t.at).toLocaleString()}
                     </div>
                   </div>
                 </div>
               ))}
             {(lead.timeline || []).length === 0 && (
-              <p className="text-sm text-slate-500">No activity yet.</p>
+              <p className="text-sm text-slate-400">No activity yet.</p>
             )}
           </div>
         </Section>

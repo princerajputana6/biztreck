@@ -92,12 +92,12 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
 
   return (
-    <footer className="relative z-10 mt-20 border-t border-navy-700/40 bg-gradient-to-b from-navy-950 to-[#dbe8fc] pt-20">
+    <footer className="relative z-10 mt-20 border-t border-navy-700/40 bg-gradient-to-b from-navy-950 to-[#060910] pt-20">
       <div className="container-px">
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Logo size={72} showWordmark={false} />
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-600">
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-300">
               We are a senior product studio building modern websites and apps,
               revamping legacy platforms, automating infrastructure, growing
               search rankings, and helping startups launch from zero. One team,
@@ -107,17 +107,17 @@ export default function Footer() {
             <div className="mt-6 space-y-2.5 text-sm">
               <a
                 href={`mailto:${SITE.email}`}
-                className="flex items-center gap-3 text-slate-600 hover:text-ink"
+                className="flex items-center gap-3 text-slate-300 hover:text-ink"
               >
                 <Mail size={16} className="text-accent-glow" /> {SITE.email}
               </a>
               <a
                 href={`tel:${SITE.phoneRaw}`}
-                className="flex items-center gap-3 text-slate-600 hover:text-ink"
+                className="flex items-center gap-3 text-slate-300 hover:text-ink"
               >
                 <Phone size={16} className="text-accent-glow" /> {SITE.phone}
               </a>
-              <div className="flex items-center gap-3 text-slate-600">
+              <div className="flex items-center gap-3 text-slate-300">
                 <MapPin size={16} className="text-accent-glow" /> {SITE.address}
               </div>
             </div>
@@ -139,18 +139,18 @@ export default function Footer() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
-                  className="flex-1 bg-transparent px-5 py-3 text-sm text-ink placeholder:text-slate-500 outline-none"
+                  className="flex-1 bg-transparent px-5 py-3 text-sm text-ink placeholder:text-slate-400 outline-none"
                 />
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.95 }}
                   type="submit"
-                  className="flex items-center gap-2 bg-gradient-to-r from-navy-500 to-accent-cyan px-5 text-sm font-semibold text-white"
+                  className="flex items-center gap-2 bg-gradient-to-r from-navy-500 to-accent-glow px-5 text-sm font-semibold text-white"
                 >
                   {subscribed ? "Subscribed" : "Subscribe"} <Send size={14} />
                 </motion.button>
               </form>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-slate-400">
                 Monthly digest. No spam. Unsubscribe anytime.
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function Footer() {
                     <li key={l.label}>
                       <a
                         href={l.href}
-                        className="group inline-flex items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-ink"
+                        className="group inline-flex items-center gap-1.5 text-sm text-slate-300 transition-colors hover:text-ink"
                       >
                         {l.label}
                         <ArrowUpRight
@@ -192,14 +192,14 @@ export default function Footer() {
           ].map((l) => (
             <div key={l.city} className="text-sm">
               <div className="font-semibold text-ink">{l.city}</div>
-              <div className="text-slate-500">{l.role}</div>
+              <div className="text-slate-400">{l.role}</div>
             </div>
           ))}
         </div>
 
         {/* Bottom bar */}
         <div className="flex flex-col items-start justify-between gap-4 border-t border-navy-700/40 py-7 sm:flex-row sm:items-center">
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-slate-400">
             © {new Date().getFullYear()} Biztreck Solutions. All rights
             reserved. Built with care in Greater Noida, India.
           </div>
@@ -212,7 +212,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 whileHover={{ y: -3 }}
-                className="grid h-9 w-9 place-items-center rounded-full border border-navy-700/60 bg-navy-800/40 text-slate-600 transition-colors hover:border-accent-electric hover:text-ink"
+                className="grid h-9 w-9 place-items-center rounded-full border border-navy-700/60 bg-navy-800/40 text-slate-300 transition-colors hover:border-accent-electric hover:text-ink"
               >
                 <Icon size={15} />
               </motion.a>

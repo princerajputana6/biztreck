@@ -16,7 +16,7 @@ export default async function AdminLayout({
   const session = await getSession();
   const isOwner = session?.role === "owner";
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-800">
+    <div className="min-h-screen bg-navy-950 text-slate-100">
       {children}
       {isOwner && <ShadowWidget />}
     </div>

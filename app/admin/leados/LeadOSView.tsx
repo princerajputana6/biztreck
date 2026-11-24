@@ -58,13 +58,13 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
   return (
     <div className="mt-4 rounded-lg border border-navy-700/40 bg-navy-950/40 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="uppercase tracking-wider">Best channel</span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
               actionable
                 ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-                : "border-slate-500/30 bg-slate-400/10 text-slate-600"
+                : "border-slate-500/30 bg-slate-400/10 text-slate-300"
             }`}
           >
             <Icon size={12} /> {r.label}
@@ -76,7 +76,7 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
             actionable
               ? "bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/25"
-              : "border border-navy-700/70 bg-navy-800/50 text-slate-600 hover:text-ink"
+              : "border border-navy-700/70 bg-navy-800/50 text-slate-300 hover:text-ink"
           }`}
         >
           <Icon size={12} />
@@ -89,7 +89,7 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
                 : "Open"}
         </a>
       </div>
-      <p className="mt-2 text-[11px] text-slate-500">{r.reason}</p>
+      <p className="mt-2 text-[11px] text-slate-400">{r.reason}</p>
       {/* Availability ladder */}
       <div className="mt-2 flex flex-wrap gap-1.5">
         {r.ladder.map((rung) => {
@@ -103,8 +103,8 @@ export function ChannelPanel({ lead }: { lead: AnyDoc }) {
                 chosen
                   ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
                   : rung.available
-                    ? "border-navy-700/60 bg-navy-800/50 text-slate-600"
-                    : "border-navy-800/60 bg-navy-900/40 text-slate-600 line-through"
+                    ? "border-navy-700/60 bg-navy-800/50 text-slate-300"
+                    : "border-navy-800/60 bg-navy-900/40 text-slate-300 line-through"
               }`}
             >
               <RIcon size={10} /> {rung.label}
@@ -122,13 +122,13 @@ const PRIORITY_TONE: Record<string, string> = {
   hot: "text-rose-300 bg-rose-400/10 border-rose-400/25",
   warm: "text-amber-300 bg-amber-400/10 border-amber-400/25",
   cold: "text-cyan-300 bg-cyan-400/10 border-cyan-400/25",
-  ignore: "text-slate-500 bg-slate-400/10 border-slate-500/25",
+  ignore: "text-slate-400 bg-slate-400/10 border-slate-500/25",
 };
 
 const PREMIUM_TONE: Record<string, string> = {
   PREMIUM: "text-amber-200 bg-amber-400/10 border-amber-400/30",
   STANDARD: "text-cyan-200 bg-cyan-400/10 border-cyan-400/25",
-  LOW_VALUE: "text-slate-500 bg-slate-500/10 border-slate-500/25",
+  LOW_VALUE: "text-slate-400 bg-slate-500/10 border-slate-500/25",
 };
 
 export function ScoreBar({ label, value }: { label: string; value: number }) {
@@ -136,9 +136,9 @@ export function ScoreBar({ label, value }: { label: string; value: number }) {
     value >= 70 ? "bg-rose-400" : value >= 45 ? "bg-amber-400" : "bg-cyan-400";
   return (
     <div>
-      <div className="flex items-center justify-between text-[11px] text-slate-500">
+      <div className="flex items-center justify-between text-[11px] text-slate-400">
         <span>{label}</span>
-        <span className="text-slate-700">{value}</span>
+        <span className="text-slate-200">{value}</span>
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-navy-800">
         <div className={`h-full ${tone}`} style={{ width: `${value}%` }} />
@@ -475,11 +475,11 @@ export default function LeadOSView({ session }: { session: Session }) {
               } ${clickable ? "cursor-pointer hover:border-accent-cyan/50" : "cursor-default"}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-slate-500">{s.label}</span>
+                <span className="text-xs uppercase tracking-wider text-slate-400">{s.label}</span>
                 <Icon size={16} className={active ? "text-emerald-300" : "text-accent-cyan"} />
               </div>
               <div className="mt-3 font-display text-2xl font-bold text-ink">{s.value}</div>
-              <div className={`mt-1 text-xs ${active ? "text-emerald-300" : "text-slate-500"}`}>
+              <div className={`mt-1 text-xs ${active ? "text-emerald-300" : "text-slate-400"}`}>
                 {active ? "showing contacted only" : s.hint}
               </div>
             </button>
@@ -500,7 +500,7 @@ export default function LeadOSView({ session }: { session: Session }) {
           type="button"
           onClick={() => act("import", { action: "import-from-scraper", limit: 500 }, "Imported from scraper")}
           disabled={busy === "import"}
-          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
         >
           {busy === "import" ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
           Import from scraper
@@ -532,11 +532,11 @@ export default function LeadOSView({ session }: { session: Session }) {
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-700"
+          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200"
         >
           <RefreshCw size={15} /> Refresh
         </button>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-400">
           Analysis fetches each site and scores 30+ signals — no external API cost.
         </span>
       </div>
@@ -548,17 +548,17 @@ export default function LeadOSView({ session }: { session: Session }) {
             <Search size={16} className="text-accent-cyan" /> Search Google Places
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1 text-sm text-slate-600 md:col-span-2">
+            <label className="grid gap-1 text-sm text-slate-300 md:col-span-2">
               Search terms (one per line)
               <textarea
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 rows={3}
                 placeholder={"law firms\ndental clinics\nconstruction companies"}
-                className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan"
+                className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               Country
               <select
                 value={searchCountry}
@@ -572,7 +572,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               State / region
               <select
                 value={searchState}
@@ -585,8 +585,8 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {statesFor(searchCountry).map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-sm text-slate-600">
-              City / area <span className="text-slate-500">(optional)</span>
+            <label className="grid gap-1 text-sm text-slate-300">
+              City / area <span className="text-slate-400">(optional)</span>
               <input
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
@@ -594,7 +594,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
-            <label className="grid gap-1 text-sm text-slate-600">
+            <label className="grid gap-1 text-sm text-slate-300">
               Max results per term
               <input
                 type="number"
@@ -615,8 +615,8 @@ export default function LeadOSView({ session }: { session: Session }) {
             {busy === "search" ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
             Search &amp; import
           </button>
-          <p className="mt-3 text-xs text-slate-500">
-            Runs the Apify Google Places actor (needs <code className="text-slate-500">APIFY_TOKEN</code>)
+          <p className="mt-3 text-xs text-slate-400">
+            Runs the Apify Google Places actor (needs <code className="text-slate-400">APIFY_TOKEN</code>)
             and imports results straight into your lead database.
           </p>
         </div>
@@ -626,12 +626,12 @@ export default function LeadOSView({ session }: { session: Session }) {
       <div className="rounded-xl border border-navy-700/40 bg-navy-900/35 p-4">
         <div className="grid gap-3 md:grid-cols-4">
           <label className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search business name"
-              className="w-full rounded-lg border border-navy-700/70 bg-navy-950/50 py-2 pl-9 pr-3 text-sm text-ink placeholder:text-slate-600 outline-none focus:border-accent-cyan"
+              className="w-full rounded-lg border border-navy-700/70 bg-navy-950/50 py-2 pl-9 pr-3 text-sm text-ink placeholder:text-slate-300 outline-none focus:border-accent-cyan"
             />
           </label>
           <select value={priority} onChange={(e) => setPriority(e.target.value)} className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink">
@@ -693,7 +693,7 @@ export default function LeadOSView({ session }: { session: Session }) {
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 flags[k]
                   ? "border-emerald-400/40 bg-emerald-400/15 text-ink"
-                  : "border-navy-700/60 bg-navy-900/60 text-slate-600 hover:text-ink"
+                  : "border-navy-700/60 bg-navy-900/60 text-slate-300 hover:text-ink"
               }`}
             >
               {label}
@@ -713,7 +713,7 @@ export default function LeadOSView({ session }: { session: Session }) {
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 flags[k]
                   ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
-                  : "border-navy-700/60 bg-navy-900/60 text-slate-600 hover:text-ink"
+                  : "border-navy-700/60 bg-navy-900/60 text-slate-300 hover:text-ink"
               }`}
             >
               {label}
@@ -724,7 +724,7 @@ export default function LeadOSView({ session }: { session: Session }) {
 
       {/* View toggle */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-400">
           {leads.length} of {total} lead{total === 1 ? "" : "s"}
         </span>
         <div className="inline-flex rounded-lg border border-navy-700/70 bg-navy-950/60 p-0.5">
@@ -732,7 +732,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("list")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "list" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
+              view === "list" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <LayoutGrid size={15} /> List
@@ -741,7 +741,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("board")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "board" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
+              view === "board" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <Columns3 size={15} /> Board
@@ -750,7 +750,7 @@ export default function LeadOSView({ session }: { session: Session }) {
             type="button"
             onClick={() => setView("sent")}
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-              view === "sent" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-500 hover:text-slate-700"
+              view === "sent" ? "bg-accent-cyan/15 text-accent-cyan" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <Mail size={15} /> Sent
@@ -761,24 +761,24 @@ export default function LeadOSView({ session }: { session: Session }) {
       {/* Lead list */}
       {view === "sent" ? (
         sentLoading ? (
-          <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
+          <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
             <Loader2 size={16} className="animate-spin" /> Loading sent emails…
           </div>
         ) : !sentEmails || sentEmails.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-10 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-10 text-center text-sm text-slate-400">
             No outreach emails have been sent yet. When they are, every send is logged here —
             recipient, subject, time and transport.
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="rounded-lg border border-navy-700/40 bg-navy-900/30 p-3 text-xs text-slate-500">
-              These went out via Resend / SMTP — <span className="text-slate-600">not your Gmail</span>,
+            <div className="rounded-lg border border-navy-700/40 bg-navy-900/30 p-3 text-xs text-slate-400">
+              These went out via Resend / SMTP — <span className="text-slate-300">not your Gmail</span>,
               so they won&apos;t appear in Gmail&apos;s Sent folder. Check your Resend dashboard for
               delivery status.
             </div>
             <div className="overflow-x-auto rounded-xl border border-navy-700/40">
               <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="bg-navy-900/50 text-xs uppercase tracking-wider text-slate-500">
+                <thead className="bg-navy-900/50 text-xs uppercase tracking-wider text-slate-400">
                   <tr>
                     <th className="px-4 py-2.5">Business</th>
                     <th className="px-4 py-2.5">Recipient</th>
@@ -791,13 +791,13 @@ export default function LeadOSView({ session }: { session: Session }) {
                   {sentEmails.map((e, i) => (
                     <tr key={i} className="border-t border-navy-700/30">
                       <td className="px-4 py-2.5 text-ink">{e.businessName || "—"}</td>
-                      <td className="px-4 py-2.5 text-slate-600">{e.to}</td>
-                      <td className="px-4 py-2.5 text-slate-500">{e.subject}</td>
-                      <td className="px-4 py-2.5 text-slate-500">
+                      <td className="px-4 py-2.5 text-slate-300">{e.to}</td>
+                      <td className="px-4 py-2.5 text-slate-400">{e.subject}</td>
+                      <td className="px-4 py-2.5 text-slate-400">
                         {e.at ? new Date(e.at).toLocaleString() : "—"}
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] uppercase text-slate-500">
+                        <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] uppercase text-slate-400">
                           {e.transport || "resend"}
                         </span>
                       </td>
@@ -809,11 +809,11 @@ export default function LeadOSView({ session }: { session: Session }) {
           </div>
         )
       ) : loading ? (
-        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
+        <div className="flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
           <Loader2 size={16} className="animate-spin" /> Loading leads…
         </div>
       ) : leads.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-10 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-navy-700/60 bg-navy-950/25 p-10 text-center text-sm text-slate-400">
           No leads match. Import from the scraper to get started.
         </div>
       ) : view === "board" ? (
@@ -832,9 +832,9 @@ export default function LeadOSView({ session }: { session: Session }) {
                       className="flex items-center gap-1.5 truncate font-display text-lg font-bold text-ink hover:text-accent-cyan"
                     >
                       <span className="truncate">{l.businessName}</span>
-                      <ExternalLink size={13} className="shrink-0 text-slate-500" />
+                      <ExternalLink size={13} className="shrink-0 text-slate-400" />
                     </Link>
-                    <div className="mt-1 truncate text-xs text-slate-500">
+                    <div className="mt-1 truncate text-xs text-slate-400">
                       {[l.businessCategory, l.city, l.country].filter(Boolean).join(" · ") || "—"}
                     </div>
                     {l.website ? (
@@ -882,7 +882,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {a?.issues?.length > 0 && (
                   <div className="mt-4 space-y-1">
                     {a.issues.slice(0, 3).map((i: string) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-slate-500">
+                      <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
                         <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />
                         {i}
                       </div>
@@ -893,7 +893,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                 {l.opportunities?.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {l.opportunities.slice(0, 4).map((o: AnyDoc) => (
-                      <span key={o.service} className="rounded-full border border-navy-700/60 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-700">
+                      <span key={o.service} className="rounded-full border border-navy-700/60 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200">
                         {o.service} · {o.confidence}%
                       </span>
                     ))}
@@ -951,41 +951,41 @@ export default function LeadOSView({ session }: { session: Session }) {
                   <button
                     type="button"
                     onClick={() => setSelected(selected?.leadKey === l.leadKey ? null : l)}
-                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700"
+                    className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200"
                   >
                     {selected?.leadKey === l.leadKey ? "Hide" : "Details"}
                   </button>
                 </div>
 
                 {selected?.leadKey === l.leadKey && (
-                  <div className="mt-4 space-y-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-4 text-xs text-slate-600">
+                  <div className="mt-4 space-y-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-4 text-xs text-slate-300">
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <div><span className="text-slate-500">Email:</span> {l.email || "—"}</div>
-                      <div><span className="text-slate-500">Phone:</span> {l.phone || "—"}</div>
-                      <div><span className="text-slate-500">Rating:</span> {l.googleRating ?? "—"} ({l.googleReviews} reviews)</div>
-                      <div><span className="text-slate-500">CMS:</span> {a?.cms || "—"} {a?.framework ? `· ${a.framework}` : ""}</div>
+                      <div><span className="text-slate-400">Email:</span> {l.email || "—"}</div>
+                      <div><span className="text-slate-400">Phone:</span> {l.phone || "—"}</div>
+                      <div><span className="text-slate-400">Rating:</span> {l.googleRating ?? "—"} ({l.googleReviews} reviews)</div>
+                      <div><span className="text-slate-400">CMS:</span> {a?.cms || "—"} {a?.framework ? `· ${a.framework}` : ""}</div>
                     </div>
                     {l.intel && (
                       <div>
-                        <div className="mb-1 text-slate-500">Business intelligence</div>
+                        <div className="mb-1 text-slate-400">Business intelligence</div>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          <div><span className="text-slate-500">Employees:</span> {l.intel.estimatedEmployees}</div>
-                          <div><span className="text-slate-500">Revenue band:</span> {l.intel.estimatedRevenueBand}</div>
-                          <div><span className="text-slate-500">Growth stage:</span> {l.intel.growthStage}</div>
-                          <div><span className="text-slate-500">Multi-location:</span> {l.intel.multipleLocations ? "Yes" : "No"}</div>
-                          <div><span className="text-slate-500">Digital maturity:</span> {l.intel.digitalMaturity}</div>
-                          <div><span className="text-slate-500">Complexity:</span> {l.intel.businessComplexity}</div>
+                          <div><span className="text-slate-400">Employees:</span> {l.intel.estimatedEmployees}</div>
+                          <div><span className="text-slate-400">Revenue band:</span> {l.intel.estimatedRevenueBand}</div>
+                          <div><span className="text-slate-400">Growth stage:</span> {l.intel.growthStage}</div>
+                          <div><span className="text-slate-400">Multi-location:</span> {l.intel.multipleLocations ? "Yes" : "No"}</div>
+                          <div><span className="text-slate-400">Digital maturity:</span> {l.intel.digitalMaturity}</div>
+                          <div><span className="text-slate-400">Complexity:</span> {l.intel.businessComplexity}</div>
                         </div>
                         {l.intel.likelyDecisionMakers?.length > 0 && (
                           <div className="mt-1">
-                            <span className="text-slate-500">Decision makers:</span> {l.intel.likelyDecisionMakers.join(", ")}
+                            <span className="text-slate-400">Decision makers:</span> {l.intel.likelyDecisionMakers.join(", ")}
                           </div>
                         )}
                       </div>
                     )}
                     {s?.signals?.length > 0 && (
                       <div>
-                        <div className="mb-1 text-slate-500">Scoring signals</div>
+                        <div className="mb-1 text-slate-400">Scoring signals</div>
                         <ul className="space-y-0.5">
                           {s.signals.map((sig: string) => <li key={sig}>· {sig}</li>)}
                         </ul>
@@ -993,7 +993,7 @@ export default function LeadOSView({ session }: { session: Session }) {
                     )}
                     {l.timeline?.length > 0 && (
                       <div>
-                        <div className="mb-1 text-slate-500">Timeline</div>
+                        <div className="mb-1 text-slate-400">Timeline</div>
                         <ul className="space-y-0.5">
                           {l.timeline.slice(-5).reverse().map((t: AnyDoc, i: number) => (
                             <li key={i}>· {t.summary}</li>
@@ -1143,7 +1143,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-violet-300">
               <FileText size={14} /> AI Business Audit
-              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
+              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
                 {a.source && a.source !== "rules" ? "AI-written" : "rules-based"}
               </span>
             </div>
@@ -1155,7 +1155,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
               href={pdfHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
               title="Download the audit as a PDF"
             >
               <FileText size={13} /> PDF
@@ -1163,7 +1163,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <button
               type="button"
               onClick={download}
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
               title="Download a self-contained HTML report"
             >
               <Download size={13} /> HTML
@@ -1171,7 +1171,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-700 hover:border-rose-400/50 hover:text-rose-300"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-200 hover:border-rose-400/50 hover:text-rose-300"
             >
               <X size={16} />
             </button>
@@ -1180,10 +1180,10 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
 
         <div className="max-h-[70vh] space-y-5 overflow-y-auto p-6 text-sm">
           <div className="flex flex-wrap gap-3 text-xs">
-            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-600">
+            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-300">
               Website score <span className="text-ink">{a.websiteScore}/100</span>
             </span>
-            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-600 capitalize">
+            <span className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-slate-300 capitalize">
               Priority <span className="text-ink">{a.priority}</span>
             </span>
           </div>
@@ -1200,7 +1200,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
                     readOnly
                     value={shareUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="min-w-0 flex-1 rounded-lg border border-navy-700/70 bg-navy-950/60 px-3 py-2 text-xs text-slate-700 outline-none"
+                    className="min-w-0 flex-1 rounded-lg border border-navy-700/70 bg-navy-950/60 px-3 py-2 text-xs text-slate-200 outline-none"
                   />
                   <button
                     type="button"
@@ -1213,7 +1213,7 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
                     href={shareUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-navy-700/70 bg-navy-800/50 px-3 py-2 text-xs text-slate-700 hover:border-accent-cyan"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-navy-700/70 bg-navy-800/50 px-3 py-2 text-xs text-slate-200 hover:border-accent-cyan"
                   >
                     <ExternalLink size={12} /> Open
                   </a>
@@ -1226,13 +1226,13 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
                     {sharing ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />} Revoke
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-400">
                   Anyone with this link can view the audit (no login). Revoke to disable it.
                 </p>
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Create an unlisted public link to send this audit to the prospect.
                 </p>
                 <button
@@ -1250,17 +1250,17 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
 
           <div>
             <h3 className="mb-1 font-semibold text-ink">Executive Summary</h3>
-            <p className="text-slate-600">{a.executiveSummary}</p>
+            <p className="text-slate-300">{a.executiveSummary}</p>
           </div>
 
           {(a.sections || []).map((s: AnyDoc) => (
             <div key={s.title} className="border-t border-navy-700/40 pt-4">
               <h3 className="mb-1 font-semibold text-ink">{s.title}</h3>
-              {s.summary && <p className="text-slate-600">{s.summary}</p>}
+              {s.summary && <p className="text-slate-300">{s.summary}</p>}
               {s.points?.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {s.points.map((p: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-slate-500">
+                    <li key={i} className="flex items-start gap-2 text-slate-400">
                       <Check size={13} className="mt-0.5 shrink-0 text-accent-cyan" />
                       {p}
                     </li>
@@ -1272,13 +1272,13 @@ export function AuditModal({ lead, onClose }: { lead: AnyDoc; onClose: () => voi
 
           <div className="rounded-xl border border-accent-cyan/25 bg-accent-cyan/5 p-4">
             <h3 className="mb-1 font-semibold text-ink">Estimated ROI</h3>
-            <p className="text-slate-600">{a.estimatedRoi}</p>
+            <p className="text-slate-300">{a.estimatedRoi}</p>
           </div>
 
           {a.nextSteps?.length > 0 && (
             <div>
               <h3 className="mb-1 font-semibold text-ink">Recommended Next Steps</h3>
-              <ol className="ml-4 list-decimal space-y-1 text-slate-600">
+              <ol className="ml-4 list-decimal space-y-1 text-slate-300">
                 {a.nextSteps.map((n: string, i: number) => (
                   <li key={i}>{n}</li>
                 ))}
@@ -1357,13 +1357,13 @@ function LeadKanban({
                 <span className={`h-2.5 w-2.5 rounded-full ${STAGE_TONE[s] || "bg-slate-400"}`} />
                 {STAGE_LABELS[s]}
               </span>
-              <span className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-500">
+              <span className="rounded-full bg-navy-800/70 px-2 py-0.5 text-[11px] text-slate-400">
                 {items.length}
               </span>
             </div>
             <div className="flex min-h-[120px] flex-1 flex-col gap-2 p-2">
               {items.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-navy-700/50 py-6 text-center text-xs text-slate-600">
+                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-navy-700/50 py-6 text-center text-xs text-slate-300">
                   Drop here
                 </div>
               ) : (
@@ -1395,7 +1395,7 @@ function LeadKanban({
                         {l.scores?.overall ?? "—"}
                       </span>
                     </div>
-                    <div className="mt-1 truncate text-[11px] text-slate-500">
+                    <div className="mt-1 truncate text-[11px] text-slate-400">
                       {[l.businessCategory, l.city].filter(Boolean).join(" · ")}
                     </div>
                     <div className="mt-2 flex items-center gap-2">
@@ -1450,7 +1450,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
           /* clipboard blocked — ignore */
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+      className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
     >
       {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
       {copied ? "Copied" : label}
@@ -1626,12 +1626,12 @@ export function OutreachModal({
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-300">
               <Send size={14} /> AI Outreach kit
-              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-500">
+              <span className="rounded-full border border-navy-700/60 bg-navy-800/60 px-2 py-0.5 text-[10px] text-slate-400">
                 {o.source && o.source !== "rules" ? "AI-written" : "rules-based"}
               </span>
             </div>
             <h2 className="mt-1 truncate font-display text-xl font-bold text-ink">{lead.businessName}</h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               Every message references this lead&apos;s audit findings.
             </p>
           </div>
@@ -1640,7 +1640,7 @@ export function OutreachModal({
               type="button"
               onClick={onRegenerate}
               disabled={regenerating}
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan disabled:opacity-60"
             >
               {regenerating ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
               Regenerate
@@ -1648,7 +1648,7 @@ export function OutreachModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-700 hover:border-rose-400/50 hover:text-rose-300"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 p-2 text-slate-200 hover:border-rose-400/50 hover:text-rose-300"
             >
               <X size={16} />
             </button>
@@ -1658,7 +1658,7 @@ export function OutreachModal({
         <div className="max-h-[72vh] space-y-4 overflow-y-auto p-5">
           {/* Recipient */}
           <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
-            <label className="grid gap-1 text-xs text-slate-500">
+            <label className="grid gap-1 text-xs text-slate-400">
               Recipient email {lead.email ? "" : "(none on file — add one to send)"}
               <input
                 value={to}
@@ -1667,7 +1667,7 @@ export function OutreachModal({
                 className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none focus:border-accent-cyan"
               />
             </label>
-            <p className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[11px] text-slate-400">
               Sends via Resend; replies route to your admin inbox. Sending advances the lead to
               &ldquo;Email sent&rdquo; and logs it to the timeline.
             </p>
@@ -1715,7 +1715,7 @@ export function OutreachModal({
                   href={linkedinUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan"
                 >
                   <Linkedin size={12} /> Open
                 </a>

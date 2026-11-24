@@ -98,7 +98,7 @@ export default function NewBlogClient() {
           </div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-ink"
+            className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-ink"
           >
             <ArrowLeft size={14} /> Dashboard
           </Link>
@@ -114,7 +114,7 @@ export default function NewBlogClient() {
           <h1 className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">
             Type a topic — get a publish-ready post.
           </h1>
-          <p className="mt-2 max-w-2xl text-slate-500">
+          <p className="mt-2 max-w-2xl text-slate-400">
             Powered by Groq + Llama 3.3. Generates the full markdown article,
             tags, excerpt, cover image, and SEO slug in one click.
           </p>
@@ -128,7 +128,7 @@ export default function NewBlogClient() {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="e.g. How modern startups should think about DevOps"
-            className="flex-1 rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none focus:border-accent-electric"
+            className="flex-1 rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none focus:border-accent-electric"
           />
           <button
             type="submit"
@@ -153,7 +153,7 @@ export default function NewBlogClient() {
               <button
                 key={s}
                 onClick={() => setTopic(s)}
-                className="rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-600 hover:border-accent-electric"
+                className="rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-300 hover:border-accent-electric"
               >
                 {s}
               </button>
@@ -180,7 +180,7 @@ export default function NewBlogClient() {
               >
                 <Sparkles size={28} className="text-accent-glow" />
               </motion.div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-400">
                 Crafting your blog post… this typically takes 8-15s.
               </p>
             </motion.div>
@@ -216,7 +216,7 @@ export default function NewBlogClient() {
                     value={blog.excerpt}
                     onChange={(e) => updateField("excerpt", e.target.value)}
                     rows={2}
-                    className="mt-4 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-600 outline-none"
+                    className="mt-4 w-full resize-none rounded-xl border border-navy-700/40 bg-navy-900/40 p-3 text-sm text-slate-300 outline-none"
                   />
                 </div>
               </div>
@@ -226,14 +226,14 @@ export default function NewBlogClient() {
                   <div className="text-xs uppercase tracking-wider text-navy-300">
                     Markdown content
                   </div>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-400">
                     {blog.contentMarkdown.length} chars
                   </span>
                 </div>
                 <textarea
                   value={blog.contentMarkdown}
                   onChange={(e) => updateField("contentMarkdown", e.target.value)}
-                  className="h-[600px] w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-700 outline-none"
+                  className="h-[600px] w-full resize-y rounded-xl border border-navy-700/40 bg-navy-900/60 p-4 font-mono text-[13px] leading-relaxed text-slate-200 outline-none"
                 />
               </div>
             </div>
@@ -299,7 +299,7 @@ export default function NewBlogClient() {
                           `https://image.pollinations.ai/prompt/${enc}?width=1200&height=630&nologo=true&seed=${Math.floor(Math.random() * 1e9)}`
                         );
                       }}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-electric"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-navy-700/50 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-electric"
                     >
                       <ImageIcon size={12} /> Re-roll image
                     </button>
@@ -342,7 +342,7 @@ export default function NewBlogClient() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
         {label}
       </div>
       {children}

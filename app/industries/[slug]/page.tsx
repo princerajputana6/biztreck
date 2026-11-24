@@ -77,12 +77,12 @@ export default async function IndustryPage({
       <Navbar />
 
       <article className="relative z-10 container-px pt-32 sm:pt-40">
-        <nav className="mb-6 text-sm text-slate-500" aria-label="Breadcrumb">
+        <nav className="mb-6 text-sm text-slate-400" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-ink">Home</Link>
           <span className="mx-2">/</span>
           <Link href="/industries" className="hover:text-ink">Industries</Link>
           <span className="mx-2">/</span>
-          <span className="text-slate-600">{ind.name}</span>
+          <span className="text-slate-300">{ind.name}</span>
         </nav>
 
         {/* Hero */}
@@ -90,7 +90,7 @@ export default async function IndustryPage({
           <div className="eyebrow">{ind.tagline}</div>
           <h1 className="section-title mt-5 text-ink">{ind.h1}</h1>
           {ind.intro.map((p, i) => (
-            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-600">
+            <p key={i} className="mt-5 text-lg leading-relaxed text-slate-300">
               {p}
             </p>
           ))}
@@ -116,7 +116,7 @@ export default async function IndustryPage({
                 className="flex items-start gap-3 rounded-2xl border border-navy-700/40 bg-navy-900/40 p-5"
               >
                 <AlertTriangle size={18} className="mt-0.5 shrink-0 text-accent-glow" />
-                <p className="text-sm leading-relaxed text-slate-600">{p}</p>
+                <p className="text-sm leading-relaxed text-slate-300">{p}</p>
               </div>
             ))}
           </div>
@@ -137,7 +137,7 @@ export default async function IndustryPage({
                 <h3 className="mt-3 font-display text-lg font-bold text-ink">
                   {w.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {w.desc}
                 </p>
               </div>
@@ -164,7 +164,7 @@ export default async function IndustryPage({
                     className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                   />
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {s.desc}
                 </p>
               </Link>
@@ -184,26 +184,26 @@ export default async function IndustryPage({
                 <h3 className="font-display text-lg font-bold text-ink">
                   Business challenge
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {ind.caseStudy.challenge}
                 </p>
                 <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Solution
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {ind.caseStudy.solution}
                 </p>
                 <h3 className="mt-6 font-display text-lg font-bold text-ink">
                   Timeline
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {ind.caseStudy.timeline}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {ind.caseStudy.tech.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-600"
+                      className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-300"
                     >
                       {t}
                     </span>
@@ -218,7 +218,7 @@ export default async function IndustryPage({
                   {ind.caseStudy.results.map((r) => (
                     <li key={r} className="flex items-start gap-3">
                       <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                      <span className="text-sm leading-relaxed text-slate-600">{r}</span>
+                      <span className="text-sm leading-relaxed text-slate-300">{r}</span>
                     </li>
                   ))}
                 </ul>
@@ -241,7 +241,7 @@ export default async function IndustryPage({
                 <summary className="cursor-pointer list-none font-display text-lg font-semibold text-ink">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
                   {f.a}
                 </p>
               </details>
@@ -259,7 +259,7 @@ export default async function IndustryPage({
               <Link
                 key={i.slug}
                 href={`/industries/${i.slug}`}
-                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700 transition-colors hover:border-accent-electric hover:text-ink"
+                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200 transition-colors hover:border-accent-electric hover:text-ink"
               >
                 {i.name}
               </Link>
@@ -272,7 +272,7 @@ export default async function IndustryPage({
           <h2 className="font-display text-3xl font-bold text-ink">
             Let&apos;s build software that grows your business
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Book a 30-minute call and we will map where software would remove the
             most cost from your {ind.name.toLowerCase()} operation.
           </p>

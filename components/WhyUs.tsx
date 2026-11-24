@@ -52,7 +52,7 @@ export default function WhyUs() {
               An agency that thinks like your{" "}
               <span className="gradient-text">in-house team.</span>
             </motion.h2>
-            <p className="mt-6 text-lg text-slate-600">
+            <p className="mt-6 text-lg text-slate-300">
               We blend product thinking, design, engineering and growth so you
               don&apos;t need to juggle five different vendors. One contract.
               One outcome. One team.
@@ -66,7 +66,7 @@ export default function WhyUs() {
               ].map((c) => (
                 <span
                   key={c}
-                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-4 py-1.5 text-xs font-medium text-slate-700"
+                  className="rounded-full border border-navy-700/50 bg-navy-800/40 px-4 py-1.5 text-xs font-medium text-slate-200"
                 >
                   {c}
                 </span>
@@ -94,7 +94,7 @@ export default function WhyUs() {
                     <div className="mt-4 font-display text-lg font-semibold text-ink">
                       {r.title}
                     </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
                       {r.desc}
                     </p>
                   </motion.div>

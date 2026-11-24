@@ -70,7 +70,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
       <p className="relative mt-1.5 text-sm font-medium uppercase tracking-wider text-navy-300">
         {p.tagline}
       </p>
-      <p className="relative mt-4 text-[15px] leading-relaxed text-slate-600">
+      <p className="relative mt-4 text-[15px] leading-relaxed text-slate-300">
         {p.description}
       </p>
 
@@ -78,7 +78,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
         {p.tags.map((t) => (
           <span
             key={t}
-            className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-700"
+            className="rounded-full border border-navy-700/50 bg-navy-800/50 px-3 py-1 text-[11px] font-medium text-slate-200"
           >
             {t}
           </span>
@@ -88,7 +88,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
       <div className="relative mt-7 flex items-center justify-between">
         <Link
           href={`/portfolio?category=${p.category}`}
-          className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 transition-colors hover:text-accent-cyan"
+          className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-accent-cyan"
         >
           A Biztreck product
         </Link>
@@ -153,7 +153,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="mt-5 text-lg text-slate-600"
+            className="mt-5 text-lg text-slate-300"
           >
             Platforms we designed, built and run ourselves — the same engineering
             we bring to client work.
@@ -172,7 +172,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
-                    : "border-navy-700/50 bg-navy-900/50 text-slate-600 hover:border-accent-electric hover:text-ink"
+                    : "border-navy-700/50 bg-navy-900/50 text-slate-300 hover:border-accent-electric hover:text-ink"
                 }`}
               >
                 {t.label}
@@ -180,7 +180,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
                   className={`rounded-full px-2 py-0.5 text-[11px] ${
                     isActive
                       ? "bg-accent-cyan/20 text-accent-cyan"
-                      : "bg-navy-800/80 text-slate-500"
+                      : "bg-navy-800/80 text-slate-400"
                   }`}
                 >
                   {t.count}

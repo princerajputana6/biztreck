@@ -8,34 +8,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep-ocean-blue + white light theme.
-        // The `navy` ramp is intentionally INVERTED vs a dark theme: high
-        // numbers are near-white surfaces, low numbers are deep ocean ink.
-        // This lets the site's existing `bg-navy-900`, `border-navy-700`,
-        // `text-navy-300` classes read correctly on a light background.
+        // Dark theme — near-black ink (#030407) + electric blue (#1558cb) +
+        // lime accent (#d4ff24). Standard dark ramp: low numbers = darkest
+        // surfaces (page background), high numbers = light text/headings.
         navy: {
-          950: "#f4f8ff", // page background
-          900: "#eaf2ff", // raised background
-          850: "#e2ecfe",
-          800: "#d7e6fc", // cards / surfaces
-          700: "#b8cff3", // borders / dividers
-          600: "#6c90d8", // strong border / muted accent
-          500: "#2f5ec9", // brand
-          400: "#1e4fa8", // links / accent text
-          300: "#0a2f6b", // deep ocean headings / eyebrow text
+          950: "#030407", // page background (near-black)
+          900: "#070a12", // raised background
+          850: "#0b0f1a",
+          800: "#121a2b", // cards / surfaces
+          700: "#202c44", // borders / dividers
+          600: "#304162", // strong border / muted accent
+          500: "#1558cb", // brand blue
+          400: "#4a84e6", // links / accent text
+          300: "#cfe0fb", // light headings / eyebrow text
         },
-        // Deep-ocean "ink" used as the primary text color (replaces white).
-        // Darkened `soft`/`mute` so secondary text reads clearly on the light
-        // page instead of looking washed out.
+        // Primary text color (replaces white) — near-white, cool.
         ink: {
-          DEFAULT: "#0a2540",
-          soft: "#2b4668",
-          mute: "#425a79",
+          DEFAULT: "#eef3fc",
+          soft: "#c2cfe6",
+          mute: "#8fa0bd",
         },
         accent: {
-          cyan: "#0e7490", // deep teal — readable on white
-          electric: "#1d4ed8",
-          glow: "#2563eb",
+          cyan: "#d4ff24", // lime — vivid secondary accent / highlights
+          electric: "#1558cb", // brand blue
+          glow: "#2f6fe0", // lighter blue for glows / particles
         },
       },
       fontFamily: {
@@ -60,13 +56,13 @@ const config: Config = {
       },
       backgroundImage: {
         "grid-pattern":
-          "linear-gradient(rgba(13, 71, 161, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 71, 161, 0.06) 1px, transparent 1px)",
+          "linear-gradient(rgba(21, 88, 203, 0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(21, 88, 203, 0.10) 1px, transparent 1px)",
         "radial-glow":
-          "radial-gradient(circle at center, rgba(37, 99, 235, 0.14), transparent 60%)",
+          "radial-gradient(circle at center, rgba(21, 88, 203, 0.22), transparent 60%)",
       },
       boxShadow: {
-        glow: "0 18px 40px -12px rgba(37, 99, 235, 0.28)",
-        "glow-lg": "0 30px 70px -16px rgba(37, 99, 235, 0.35)",
+        glow: "0 18px 40px -12px rgba(21, 88, 203, 0.45)",
+        "glow-lg": "0 30px 70px -16px rgba(21, 88, 203, 0.5)",
       },
     },
   },

@@ -84,7 +84,7 @@ export default function AboutPage() {
             We build software that{" "}
             <span className="gradient-text">removes real work</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Biztreck Solutions is a business growth, AI automation and custom
             software partner for growing companies. We work with businesses that
             have outgrown spreadsheets and disconnected tools but are not ready
@@ -96,7 +96,7 @@ export default function AboutPage() {
         <section className="mt-20 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-8 sm:p-10">
             <h2 className="font-display text-2xl font-bold text-ink">Our mission</h2>
-            <p className="mt-4 text-base leading-relaxed text-slate-600">
+            <p className="mt-4 text-base leading-relaxed text-slate-300">
               To help growing businesses replace manual work with software that
               fits how they actually operate — so their people spend time on
               customers and growth rather than on data entry and chasing.
@@ -104,7 +104,7 @@ export default function AboutPage() {
           </div>
           <div className="rounded-3xl border border-navy-700/40 bg-gradient-to-b from-navy-850/60 to-navy-900/40 p-8 sm:p-10">
             <h2 className="font-display text-2xl font-bold text-ink">Our vision</h2>
-            <p className="mt-4 text-base leading-relaxed text-slate-600">
+            <p className="mt-4 text-base leading-relaxed text-slate-300">
               A world where a 40-person business can run on software as capable
               as a 4,000-person enterprise — without the licence costs, the
               consultants, or the two-year implementation.
@@ -117,14 +117,14 @@ export default function AboutPage() {
           <h2 className="font-display text-2xl font-bold text-ink">
             Why Biztreck exists
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Most growing businesses sit in an awkward middle. Off-the-shelf tools
             cover most of the process and block the rest. Enterprise platforms
             are priced and scoped for organisations ten times their size. So the
             gap gets filled with spreadsheets, shared inboxes and people manually
             moving data between systems.
           </p>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             That gap is expensive and it compounds. Every new client adds admin
             load instead of margin. We started Biztreck to close it — building
             software sized and priced for businesses in that middle, delivered in
@@ -149,7 +149,7 @@ export default function AboutPage() {
                   <h3 className="mt-3 font-display text-lg font-bold text-ink">
                     {v.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
                     {v.desc}
                   </p>
                 </div>
@@ -170,12 +170,12 @@ export default function AboutPage() {
                 <h3 className="font-display text-xl font-bold text-ink">
                   Prince Kumar
                 </h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-400">
                   Founder, Biztreck Solutions
                 </p>
               </div>
             </div>
-            <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-600">
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-300">
               Biztreck is founder-led, which means the person setting your scope
               is accountable for whether it works. Engagements are staffed with
               senior engineers and architects — no juniors learning on your
@@ -202,7 +202,7 @@ export default function AboutPage() {
                 <h3 className="mt-3 font-display text-base font-bold text-ink">
                   {p.step}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {p.desc}
                 </p>
               </div>
@@ -215,7 +215,7 @@ export default function AboutPage() {
           <h2 className="font-display text-2xl font-bold text-ink">
             Global delivery
           </h2>
-          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
             We are headquartered in {SITE.shortAddress} and deliver remotely for
             clients across eight markets. Engagements run async-first with
             overlapping hours agreed upfront, working previews you can review in
@@ -225,7 +225,7 @@ export default function AboutPage() {
             {markets.map((m) => (
               <span
                 key={m}
-                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700"
+                className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200"
               >
                 {m}
               </span>
@@ -240,7 +240,7 @@ export default function AboutPage() {
             ].map((x) => (
               <li key={x} className="flex items-start gap-3">
                 <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                <span className="text-sm leading-relaxed text-slate-600">{x}</span>
+                <span className="text-sm leading-relaxed text-slate-300">{x}</span>
               </li>
             ))}
           </ul>
@@ -251,7 +251,7 @@ export default function AboutPage() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Let&apos;s build software that grows your business
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Start with a 30-minute strategy call. No pitch deck, no obligation.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">

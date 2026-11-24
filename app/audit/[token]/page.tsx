@@ -67,18 +67,18 @@ export default async function PublicAuditPage({
             {/* Executive summary */}
             <section>
               <h2 className="mb-2 text-lg font-bold text-slate-900">Executive Summary</h2>
-              <p className="leading-relaxed text-slate-700">{a.executiveSummary}</p>
+              <p className="leading-relaxed text-slate-200">{a.executiveSummary}</p>
             </section>
 
             {/* Sections */}
             {a.sections.map((s) => (
               <section key={s.title} className="border-t border-slate-100 pt-6">
                 <h2 className="mb-2 text-lg font-bold text-slate-900">{s.title}</h2>
-                {s.summary && <p className="leading-relaxed text-slate-700">{s.summary}</p>}
+                {s.summary && <p className="leading-relaxed text-slate-200">{s.summary}</p>}
                 {s.points?.length > 0 && (
                   <ul className="mt-3 space-y-2">
                     {s.points.map((p, i) => (
-                      <li key={i} className="flex items-start gap-2 text-slate-700">
+                      <li key={i} className="flex items-start gap-2 text-slate-200">
                         <Check size={16} className="mt-0.5 shrink-0 text-cyan-600" />
                         <span>{p}</span>
                       </li>
@@ -91,14 +91,14 @@ export default async function PublicAuditPage({
             {/* ROI */}
             <section className="rounded-xl border border-cyan-200 bg-cyan-50 p-5">
               <h2 className="mb-1 text-lg font-bold text-slate-900">Estimated ROI</h2>
-              <p className="leading-relaxed text-slate-700">{a.estimatedRoi}</p>
+              <p className="leading-relaxed text-slate-200">{a.estimatedRoi}</p>
             </section>
 
             {/* Next steps */}
             {a.nextSteps?.length > 0 && (
               <section>
                 <h2 className="mb-2 text-lg font-bold text-slate-900">Recommended Next Steps</h2>
-                <ol className="ml-5 list-decimal space-y-1 text-slate-700">
+                <ol className="ml-5 list-decimal space-y-1 text-slate-200">
                   {a.nextSteps.map((n, i) => (
                     <li key={i}>{n}</li>
                   ))}
@@ -109,7 +109,7 @@ export default async function PublicAuditPage({
             {/* CTA */}
             <section className="rounded-xl bg-slate-900 p-6 text-ink">
               <p className="text-lg font-semibold">{a.callToAction}</p>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
+              <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-300">
                 <a href={`mailto:${SITE.email}`} className="hover:text-cyan-300">
                   {SITE.email}
                 </a>
@@ -121,7 +121,7 @@ export default async function PublicAuditPage({
           </div>
         </article>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-slate-400">
           Prepared by {SITE.name} · {SITE.shortAddress}
         </p>
       </div>

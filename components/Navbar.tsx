@@ -93,7 +93,7 @@ export default function Navbar() {
               >
                 <a
                   href={l.href}
-                  className="relative flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-navy-700/40 hover:text-ink"
+                  className="relative flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-navy-700/40 hover:text-ink"
                 >
                   {l.label}
                   <ChevronDown size={14} className="opacity-70" />
@@ -111,7 +111,7 @@ export default function Navbar() {
                         <a
                           key={c.href}
                           href={c.href}
-                          className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-navy-800/70 hover:text-ink"
+                          className="block rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-navy-800/70 hover:text-ink"
                         >
                           {c.label}
                         </a>
@@ -124,7 +124,7 @@ export default function Navbar() {
               <a
                 key={l.href}
                 href={l.href}
-                className="relative rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-navy-700/40 hover:text-ink"
+                className="relative rounded-full px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-navy-700/40 hover:text-ink"
               >
                 {l.label}
               </a>
@@ -164,7 +164,7 @@ export default function Navbar() {
                       onClick={() =>
                         setMobileOpenMenu((v) => (v === l.label ? null : l.label))
                       }
-                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-navy-800/60"
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-slate-200 hover:bg-navy-800/60"
                     >
                       {l.label}
                       <ChevronDown
@@ -181,7 +181,7 @@ export default function Navbar() {
                             key={c.href}
                             href={c.href}
                             onClick={() => setOpen(false)}
-                            className="block rounded-lg px-4 py-2.5 text-sm text-slate-600 hover:bg-navy-800/60 hover:text-ink"
+                            className="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-navy-800/60 hover:text-ink"
                           >
                             {c.label}
                           </a>
@@ -194,7 +194,7 @@ export default function Navbar() {
                     key={l.href}
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-navy-800/60"
+                    className="rounded-lg px-4 py-3 text-sm font-medium text-slate-200 hover:bg-navy-800/60"
                   >
                     {l.label}
                   </a>

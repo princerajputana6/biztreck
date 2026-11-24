@@ -46,7 +46,7 @@ export default async function PortfolioPage() {
             Products and platforms{" "}
             <span className="gradient-text">we&apos;ve built</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             These are platforms we designed, engineered and run ourselves —
             filtered by the kind of solution they represent, so you can see work
             closest to what you need.
@@ -61,7 +61,7 @@ export default async function PortfolioPage() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Want something like this for your business?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Book a strategy call and we&apos;ll map what it would take — scope,
             sequence and realistic cost.
           </p>

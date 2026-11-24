@@ -53,7 +53,7 @@ export default function Stats() {
                     <Counter to={s.value} suffix={s.suffix} />
                   </span>
                 </div>
-                <div className="mt-3 text-sm font-medium uppercase tracking-wider text-slate-500">
+                <div className="mt-3 text-sm font-medium uppercase tracking-wider text-slate-400">
                   {s.label}
                 </div>
               </motion.div>

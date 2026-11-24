@@ -53,7 +53,7 @@ export default function ApplyForm({
   };
 
   const fieldBase =
-    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
+    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
 
   return (
     <form onSubmit={submit} className="glass mt-6 rounded-3xl p-6 sm:p-8">
@@ -124,7 +124,7 @@ export default function ApplyForm({
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-400">
           By applying, you agree to our{" "}
           <a className="underline hover:text-ink" href="/legal/privacy-policy">
             Privacy Policy
@@ -186,7 +186,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+      <div className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-400">
         {label}
       </div>
       {children}

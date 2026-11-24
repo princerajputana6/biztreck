@@ -260,7 +260,7 @@ export default function FaqPage() {
           <h1 className="section-title mt-5 text-ink">
             Frequently asked <span className="gradient-text">questions</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             The questions businesses actually ask before commissioning software —
             answered directly, including the ones where the honest answer is
             &ldquo;you probably don&apos;t need us for that&rdquo;.
@@ -272,7 +272,7 @@ export default function FaqPage() {
             <a
               key={g.title}
               href={`#${g.title.toLowerCase().replace(/[^a-z]+/g, "-")}`}
-              className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-700 transition-colors hover:border-accent-electric hover:text-ink"
+              className="rounded-full border border-navy-700/60 bg-navy-900/60 px-4 py-2 text-sm text-slate-200 transition-colors hover:border-accent-electric hover:text-ink"
             >
               {g.title}
             </a>
@@ -297,7 +297,7 @@ export default function FaqPage() {
                   <summary className="cursor-pointer list-none font-display text-lg font-semibold text-ink">
                     {f.q}
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-300">
                     {f.a}
                   </p>
                 </details>
@@ -310,7 +310,7 @@ export default function FaqPage() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Still have a question?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Ask it on a 30-minute strategy call. You&apos;ll get a straight
             answer, whether or not it leads to a project.
           </p>

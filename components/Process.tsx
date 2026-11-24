@@ -104,7 +104,7 @@ export default function Process() {
                     <h3 className="mt-4 font-display text-2xl font-bold text-ink">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-slate-600">{s.desc}</p>
+                    <p className="mt-2 text-slate-300">{s.desc}</p>
                   </div>
 
                   <div className="hidden lg:block" />

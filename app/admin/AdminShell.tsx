@@ -47,7 +47,7 @@ const IntegrationsView = dynamic(() => import("./integrations/IntegrationsView")
 
 function ViewSkeleton() {
   return (
-    <div className="mt-8 flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-500">
+    <div className="mt-8 flex items-center gap-2 rounded-xl border border-navy-700/40 bg-navy-900/35 p-8 text-sm text-slate-400">
       <Loader2 size={16} className="animate-spin" /> Loading…
     </div>
   );
@@ -577,7 +577,7 @@ export default function AdminShell(props: Stats) {
             </div>
             <button
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-full border border-navy-700/60 bg-navy-800/50 px-4 py-2 text-sm text-slate-700 hover:border-rose-400/40 hover:text-rose-300"
+              className="inline-flex items-center gap-2 rounded-full border border-navy-700/60 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-rose-400/40 hover:text-rose-300"
             >
               <LogOut size={14} /> Logout
             </button>
@@ -598,14 +598,14 @@ export default function AdminShell(props: Stats) {
                 Admin
               </span>
             </div>
-            <Link href="/" className="text-sm text-slate-600 hover:text-ink">
+            <Link href="/" className="text-sm text-slate-300 hover:text-ink">
               View site
             </Link>
           </div>
           <h1 className="font-display text-3xl font-bold text-ink">
             {pageCopy[view].title}
           </h1>
-          <p className="mt-1 max-w-3xl text-sm text-slate-500">
+          <p className="mt-1 max-w-3xl text-sm text-slate-400">
             {pageCopy[view].description}
           </p>
         </motion.div>
@@ -625,7 +625,7 @@ export default function AdminShell(props: Stats) {
               >
                 <div className="flex items-center justify-between gap-3">
                   <Icon size={18} className="text-accent-glow" />
-                  <span className="text-right text-xs uppercase tracking-wider text-slate-500">
+                  <span className="text-right text-xs uppercase tracking-wider text-slate-400">
                     {c.label}
                   </span>
                 </div>
@@ -697,7 +697,7 @@ export default function AdminShell(props: Stats) {
             {clientsTab === "roster" && (
               <div className="mt-6 space-y-6">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-900/35 p-4">
-              <p className="text-sm text-slate-500">Manage clients, documents, milestones, and milestone invoices.</p>
+              <p className="text-sm text-slate-400">Manage clients, documents, milestones, and milestone invoices.</p>
               <button
                 type="button"
                 onClick={() => {
@@ -853,7 +853,7 @@ export default function AdminShell(props: Stats) {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="truncate font-semibold text-ink">{client.company || client.name}</div>
-                            <div className="mt-1 text-xs text-slate-500">{client.name} | {client.email || "No email"}</div>
+                            <div className="mt-1 text-xs text-slate-400">{client.name} | {client.email || "No email"}</div>
                           </div>
                           <span className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-2 py-1 text-[11px] uppercase tracking-wider text-accent-cyan">
                             {client.status || "active"}
@@ -862,15 +862,15 @@ export default function AdminShell(props: Stats) {
                         {(() => {
                           const f = clientFinancials(client);
                           return (
-                            <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
-                              <div><span className="text-slate-500">Project:</span> {client.projectName || "Project"}</div>
-                              <div><span className="text-slate-500">Paid:</span> {money.format(f.paid)}</div>
-                              <div><span className="text-slate-500">Left:</span> {money.format(f.left)}</div>
+                            <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
+                              <div><span className="text-slate-400">Project:</span> {client.projectName || "Project"}</div>
+                              <div><span className="text-slate-400">Paid:</span> {money.format(f.paid)}</div>
+                              <div><span className="text-slate-400">Left:</span> {money.format(f.left)}</div>
                             </div>
                           );
                         })()}
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <button type="button" onClick={() => setSelectedClient(client)} className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-cyan">View</button>
+                          <button type="button" onClick={() => setSelectedClient(client)} className="rounded-full border border-navy-700/70 bg-navy-800/50 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-cyan">View</button>
                           <button type="button" onClick={() => startEditClient(client)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan">Edit</button>
                           <button type="button" onClick={() => deleteClient(client)} disabled={operationBusy === `delete-client-${client._id}`} className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs text-rose-300 disabled:opacity-60">Delete</button>
                         </div>
@@ -888,26 +888,26 @@ export default function AdminShell(props: Stats) {
                         selectedClient.theirContact ||
                         selectedClient.contactEmail ||
                         selectedClient.contactPhone) && (
-                        <div className="grid gap-2 rounded-lg border border-navy-700/40 bg-navy-950/35 p-3 text-xs text-slate-600 sm:grid-cols-2">
+                        <div className="grid gap-2 rounded-lg border border-navy-700/40 bg-navy-950/35 p-3 text-xs text-slate-300 sm:grid-cols-2">
                           {selectedClient.websiteUrl && (
                             <div>
-                              <span className="text-slate-500">Website:</span>{" "}
+                              <span className="text-slate-400">Website:</span>{" "}
                               <a href={selectedClient.websiteUrl} target="_blank" rel="noreferrer" className="text-accent-cyan hover:underline">
                                 {selectedClient.websiteUrl}
                               </a>
                             </div>
                           )}
                           {selectedClient.reportsTo && (
-                            <div><span className="text-slate-500">We report to:</span> {selectedClient.reportsTo}</div>
+                            <div><span className="text-slate-400">We report to:</span> {selectedClient.reportsTo}</div>
                           )}
                           {selectedClient.theirContact && (
-                            <div><span className="text-slate-500">Their POC (us):</span> {selectedClient.theirContact}</div>
+                            <div><span className="text-slate-400">Their POC (us):</span> {selectedClient.theirContact}</div>
                           )}
                           {selectedClient.contactEmail && (
-                            <div><span className="text-slate-500">Contact email:</span> {selectedClient.contactEmail}</div>
+                            <div><span className="text-slate-400">Contact email:</span> {selectedClient.contactEmail}</div>
                           )}
                           {selectedClient.contactPhone && (
-                            <div><span className="text-slate-500">Contact phone:</span> {selectedClient.contactPhone}</div>
+                            <div><span className="text-slate-400">Contact phone:</span> {selectedClient.contactPhone}</div>
                           )}
                         </div>
                       )}
@@ -925,8 +925,8 @@ export default function AdminShell(props: Stats) {
                         );
                       })()}
                       <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
-                        <div className="mb-2 text-xs uppercase tracking-wider text-slate-500">BRD summary</div>
-                        <div className="max-h-44 overflow-auto whitespace-pre-wrap text-sm text-slate-600">{selectedClient.brdText || "No BRD saved."}</div>
+                        <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">BRD summary</div>
+                        <div className="max-h-44 overflow-auto whitespace-pre-wrap text-sm text-slate-300">{selectedClient.brdText || "No BRD saved."}</div>
                       </div>
                       <div className="space-y-3">
                         <div className="text-sm font-semibold text-ink">Milestones</div>
@@ -934,11 +934,11 @@ export default function AdminShell(props: Stats) {
                         {selectedClient.milestones?.map((m: any, index: number) => (
                           <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
                             <div className="font-semibold text-ink">{m.title}</div>
-                            <div className="mt-1 text-xs text-slate-500">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
+                            <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
                           </div>
                         ))}
                       </div>
-                      <p className="rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3 text-xs text-slate-500">
+                      <p className="rounded-lg border border-accent-cyan/25 bg-accent-cyan/5 p-3 text-xs text-slate-400">
                         Record payments and generate invoices from the{" "}
                         <span className="font-semibold text-accent-cyan">Payment &amp; Invoice</span> page.
                       </p>
@@ -959,7 +959,7 @@ export default function AdminShell(props: Stats) {
                         action={
                           <div className="flex gap-2">
                             {doc.clientId && (
-                              <a href={`/api/admin/agreements/${doc.clientId}/pdf`} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-700 hover:border-accent-cyan" title="Download agreement PDF"><Download size={14} /></a>
+                              <a href={`/api/admin/agreements/${doc.clientId}/pdf`} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan" title="Download agreement PDF"><Download size={14} /></a>
                             )}
                             <button type="button" onClick={() => deleteDocument(doc)} className="rounded-full border border-rose-400/30 bg-rose-400/10 p-2 text-rose-300 hover:border-rose-400/60" title="Delete document"><Trash2 size={14} /></button>
                           </div>
@@ -1033,7 +1033,7 @@ export default function AdminShell(props: Stats) {
                   <div className="flex items-center gap-2.5">
                     <activeTab.icon size={18} className="text-accent-cyan" />
                     <h2 className="font-display text-lg font-bold text-ink">{activeTab.label}</h2>
-                    <span className="rounded-full bg-navy-800/80 px-2 py-0.5 text-xs text-slate-500">{activeTab.count}</span>
+                    <span className="rounded-full bg-navy-800/80 px-2 py-0.5 text-xs text-slate-400">{activeTab.count}</span>
                   </div>
                   {canAdd && (
                     <button
@@ -1108,7 +1108,7 @@ export default function AdminShell(props: Stats) {
                         <Field name="category" label="Category" />
                         <Field name="amount" label="Amount" type="number" required />
                         <Field name="paidOn" label="Paid on" type="date" />
-                        <label className="flex items-center gap-2 self-end pb-2.5 text-sm text-slate-600">
+                        <label className="flex items-center gap-2 self-end pb-2.5 text-sm text-slate-300">
                           <input name="recurring" type="checkbox" className="h-4 w-4 rounded border-navy-700 bg-navy-950" />
                           Recurring
                         </label>
@@ -1122,7 +1122,7 @@ export default function AdminShell(props: Stats) {
                 {teamTab === "dashboard" && (
                   <div className="grid gap-8 xl:grid-cols-2">
                     <div>
-                      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Team</h3>
+                      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Team</h3>
                       <ListEmpty show={employees.length === 0} label="No employees yet." />
                       <div className="grid gap-3 md:grid-cols-2">
                         {employees.slice(0, 10).map((employee) => (
@@ -1136,7 +1136,7 @@ export default function AdminShell(props: Stats) {
                     </div>
                     <div className="grid gap-5">
                       <div>
-                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Hiring</h3>
+                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Hiring</h3>
                         <ListEmpty show={hiring.length === 0} label="No hiring items yet." />
                         <div className="space-y-3">
                           {hiring.slice(0, 6).map((item) => (
@@ -1145,7 +1145,7 @@ export default function AdminShell(props: Stats) {
                         </div>
                       </div>
                       <div>
-                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Social</h3>
+                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Social</h3>
                         <ListEmpty show={socialTasks.length === 0} label="No social tasks yet." />
                         <div className="space-y-3">
                           {socialTasks.slice(0, 6).map((item) => (
@@ -1180,7 +1180,7 @@ export default function AdminShell(props: Stats) {
                 {teamTab === "hiring" && (
                   <>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent-cyan/20 bg-accent-cyan/5 p-3">
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-400">
                         Public job posts live in Content. {jobs.length} open role{jobs.length === 1 ? "" : "s"} published.
                       </p>
                       <Link
@@ -1197,11 +1197,11 @@ export default function AdminShell(props: Stats) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <div className="truncate font-semibold text-ink">{item.title}</div>
-                              <div className="mt-0.5 truncate text-xs text-slate-500">{item.department || "Team"}{item.candidateName ? ` · ${item.candidateName}` : ""}</div>
+                              <div className="mt-0.5 truncate text-xs text-slate-400">{item.department || "Team"}{item.candidateName ? ` · ${item.candidateName}` : ""}</div>
                             </div>
                             <StatusBadge value={item.stage} />
                           </div>
-                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-500">{item.notes}</p>}
+                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-400">{item.notes}</p>}
                         </div>
                       ))}
                     </div>
@@ -1218,21 +1218,21 @@ export default function AdminShell(props: Stats) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <div className="truncate font-semibold text-ink">{app.name}</div>
-                              <div className="mt-0.5 truncate text-xs text-slate-500">{app.jobTitle || "General application"}{app.email ? ` · ${app.email}` : ""}</div>
+                              <div className="mt-0.5 truncate text-xs text-slate-400">{app.jobTitle || "General application"}{app.email ? ` · ${app.email}` : ""}</div>
                             </div>
                             <StatusBadge value={app.status} />
                           </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
                             {app.phone && <span>{app.phone}</span>}
                             <span>{dateLabel(app.createdAt)}</span>
                           </div>
                           {(app.resumeUrl || app.portfolio) && (
                             <div className="mt-2 flex flex-wrap gap-2">
                               {app.resumeUrl && (
-                                <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-700 hover:border-accent-cyan">Resume</a>
+                                <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200 hover:border-accent-cyan">Resume</a>
                               )}
                               {app.portfolio && (
-                                <a href={app.portfolio} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-700 hover:border-accent-cyan">Portfolio</a>
+                                <a href={app.portfolio} target="_blank" rel="noreferrer" className="rounded-full border border-navy-700/70 bg-navy-800/50 px-2.5 py-1 text-[11px] text-slate-200 hover:border-accent-cyan">Portfolio</a>
                               )}
                             </div>
                           )}
@@ -1251,14 +1251,14 @@ export default function AdminShell(props: Stats) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <div className="truncate font-semibold text-ink">{item.title}</div>
-                              <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
-                                <span className="rounded bg-navy-800/80 px-1.5 py-0.5 text-[11px] text-slate-600">{item.channel}</span>
+                              <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400">
+                                <span className="rounded bg-navy-800/80 px-1.5 py-0.5 text-[11px] text-slate-300">{item.channel}</span>
                                 <span className="inline-flex items-center gap-1"><CalendarClock size={12} />{item.scheduledFor || "unscheduled"}</span>
                               </div>
                             </div>
                             <StatusBadge value={item.status} />
                           </div>
-                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-500">{item.notes}</p>}
+                          {item.notes && <p className="mt-2 line-clamp-2 text-xs text-slate-400">{item.notes}</p>}
                         </div>
                       ))}
                     </div>
@@ -1273,7 +1273,7 @@ export default function AdminShell(props: Stats) {
                         <div key={item._id} className="flex items-center justify-between gap-3 rounded-xl border border-navy-700/40 bg-navy-950/35 p-3.5">
                           <div className="min-w-0">
                             <div className="truncate font-semibold text-ink">{item.title}</div>
-                            <div className="mt-0.5 flex items-center gap-2 truncate text-xs text-slate-500">
+                            <div className="mt-0.5 flex items-center gap-2 truncate text-xs text-slate-400">
                               <span>{item.category || "General"}</span>
                               <span>· {item.paidOn || "—"}</span>
                               {item.recurring && <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300">recurring</span>}
@@ -1296,7 +1296,7 @@ export default function AdminShell(props: Stats) {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="font-display text-xl font-bold text-ink">Generate</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-400">
                   Vercel cron calls /api/cron/generate-blogs daily at 00:30 UTC.
                 </p>
               </div>
@@ -1373,13 +1373,13 @@ function TabBar<T extends string>({
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
               isActive
                 ? "border border-accent-cyan/30 bg-accent-cyan/15 text-ink"
-                : "border border-transparent text-slate-500 hover:bg-navy-800/60 hover:text-ink"
+                : "border border-transparent text-slate-400 hover:bg-navy-800/60 hover:text-ink"
             }`}
           >
-            <Icon size={16} className={isActive ? "text-accent-cyan" : "text-slate-500"} />
+            <Icon size={16} className={isActive ? "text-accent-cyan" : "text-slate-400"} />
             {t.label}
             {t.count != null && (
-              <span className={`rounded-full px-2 py-0.5 text-[11px] ${isActive ? "bg-accent-cyan/20 text-accent-cyan" : "bg-navy-800/80 text-slate-500"}`}>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] ${isActive ? "bg-accent-cyan/20 text-accent-cyan" : "bg-navy-800/80 text-slate-400"}`}>
                 {t.count}
               </span>
             )}
@@ -1423,7 +1423,7 @@ function BillingTab({
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
       <section className="space-y-6">
         <Panel id="payment-invoice" title="Record payment & generate invoice" icon={ReceiptText}>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Select client
             <select
               value={selectedClient?._id || ""}
@@ -1444,7 +1444,7 @@ function BillingTab({
           </label>
 
           {!selectedClient && (
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-slate-400">
               Pick a client to see totals, record payments, and generate a branded invoice PDF.
             </p>
           )}
@@ -1482,13 +1482,13 @@ function BillingTab({
                           href={`/api/admin/invoices/${latestInvoice._id}/pdf`}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-700 hover:border-accent-cyan"
+                          className="inline-flex items-center gap-2 rounded-full border border-navy-700/70 bg-navy-800/50 px-4 py-2 text-sm text-slate-200 hover:border-accent-cyan"
                         >
                           <Download size={14} />
                           Download {latestInvoice.invoiceNumber}
                         </a>
                       )}
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-400">
                         Uses the total website cost, discount, and GST from the client record.
                       </span>
                     </div>
@@ -1570,7 +1570,7 @@ function BillingTab({
                   {selectedClient.payments?.map((payment: any, index: number) => (
                     <div
                       key={`${payment.createdAt || payment.receivedOn}-${index}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-600"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-navy-700/40 bg-navy-900/40 px-3 py-2 text-xs text-slate-300"
                     >
                       <span>{money.format(Number(payment.amount || 0))}</span>
                       <span>{payment.method || "payment"}</span>
@@ -1586,7 +1586,7 @@ function BillingTab({
                 {selectedClient.milestones?.map((m: any, index: number) => (
                   <div key={`${m.title}-${index}`} className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
                     <div className="font-semibold text-ink">{m.title}</div>
-                    <div className="mt-1 text-xs text-slate-500">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
+                    <div className="mt-1 text-xs text-slate-400">{money.format(Number(m.amount || 0))} | {m.dueDate || "No due date"} | {m.status || "planned"}</div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "completed")} disabled={Boolean(m.invoiceId)} className="rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-3 py-1.5 text-xs text-accent-cyan disabled:cursor-not-allowed disabled:opacity-50">Complete & generate invoice</button>
                       <button type="button" onClick={() => updateMilestoneStatus(selectedClient, index, "paid")} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-300">Mark paid</button>
@@ -1618,7 +1618,7 @@ function BillingTab({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-ink">{invoice.invoiceNumber}</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-slate-400">
                       {invoice.clientCompany || invoice.clientName} |{" "}
                       {invoice.type === "project"
                         ? "Full project invoice"
@@ -1626,14 +1626,14 @@ function BillingTab({
                           ? invoice.projectName || "Custom invoice"
                           : invoice.milestoneTitle}
                     </div>
-                    <div className="mt-1 text-xs text-slate-600">{money.format(Number(invoice.amount || 0))}</div>
+                    <div className="mt-1 text-xs text-slate-300">{money.format(Number(invoice.amount || 0))}</div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     <a
                       href={`/api/admin/invoices/${invoice._id}/pdf`}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-700 hover:border-accent-cyan"
+                      className="rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-200 hover:border-accent-cyan"
                       title="Download invoice PDF"
                     >
                       <Download size={14} />
@@ -1698,7 +1698,7 @@ function CustomInvoiceForm({
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const inputCls =
-    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan";
+    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-accent-cyan";
 
   const [items, setItems] = useState<{ description: string; amount: string }[]>([
     { description: "", amount: "" },
@@ -1819,13 +1819,13 @@ function CustomInvoiceForm({
   return (
     <Panel id="custom-invoice" title="Create custom invoice" icon={ReceiptText}>
       <form onSubmit={submit} className="space-y-4">
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-400">
           Build a one-off invoice for anyone — link a client or type a bill-to, back-date it for a past
           payment, set its status, and choose whether tax is added on top or already included.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Link a client (optional)
             <select value={clientId} onChange={(e) => onClientSelect(e.target.value)} className={inputCls}>
               <option value="">— None (type bill-to below) —</option>
@@ -1836,31 +1836,31 @@ function CustomInvoiceForm({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Bill to <span className="text-rose-300">*</span>
             <input value={billTo} onChange={(e) => setBillTo(e.target.value)} placeholder="Client or company name" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Email (optional)
             <input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="billing@theirco.com" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Description / project (optional)
             <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. March retainer" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Client phone (optional)
             <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="+91 98xxxxxxx" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Client GSTIN (optional)
             <input value={clientGstin} onChange={(e) => setClientGstin(e.target.value)} placeholder="07AAMCT1251B1ZO" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Country (optional)
             <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="India" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600 sm:col-span-2">
+          <label className="grid gap-1 text-sm text-slate-300 sm:col-span-2">
             Billing address (appears under Bill To)
             <textarea
               value={billingAddress}
@@ -1905,7 +1905,7 @@ function CustomInvoiceForm({
                 onClick={() => removeItem(i)}
                 disabled={items.length <= 1}
                 title="Remove line"
-                className="shrink-0 rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-600 hover:border-rose-400/50 hover:text-rose-300 disabled:opacity-40"
+                className="shrink-0 rounded-full border border-navy-700/70 bg-navy-800/50 p-2 text-slate-300 hover:border-rose-400/50 hover:text-rose-300 disabled:opacity-40"
               >
                 <X size={14} />
               </button>
@@ -1914,19 +1914,19 @@ function CustomInvoiceForm({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Currency
             <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} placeholder="INR" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             SAC code
             <input value={sac} onChange={(e) => setSac(e.target.value)} placeholder="998314" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Tax rate %
             <input value={taxRate} onChange={(e) => setTaxRate(e.target.value)} type="number" min="0" step="0.1" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Tax treatment
             <select value={gstMode} onChange={(e) => setGstMode(e.target.value as any)} className={inputCls}>
               <option value="exclusive">Add on top (exclusive)</option>
@@ -1937,16 +1937,16 @@ function CustomInvoiceForm({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Invoice date
             <input value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} type="date" className={inputCls} />
-            <span className="text-[11px] text-slate-500">Can be in the past.</span>
+            <span className="text-[11px] text-slate-400">Can be in the past.</span>
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Due date (optional)
             <input value={dueDate} onChange={(e) => setDueDate(e.target.value)} type="date" className={inputCls} />
           </label>
-          <label className="grid gap-1 text-sm text-slate-600">
+          <label className="grid gap-1 text-sm text-slate-300">
             Status
             <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
               {["paid", "draft", "sent", "overdue"].map((s) => (
@@ -1958,24 +1958,24 @@ function CustomInvoiceForm({
           </label>
         </div>
 
-        <label className="grid gap-1 text-sm text-slate-600">
+        <label className="grid gap-1 text-sm text-slate-300">
           Notes (optional)
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything to print in the Notes section." className={`${inputCls} resize-y`} />
         </label>
 
         <div className="grid grid-cols-3 gap-3 rounded-lg border border-navy-700/40 bg-navy-950/40 p-3 text-sm">
           <div>
-            <div className="text-xs text-slate-500">Subtotal</div>
+            <div className="text-xs text-slate-400">Subtotal</div>
             <div className="font-semibold text-ink">{fmt(subtotal)}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-slate-400">
               Tax {gstMode === "none" || rate <= 0 ? "" : `(${rate}%${gstMode === "inclusive" ? " incl." : ""})`}
             </div>
             <div className="font-semibold text-ink">{fmt(taxAmount)}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-500">Total</div>
+            <div className="text-xs text-slate-400">Total</div>
             <div className="font-bold text-accent-cyan">{fmt(total)}</div>
           </div>
         </div>
@@ -2022,7 +2022,7 @@ function EmployeeCard({
   const [open, setOpen] = useState(false);
   const isIntern = (emp.employmentType || emp.status) === "intern";
   const inputCls =
-    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-2.5 py-1.5 text-xs text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan";
+    "rounded-lg border border-navy-700/70 bg-navy-950/50 px-2.5 py-1.5 text-xs text-ink outline-none placeholder:text-slate-300 focus:border-accent-cyan";
   const [f, setF] = useState({
     role: emp.role || "",
     department: emp.department || "",
@@ -2052,11 +2052,11 @@ function EmployeeCard({
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent-cyan/30 to-violet-500/30 text-sm font-bold text-ink">{initials(emp.name)}</div>
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold text-ink">{emp.name}</div>
-          <div className="mt-0.5 truncate text-xs text-slate-500">
+          <div className="mt-0.5 truncate text-xs text-slate-400">
             {emp.role || "Team"}{emp.department ? ` · ${emp.department}` : ""}{isIntern ? " · Intern" : ""}
           </div>
         </div>
-        <div className="shrink-0 text-sm font-semibold text-ink">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-500">/mo</span></div>
+        <div className="shrink-0 text-sm font-semibold text-ink">{money.format(Number(emp.salaryMonthly || 0))}<span className="text-xs font-normal text-slate-400">/mo</span></div>
       </div>
       <div className="mt-3 flex items-center gap-2">
         <select
@@ -2087,7 +2087,7 @@ function EmployeeCard({
 
       {open && (
         <div className="mt-3 space-y-3 rounded-lg border border-navy-700/40 bg-navy-900/40 p-3">
-          <div className="text-xs font-semibold text-slate-600">HR details (used to fill the documents)</div>
+          <div className="text-xs font-semibold text-slate-300">HR details (used to fill the documents)</div>
           <div className="grid grid-cols-2 gap-2">
             <input value={f.role} onChange={(e) => set("role", e.target.value)} placeholder="Role / designation" className={inputCls} />
             <input value={f.department} onChange={(e) => set("department", e.target.value)} placeholder="Department" className={inputCls} />
@@ -2097,10 +2097,10 @@ function EmployeeCard({
               <option value="contract">Contract</option>
             </select>
             <input value={f.salaryMonthly} onChange={(e) => set("salaryMonthly", e.target.value)} type="number" placeholder="Monthly salary / stipend" className={inputCls} />
-            <label className="grid gap-0.5 text-[10px] text-slate-500">Start date
+            <label className="grid gap-0.5 text-[10px] text-slate-400">Start date
               <input value={f.joiningDate} onChange={(e) => set("joiningDate", e.target.value)} type="date" className={inputCls} />
             </label>
-            <label className="grid gap-0.5 text-[10px] text-slate-500">End / last day
+            <label className="grid gap-0.5 text-[10px] text-slate-400">End / last day
               <input value={f.endDate} onChange={(e) => set("endDate", e.target.value)} type="date" className={inputCls} />
             </label>
             <input value={f.location} onChange={(e) => set("location", e.target.value)} placeholder="Work location" className={inputCls} />
@@ -2131,7 +2131,7 @@ function EmployeeCard({
           </button>
 
           <div className="border-t border-navy-700/40 pt-3">
-            <div className="mb-2 text-xs font-semibold text-slate-600">Generate &amp; download</div>
+            <div className="mb-2 text-xs font-semibold text-slate-300">Generate &amp; download</div>
             <div className="flex flex-wrap gap-2">
               {docs.map((d) => (
                 <a
@@ -2142,14 +2142,14 @@ function EmployeeCard({
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${
                     d.cert
                       ? "border-amber-400/30 bg-amber-400/10 text-amber-200 hover:border-amber-400/60"
-                      : "border-navy-700/70 bg-navy-800/50 text-slate-700 hover:border-accent-cyan"
+                      : "border-navy-700/70 bg-navy-800/50 text-slate-200 hover:border-accent-cyan"
                   }`}
                 >
                   {d.cert ? <Award size={12} /> : <Download size={12} />} {d.label}
                 </a>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-slate-500">Opens a branded PDF. Fill the details above (especially dates) for complete documents.</p>
+            <p className="mt-2 text-[11px] text-slate-400">Opens a branded PDF. Fill the details above (especially dates) for complete documents.</p>
           </div>
         </div>
       )}
@@ -2185,7 +2185,7 @@ function AdminSidebar({
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 active
                   ? "border border-accent-cyan/30 bg-accent-cyan/10 text-ink"
-                  : "text-slate-600 hover:bg-navy-800/70 hover:text-ink"
+                  : "text-slate-300 hover:bg-navy-800/70 hover:text-ink"
               }`}
             >
               <Icon size={17} className="text-accent-glow" />
@@ -2196,18 +2196,18 @@ function AdminSidebar({
       </nav>
 
       <div className="space-y-3 border-t border-navy-700/40 pt-4">
-        <div className="flex items-center gap-2 px-3 py-1 text-xs text-slate-500">
+        <div className="flex items-center gap-2 px-3 py-1 text-xs text-slate-400">
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent-cyan/15 text-[11px] font-bold uppercase text-accent-cyan">
             {(session.name || session.email).slice(0, 2)}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-slate-700">{session.name || session.email}</span>
-            <span className="capitalize text-slate-500">{session.role}</span>
+            <span className="block truncate text-slate-200">{session.name || session.email}</span>
+            <span className="capitalize text-slate-400">{session.role}</span>
           </span>
         </div>
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-navy-800/70 hover:text-ink"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-navy-800/70 hover:text-ink"
         >
           <ExternalLink size={17} className="text-accent-cyan" />
           View site
@@ -2243,7 +2243,7 @@ function MobileAdminNav({
             className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${
               active
                 ? "border-accent-cyan/40 bg-accent-cyan/15 text-ink"
-                : "border-navy-700/60 bg-navy-900/60 text-slate-700"
+                : "border-navy-700/60 bg-navy-900/60 text-slate-200"
             }`}
           >
             <Icon size={14} className="text-accent-cyan" />
@@ -2296,7 +2296,7 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm text-slate-600">
+    <label className="grid gap-1 text-sm text-slate-300">
       {label}
       <input
         name={name}
@@ -2304,7 +2304,7 @@ function Field({
         required={required}
         defaultValue={defaultValue}
         placeholder={placeholder}
-        className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan"
+        className="rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-accent-cyan"
       />
     </label>
   );
@@ -2322,7 +2322,7 @@ function Select({
   defaultValue?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm text-slate-600">
+    <label className="grid gap-1 text-sm text-slate-300">
       {label}
       <select
         name={name}
@@ -2363,7 +2363,7 @@ function Textarea({
   onChange?: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-1 text-sm text-slate-600">
+    <label className="grid gap-1 text-sm text-slate-300">
       {label}
       <textarea
         name={name}
@@ -2373,7 +2373,7 @@ function Textarea({
         defaultValue={defaultValue}
         onChange={onChange ? (event) => onChange(event.target.value) : undefined}
         rows={compact ? 2 : 5}
-        className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-accent-cyan"
+        className="resize-y rounded-lg border border-navy-700/70 bg-navy-950/50 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-accent-cyan"
       />
     </label>
   );
@@ -2419,7 +2419,7 @@ const TONES: Record<string, string> = {
   violet: "text-violet-300 bg-violet-400/10 border-violet-400/25",
   emerald: "text-emerald-300 bg-emerald-400/10 border-emerald-400/25",
   amber: "text-amber-300 bg-amber-400/10 border-amber-400/25",
-  slate: "text-slate-600 bg-slate-400/10 border-slate-500/25",
+  slate: "text-slate-300 bg-slate-400/10 border-slate-500/25",
 };
 
 function StatTile({
@@ -2438,13 +2438,13 @@ function StatTile({
   return (
     <div className="rounded-xl border border-navy-700/40 bg-navy-900/40 p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-slate-500">{label}</span>
+        <span className="text-xs uppercase tracking-wider text-slate-400">{label}</span>
         <span className={`grid h-9 w-9 place-items-center rounded-lg border ${TONES[tone] || TONES.cyan}`}>
           <Icon size={16} />
         </span>
       </div>
       <div className="mt-3 font-display text-2xl font-bold text-ink">{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+      {hint && <div className="mt-1 text-xs text-slate-400">{hint}</div>}
     </div>
   );
 }
@@ -2477,7 +2477,7 @@ function StatusBadge({ value }: { value?: string }) {
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-navy-700/40 bg-navy-950/35 p-4">
-      <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-slate-400">{label}</div>
       <div className="mt-2 break-words font-display text-xl font-bold text-ink">{value}</div>
     </div>
   );
@@ -2496,7 +2496,7 @@ function RecordRow({
     <div className="flex items-start justify-between gap-3 rounded-lg border border-navy-700/40 bg-navy-950/35 p-3">
       <div className="min-w-0">
         <div className="truncate font-semibold text-ink">{title}</div>
-        <div className="mt-1 text-xs text-slate-500">{meta}</div>
+        <div className="mt-1 text-xs text-slate-400">{meta}</div>
       </div>
       {action}
     </div>
@@ -2506,7 +2506,7 @@ function RecordRow({
 function ListEmpty({ show, label }: { show: boolean; label: string }) {
   if (!show) return null;
   return (
-    <div className="rounded-lg border border-dashed border-navy-700/60 bg-navy-950/25 p-5 text-center text-sm text-slate-500">
+    <div className="rounded-lg border border-dashed border-navy-700/60 bg-navy-950/25 p-5 text-center text-sm text-slate-400">
       {label}
     </div>
   );
@@ -2536,7 +2536,7 @@ function ContentList({
           >
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold text-ink">{item.title}</div>
-              <div className="mt-0.5 text-xs text-slate-500">
+              <div className="mt-0.5 text-xs text-slate-400">
                 {kind === "blogs"
                   ? `/${item.slug} | ${item.category || "Engineering"} | ${dateLabel(item.createdAt)}`
                   : `${item.department} | ${item.location} | ${item.type}`}
@@ -2546,7 +2546,7 @@ function ContentList({
               <Link
                 href={kind === "blogs" ? `/blog/${item.slug}` : `/careers/${item.slug}`}
                 target="_blank"
-                className="inline-flex w-fit items-center gap-1.5 rounded-full border border-navy-700/60 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-700 hover:border-accent-electric"
+                className="inline-flex w-fit items-center gap-1.5 rounded-full border border-navy-700/60 bg-navy-800/40 px-3 py-1.5 text-xs text-slate-200 hover:border-accent-electric"
               >
                 <ExternalLink size={12} /> View
               </Link>
@@ -2588,7 +2588,7 @@ function AutoResultBanner({
     >
       <div className="font-semibold">{result.message}</div>
       {result.inserted && result.inserted.length > 0 && (
-        <ul className="mt-2 space-y-1 text-slate-700/90">
+        <ul className="mt-2 space-y-1 text-slate-200/90">
           {result.inserted.map((p) => (
             <li key={p.slug} className="flex items-center gap-2">
               <span className="text-emerald-300">OK</span>

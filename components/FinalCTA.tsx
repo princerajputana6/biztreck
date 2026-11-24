@@ -17,7 +17,7 @@ export default function FinalCTA() {
             Let&apos;s build software that{" "}
             <span className="gradient-text">grows your business.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-300">
             Start with a 30-minute strategy call. We&apos;ll map where software
             would remove the most cost from your operation — and tell you
             honestly if it wouldn&apos;t.

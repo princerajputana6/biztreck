@@ -111,22 +111,22 @@ function Aurora() {
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-50"
+      className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-70"
       preserveAspectRatio="none"
       viewBox="0 0 1200 800"
     >
       <defs>
         <radialGradient id="a1" cx="20%" cy="30%" r="50%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          <stop offset="0%" stopColor="#1558cb" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#1558cb" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="a2" cx="80%" cy="20%" r="40%">
-          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+          <stop offset="0%" stopColor="#d4ff24" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#d4ff24" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="a3" cx="50%" cy="90%" r="60%">
-          <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0" />
+          <stop offset="0%" stopColor="#2f6fe0" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#2f6fe0" stopOpacity="0" />
         </radialGradient>
       </defs>
       <rect width="1200" height="800" fill="url(#a1)" />
@@ -327,7 +327,7 @@ export default function Hero() {
       {/* Marquee strip — pure CSS keyframe */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 select-none overflow-hidden whitespace-nowrap font-display text-[18vw] font-extrabold leading-none text-navy-500 opacity-[0.07]"
+        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 select-none overflow-hidden whitespace-nowrap font-display text-[18vw] font-extrabold leading-none text-ink opacity-[0.05]"
       >
         <div className="flex bt-marquee">
           <span className="px-8">BUILD · REVAMP · RANK · SCALE ·&nbsp;</span>
@@ -359,7 +359,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-7 max-w-xl text-lg leading-relaxed text-slate-600"
+            className="mt-7 max-w-xl text-lg leading-relaxed text-slate-300"
           >
             We help growing businesses automate operations, modernise outdated
             systems, and build{" "}
@@ -399,7 +399,7 @@ export default function Hero() {
                 <div className="font-display text-2xl font-bold text-ink">
                   {s.k}
                 </div>
-                <div className="mt-1 text-xs text-slate-500">{s.v}</div>
+                <div className="mt-1 text-xs text-slate-400">{s.v}</div>
               </div>
             ))}
           </motion.div>
@@ -412,7 +412,7 @@ export default function Hero() {
 
       {/* Scroll cue */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-        <div className="flex flex-col items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-500">
+        <div className="flex flex-col items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
           <span>Scroll</span>
           <div
             className="h-10 w-[2px] rounded-full bg-gradient-to-b from-accent-cyan via-accent-electric to-transparent"

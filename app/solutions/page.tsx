@@ -53,7 +53,7 @@ export default function SolutionsIndex() {
             Software that replaces{" "}
             <span className="gradient-text">manual work</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             We help growing businesses automate operations, modernise outdated
             systems, and build scalable software that drives measurable growth.
             Every engagement starts with the process that is costing you money —
@@ -83,22 +83,22 @@ export default function SolutionsIndex() {
                   className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                 />
               </h2>
-              <p className="mt-4 text-xs uppercase tracking-wider text-slate-500">
+              <p className="mt-4 text-xs uppercase tracking-wider text-slate-400">
                 Problem
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+              <p className="mt-1 text-sm leading-relaxed text-slate-300">
                 {s.card.problem}
               </p>
-              <p className="mt-3 text-xs uppercase tracking-wider text-slate-500">
+              <p className="mt-3 text-xs uppercase tracking-wider text-slate-400">
                 Solution
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+              <p className="mt-1 text-sm leading-relaxed text-slate-300">
                 {s.card.solution}
               </p>
               <p className="mt-3 text-xs uppercase tracking-wider text-accent-cyan">
                 Outcome
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-700">
+              <p className="mt-1 text-sm leading-relaxed text-slate-200">
                 {s.card.outcome}
               </p>
             </Link>
@@ -109,7 +109,7 @@ export default function SolutionsIndex() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Not sure which one you need?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             That is what the free business audit is for. We look at your current
             systems and workflows, then tell you where software would actually pay
             for itself — and where it would not.

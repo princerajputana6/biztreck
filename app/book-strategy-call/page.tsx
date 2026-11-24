@@ -53,7 +53,7 @@ export default function BookStrategyCallPage() {
             <h1 className="section-title mt-5 text-ink">
               Book a <span className="gradient-text">strategy call</span>
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-slate-600">
+            <p className="mt-5 text-lg leading-relaxed text-slate-300">
               A focused conversation about where your operation is losing time
               and whether software would actually pay for itself. No pitch deck,
               no obligation.
@@ -66,7 +66,7 @@ export default function BookStrategyCallPage() {
               {expect.map((e) => (
                 <li key={e} className="flex items-start gap-3">
                   <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                  <span className="text-sm leading-relaxed text-slate-600">{e}</span>
+                  <span className="text-sm leading-relaxed text-slate-300">{e}</span>
                 </li>
               ))}
             </ul>
@@ -86,14 +86,14 @@ export default function BookStrategyCallPage() {
                   <h3 className="mt-1 font-display text-base font-bold text-ink">
                     {a.step}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-1 text-sm leading-relaxed text-slate-300">
                     {a.desc}
                   </p>
                 </div>
               ))}
             </div>
 
-            <p className="mt-8 text-sm text-slate-500">
+            <p className="mt-8 text-sm text-slate-400">
               Prefer email? Reach us at{" "}
               <a href={`mailto:${SITE.email}`} className="text-accent-glow hover:text-ink">
                 {SITE.email}
@@ -106,7 +106,7 @@ export default function BookStrategyCallPage() {
               <h2 className="font-display text-2xl font-bold text-ink">
                 Tell us about your business
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-400">
                 Five fields. We&apos;ll come back with times that suit your zone.
               </p>
               <div className="mt-8">

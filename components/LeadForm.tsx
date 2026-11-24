@@ -84,7 +84,7 @@ export default function LeadForm({
   };
 
   const fieldBase =
-    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-500 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
+    "w-full rounded-xl border border-navy-700/60 bg-navy-900/60 px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition-all focus:border-accent-electric focus:ring-2 focus:ring-accent-electric/30";
 
   if (status === "success") {
     return (
@@ -92,7 +92,7 @@ export default function LeadForm({
         <h3 className="font-display text-2xl font-bold text-ink">
           Request received
         </h3>
-        <p className="mx-auto mt-3 max-w-md text-slate-600">
+        <p className="mx-auto mt-3 max-w-md text-slate-300">
           Thanks — we&apos;ve got your details and will reply within one business
           day with next steps.
         </p>
@@ -103,7 +103,7 @@ export default function LeadForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Name *
           <input
             required
@@ -113,7 +113,7 @@ export default function LeadForm({
             className={fieldBase}
           />
         </label>
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Work email *
           <input
             required
@@ -124,7 +124,7 @@ export default function LeadForm({
             className={fieldBase}
           />
         </label>
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Company
           <input
             value={form.company}
@@ -133,7 +133,7 @@ export default function LeadForm({
             className={fieldBase}
           />
         </label>
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Website
           <input
             value={form.website}
@@ -144,7 +144,7 @@ export default function LeadForm({
         </label>
       </div>
 
-      <label className="grid gap-1.5 text-sm text-slate-600">
+      <label className="grid gap-1.5 text-sm text-slate-300">
         {messageLabel} *
         <textarea
           required
@@ -157,7 +157,7 @@ export default function LeadForm({
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Budget (optional)
           <select
             value={form.budget}
@@ -169,7 +169,7 @@ export default function LeadForm({
             ))}
           </select>
         </label>
-        <label className="grid gap-1.5 text-sm text-slate-600">
+        <label className="grid gap-1.5 text-sm text-slate-300">
           Timeline (optional)
           <select
             value={form.timeline}
@@ -201,7 +201,7 @@ export default function LeadForm({
           Something went wrong. Please email us directly and we&apos;ll pick it up.
         </p>
       )}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         No obligation, no sales pitch. We reply within one business day.
       </p>
     </form>

@@ -44,7 +44,7 @@ export default function CaseStudiesPage() {
             Case studies with{" "}
             <span className="gradient-text">measurable results</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Every case study below states the business challenge, what we built,
             the technology, how long it took, and what actually changed. Client
             names are withheld where the work is commercially sensitive.
@@ -72,26 +72,26 @@ export default function CaseStudiesPage() {
                   <h2 className="font-display text-lg font-bold text-ink">
                     Business challenge
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
                     {cs.challenge}
                   </p>
                   <h3 className="mt-6 font-display text-lg font-bold text-ink">
                     Solution
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
                     {cs.solution}
                   </p>
                   <h3 className="mt-6 font-display text-lg font-bold text-ink">
                     Timeline
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
                     {cs.timeline}
                   </p>
                   <div className="mt-6 flex flex-wrap gap-2">
                     {cs.tech.map((t) => (
                       <span
                         key={t}
-                        className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-600"
+                        className="rounded-full border border-navy-700/60 bg-navy-900/60 px-3 py-1 text-xs text-slate-300"
                       >
                         {t}
                       </span>
@@ -106,7 +106,7 @@ export default function CaseStudiesPage() {
                     {cs.results.map((r) => (
                       <li key={r} className="flex items-start gap-3">
                         <Check size={18} className="mt-0.5 shrink-0 text-accent-cyan" />
-                        <span className="text-sm leading-relaxed text-slate-600">
+                        <span className="text-sm leading-relaxed text-slate-300">
                           {r}
                         </span>
                       </li>
@@ -122,7 +122,7 @@ export default function CaseStudiesPage() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Want results like these?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Start with a strategy call. We&apos;ll tell you what is realistic for
             your operation, and what it would take.
           </p>

@@ -150,9 +150,9 @@ export default function HeroOrb({
         <div className="text-[10px] uppercase tracking-wider text-navy-300">Lighthouse</div>
         <div className="mt-1 flex items-baseline gap-1">
           <div className="font-display text-2xl font-bold text-emerald-400">98</div>
-          <div className="text-xs text-slate-500">/ 100</div>
+          <div className="text-xs text-slate-400">/ 100</div>
         </div>
-        <div className="mt-1 text-[11px] text-slate-500">Performance score</div>
+        <div className="mt-1 text-[11px] text-slate-400">Performance score</div>
       </div>
 
       <div
@@ -167,7 +167,7 @@ export default function HeroOrb({
           </span>
           <span className="text-xs font-semibold text-ink">Live · prod</span>
         </div>
-        <div className="mt-1 text-[11px] text-slate-500">23s build · 0 errors</div>
+        <div className="mt-1 text-[11px] text-slate-400">23s build · 0 errors</div>
       </div>
     </motion.div>
   );

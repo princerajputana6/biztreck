@@ -63,7 +63,7 @@ export default function ResourcesPage() {
             Decide with{" "}
             <span className="gradient-text">better information</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Choosing whether to build, integrate or buy is an expensive decision
             to get wrong. These resources are written to help you make it well —
             including when the answer is to do nothing.
@@ -89,7 +89,7 @@ export default function ResourcesPage() {
                     className="opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                   />
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
                   {r.desc}
                 </p>
                 <span className="mt-5 inline-block text-sm font-semibold text-accent-glow">
@@ -104,7 +104,7 @@ export default function ResourcesPage() {
           <h2 className="font-display text-3xl font-bold text-ink">
             Rather just talk it through?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-slate-300">
             Book a 30-minute strategy call and get a straight answer on whether
             software would pay for itself in your operation.
           </p>
