@@ -327,7 +327,7 @@ export default function Hero() {
       {/* Marquee strip — pure CSS keyframe */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 select-none overflow-hidden whitespace-nowrap font-display text-[18vw] font-extrabold leading-none text-ink opacity-[0.05]"
+        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 select-none overflow-hidden whitespace-nowrap font-display text-[18vw] font-extrabold leading-none text-navy-500 opacity-[0.07]"
       >
         <div className="flex bt-marquee">
           <span className="px-8">BUILD · REVAMP · RANK · SCALE ·&nbsp;</span>

@@ -25,10 +25,12 @@ const config: Config = {
           300: "#0a2f6b", // deep ocean headings / eyebrow text
         },
         // Deep-ocean "ink" used as the primary text color (replaces white).
+        // Darkened `soft`/`mute` so secondary text reads clearly on the light
+        // page instead of looking washed out.
         ink: {
           DEFAULT: "#0a2540",
-          soft: "#33507a",
-          mute: "#5b7196",
+          soft: "#2b4668",
+          mute: "#425a79",
         },
         accent: {
           cyan: "#0e7490", // deep teal — readable on white

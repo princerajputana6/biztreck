@@ -92,12 +92,12 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
 
   return (
-    <footer className="relative z-10 mt-20 border-t border-navy-700/40 bg-gradient-to-b from-navy-950 to-[#020510] pt-20">
+    <footer className="relative z-10 mt-20 border-t border-navy-700/40 bg-gradient-to-b from-navy-950 to-[#dbe8fc] pt-20">
       <div className="container-px">
         <div className="grid gap-12 pb-14 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Logo size={72} showWordmark={false} />
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-500">
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-slate-600">
               We are a senior product studio building modern websites and apps,
               revamping legacy platforms, automating infrastructure, growing
               search rankings, and helping startups launch from zero. One team,
@@ -167,7 +167,7 @@ export default function Footer() {
                     <li key={l.label}>
                       <a
                         href={l.href}
-                        className="group inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-ink"
+                        className="group inline-flex items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-ink"
                       >
                         {l.label}
                         <ArrowUpRight

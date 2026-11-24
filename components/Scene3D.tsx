@@ -76,7 +76,7 @@ export default function Scene3D() {
       wireframe: true,
       vertexColors: true,
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.26,
     });
     const terrain = new THREE.Mesh(geometry, wireMaterial);
     terrain.position.y = -2.2;

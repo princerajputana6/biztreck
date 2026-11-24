@@ -9,7 +9,7 @@ export default function BackgroundFX() {
     <>
       <Scene3D />
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-60" />
+        <div className="absolute inset-0 bg-grid opacity-40" />
 
         <motion.div
           className="glow-orb"
