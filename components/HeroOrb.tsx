@@ -1,37 +1,6 @@
 "use client";
 import { motion, MotionValue } from "framer-motion";
 import Image from "next/image";
-import {
-  Code2,
-  Cloud,
-  Zap,
-  Globe2,
-  Cpu,
-  Layers,
-  Rocket,
-  Smartphone,
-  RefreshCw,
-  TrendingUp,
-  ServerCog,
-} from "lucide-react";
-
-const ringServices = [
-  { Icon: RefreshCw, label: "Revamp", color: "#7fa2ff" },
-  { Icon: Code2, label: "Web Dev", color: "#22d3ee" },
-  { Icon: Smartphone, label: "Mobile", color: "#60a5fa" },
-  { Icon: ServerCog, label: "DevOps", color: "#4f7cf0" },
-  { Icon: TrendingUp, label: "SEO", color: "#a78bfa" },
-  { Icon: Rocket, label: "Launch", color: "#22d3ee" },
-];
-
-const techBadges = [
-  { Icon: Code2, label: "Next.js" },
-  { Icon: Cloud, label: "AWS" },
-  { Icon: Layers, label: "React" },
-  { Icon: Cpu, label: "Node" },
-  { Icon: Globe2, label: "Edge" },
-  { Icon: Zap, label: "Vercel" },
-];
 
 export default function HeroOrb({
   tiltX,
@@ -96,51 +65,6 @@ export default function HeroOrb({
           </div>
         </div>
       </div>
-
-      {/* Service ring (outer) — CSS rotation */}
-      {ringServices.map((node, i) => {
-        const radius = 180;
-        const start = (360 / ringServices.length) * i;
-        return (
-          <div
-            key={node.label}
-            className="absolute left-1/2 top-1/2 h-0 w-0 bt-orbit-30"
-            style={{ ["--bt-start" as any]: `${start}deg`, transformOrigin: "center" }}
-          >
-            <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: 0, top: -radius }}>
-              <div
-                className="glass relative flex items-center gap-2 rounded-xl px-3 py-2 shadow-glow bt-orbit-counter-30"
-                style={{ borderColor: `${node.color}55` }}
-              >
-                <node.Icon size={14} style={{ color: node.color }} />
-                <span className="text-xs font-semibold text-ink">{node.label}</span>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Tech ring (inner, opposite direction) */}
-      {techBadges.map((node, i) => {
-        const radius = 110;
-        const start = (360 / techBadges.length) * i;
-        return (
-          <div
-            key={node.label}
-            className="absolute left-1/2 top-1/2 h-0 w-0 bt-orbit-rev-24"
-            style={{ ["--bt-start" as any]: `${start}deg`, transformOrigin: "center" }}
-          >
-            <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: 0, top: -radius }}>
-              <div
-                className="grid h-8 w-8 place-items-center rounded-full border border-navy-500/40 bg-navy-900/60 backdrop-blur bt-orbit-counter-24"
-                title={node.label}
-              >
-                <node.Icon size={12} className="text-accent-glow" />
-              </div>
-            </div>
-          </div>
-        );
-      })}
 
       {/* Floating live cards */}
       <div

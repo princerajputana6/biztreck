@@ -324,17 +324,6 @@ export default function Hero() {
 
       <Particles count={14} />
 
-      {/* Marquee strip — pure CSS keyframe */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/3 -z-10 select-none overflow-hidden whitespace-nowrap font-display text-[18vw] font-extrabold leading-none text-ink opacity-[0.05]"
-      >
-        <div className="flex bt-marquee">
-          <span className="px-8">BUILD · REVAMP · RANK · SCALE ·&nbsp;</span>
-          <span className="px-8">BUILD · REVAMP · RANK · SCALE ·&nbsp;</span>
-        </div>
-      </div>
-
       <div className="container-px relative grid items-center gap-16 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <motion.div
@@ -381,28 +370,6 @@ export default function Hero() {
             </MagneticButton>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.2 }}
-            className="mt-10 grid max-w-lg grid-cols-3 gap-4"
-          >
-            {[
-              { k: "120+", v: "Projects shipped" },
-              { k: "30+", v: "Startups launched" },
-              { k: "98%", v: "Retention rate" },
-            ].map((s) => (
-              <div
-                key={s.v}
-                className="glass rounded-2xl px-4 py-4 text-center bt-float-slow"
-              >
-                <div className="font-display text-2xl font-bold text-ink">
-                  {s.k}
-                </div>
-                <div className="mt-1 text-xs text-slate-400">{s.v}</div>
-              </div>
-            ))}
-          </motion.div>
         </div>
 
         <div className="relative lg:col-span-5">
