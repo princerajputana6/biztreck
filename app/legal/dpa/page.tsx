@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Data Processing Addendum · Biztreck Solutions" };
+export const metadata = {
+  title: "Data Processing Addendum · Biztreck Solutions",
+  description: "Data Processing Addendum for Biztreck Solutions clients, covering how we process personal data on your behalf.",
+  alternates: { canonical: "/legal/dpa" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Data Processing Addendum" updated="May 2026">
+    <LegalLayout path="/legal/dpa" title="Data Processing Addendum" updated="May 2026">
       <p>
         This Data Processing Addendum (&quot;DPA&quot;) forms part of the agreement
         between Biztreck Solutions (&quot;Processor&quot;) and the Customer (&quot;Controller&quot;)

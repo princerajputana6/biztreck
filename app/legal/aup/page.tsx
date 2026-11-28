@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Acceptable Use Policy · Biztreck Solutions" };
+export const metadata = {
+  title: "Acceptable Use Policy · Biztreck Solutions",
+  description: "Acceptable Use Policy for Biztreck Solutions services: what is and is not permitted on our hosted and delivered software.",
+  alternates: { canonical: "/legal/aup" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Acceptable Use Policy" updated="May 2026">
+    <LegalLayout path="/legal/aup" title="Acceptable Use Policy" updated="May 2026">
       <p>
         This Acceptable Use Policy (&quot;AUP&quot;) describes prohibited uses of the
         Biztreck Solutions website and services. By using our services you

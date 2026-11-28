@@ -54,6 +54,18 @@ const nextConfig = {
   // Map the dot-prefixed /.well-known/* paths (which the App Router cannot host
   // directly, since folders beginning with "." are ignored) onto real route
   // handlers under /api/well-known/*.
+  // One canonical host. www.* and the http:// variants currently serve the same
+  // content with no redirect; send them to https://biztreck.com in one hop.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.biztreck.com" }],
+        destination: "https://biztreck.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

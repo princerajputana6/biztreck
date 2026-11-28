@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Cookie Policy · Biztreck Solutions" };
+export const metadata = {
+  title: "Cookie Policy · Biztreck Solutions",
+  description: "How Biztreck Solutions uses cookies and similar technologies on biztreck.com, and how to control them.",
+  alternates: { canonical: "/legal/cookies" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Cookie Policy" updated="May 2026">
+    <LegalLayout path="/legal/cookies" title="Cookie Policy" updated="May 2026">
       <p>
         This Cookie Policy explains how Biztreck Solutions uses cookies and
         similar technologies on our website.

@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Terms of Service · Biztreck Solutions" };
+export const metadata = {
+  title: "Terms of Service · Biztreck Solutions",
+  description: "Terms of Service governing use of biztreck.com and engagements with Biztreck Solutions.",
+  alternates: { canonical: "/legal/terms" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Terms of Service" updated="May 2026">
+    <LegalLayout path="/legal/terms" title="Terms of Service" updated="May 2026">
       <p>
         These Terms of Service govern your access to and use of the Biztreck
         Solutions website and services. By using our site you agree to these

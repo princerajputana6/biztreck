@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowRight, ArrowUpRight, Check, TrendingUp } from "luci
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackgroundFX from "@/components/BackgroundFX";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { SITE } from "@/lib/site";
 import { SOLUTIONS, getSolution } from "@/lib/solutions";
 
@@ -105,14 +106,7 @@ export default async function SolutionPage({
       <Navbar />
 
       <article className="relative z-10 container-px pt-32 sm:pt-40">
-        {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-slate-400" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-ink">Home</Link>
-          <span className="mx-2">/</span>
-          <Link href="/solutions" className="hover:text-ink">Solutions</Link>
-          <span className="mx-2">/</span>
-          <span className="text-slate-300">{sol.name}</span>
-        </nav>
+        <Breadcrumbs trail={[{ name: "Solutions", path: "/solutions" }, { name: sol.name, path: `/solutions/${sol.slug}` }]} />
 
         {/* Hero */}
         <header className="max-w-3xl">

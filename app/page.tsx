@@ -14,6 +14,11 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import BackgroundFX from "@/components/BackgroundFX";
 import { getShowcaseProjects } from "@/lib/showcase";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // Companies come from the admin `clients` collection. Regenerate periodically so
 // clients added in admin appear on the site without a redeploy.

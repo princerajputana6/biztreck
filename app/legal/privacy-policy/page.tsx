@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Privacy Policy · Biztreck Solutions" };
+export const metadata = {
+  title: "Privacy Policy · Biztreck Solutions",
+  description: "How Biztreck Solutions collects, uses and protects personal information on biztreck.com and through our services.",
+  alternates: { canonical: "/legal/privacy-policy" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Privacy Policy" updated="May 2026">
+    <LegalLayout path="/legal/privacy-policy" title="Privacy Policy" updated="May 2026">
       <p>
         Biztreck Solutions (&quot;Biztreck&quot;, &quot;we&quot;, &quot;us&quot;) operates this website and the services
         offered through it. This Privacy Policy explains what personal data we

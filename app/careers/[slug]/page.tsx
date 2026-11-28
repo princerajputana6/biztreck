@@ -37,6 +37,7 @@ export async function generateMetadata({
   return {
     title: `${j.title} · Careers · Biztreck`,
     description: j.shortDescription,
+    alternates: { canonical: `/careers/${slug}` },
   };
 }
 

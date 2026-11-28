@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Refund Policy · Biztreck Solutions" };
+export const metadata = {
+  title: "Refund Policy · Biztreck Solutions",
+  description: "Refund policy for Biztreck Solutions project, retainer and service payments.",
+  alternates: { canonical: "/legal/refund" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Refund Policy" updated="May 2026">
+    <LegalLayout path="/legal/refund" title="Refund Policy" updated="May 2026">
       <p>
         We work hard to make every Biztreck engagement a success. This policy
         explains when and how refunds may apply.

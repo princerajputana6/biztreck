@@ -48,7 +48,8 @@ export const metadata: Metadata = {
     "Delhi NCR software agency",
   ],
   category: "technology",
-  alternates: { canonical: "/" },
+  // No root-level canonical: a canonical here would be inherited by every
+  // route and point all of them at the homepage. Each page sets its own.
   openGraph: {
     type: "website",
     siteName: SITE.name,

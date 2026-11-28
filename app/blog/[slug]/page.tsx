@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackgroundFX from "@/components/BackgroundFX";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { getDb } from "@/lib/mongodb";
 import Image from "next/image";
 import Link from "next/link";
@@ -98,6 +99,7 @@ export default async function BlogPage({
 
       <article className="relative z-10 pt-32 pb-20 sm:pt-36">
         <div className="container-px mx-auto max-w-4xl">
+          <Breadcrumbs trail={[{ name: "Blog", path: "/blog" }, { name: blog.title, path: `/blog/${blog.slug}` }]} />
           <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-ink"
@@ -170,6 +172,10 @@ export default async function BlogPage({
                 {blog.author || "Biztreck Editorial"}
               </div>
               <div className="text-sm text-slate-400">Biztreck Solutions team</div>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                Written by the Biztreck Solutions team, a Greater Noida, Delhi NCR studio
+                building websites, apps, DevOps and SEO work for businesses.
+              </p>
             </div>
           </div>
 

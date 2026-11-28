@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "Security & Compliance · Biztreck Solutions" };
+export const metadata = {
+  title: "Security & Compliance · Biztreck Solutions",
+  description: "Security and compliance controls Biztreck Solutions operates across our company, infrastructure and delivery process.",
+  alternates: { canonical: "/legal/security" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="Security & Compliance" updated="May 2026">
+    <LegalLayout path="/legal/security" title="Security & Compliance" updated="May 2026">
       <p>
         Biztreck Solutions takes security seriously. This page summarises the
         controls we operate across our company, infrastructure, and delivery

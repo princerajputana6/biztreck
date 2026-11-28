@@ -253,7 +253,6 @@ export default function FaqPage() {
     <main className="relative min-h-screen overflow-hidden bg-navy-950">
       <BackgroundFX />
       <Navbar />
-
       <article className="relative z-10 container-px pt-32 sm:pt-40">
         <header className="max-w-3xl">
           <div className="eyebrow">{allFaqs.length} questions answered</div>

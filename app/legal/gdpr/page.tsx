@@ -1,10 +1,14 @@
 import LegalLayout from "@/components/LegalLayout";
 
-export const metadata = { title: "GDPR Compliance · Biztreck Solutions" };
+export const metadata = {
+  title: "GDPR Compliance · Biztreck Solutions",
+  description: "How Biztreck Solutions supports GDPR compliance for clients and visitors, including data subject rights.",
+  alternates: { canonical: "/legal/gdpr" },
+};
 
 export default function Page() {
   return (
-    <LegalLayout title="GDPR Compliance" updated="May 2026">
+    <LegalLayout path="/legal/gdpr" title="GDPR Compliance" updated="May 2026">
       <p>
         Biztreck Solutions is committed to protecting personal data of users in
         the European Economic Area (EEA) and the United Kingdom in line with

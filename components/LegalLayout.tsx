@@ -1,12 +1,15 @@
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import BackgroundFX from "./BackgroundFX";
+import Breadcrumbs from "./Breadcrumbs";
 
 export default function LegalLayout({
+  path,
   title,
   updated,
   children,
 }: {
+  path: string;
   title: string;
   updated: string;
   children: React.ReactNode;
@@ -18,6 +21,7 @@ export default function LegalLayout({
       <section className="relative z-10 pt-36 pb-20 sm:pt-40">
         <div className="container-px">
           <div className="mx-auto max-w-3xl">
+            <Breadcrumbs trail={[{ name: title, path }]} />
             <div className="eyebrow">Legal</div>
             <h1 className="mt-5 font-display text-4xl font-extrabold text-ink sm:text-5xl">
               {title}
